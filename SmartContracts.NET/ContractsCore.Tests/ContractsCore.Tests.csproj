@@ -17,7 +17,7 @@
   </ItemGroup>
   
   <PropertyGroup>
-      <CodeAnalysisRuleSet>..\CodeAnalysis\spacetime.ruleset</CodeAnalysisRuleSet>
+      <CodeAnalysisRuleSet>..\CodeAnalysis\strongforce.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <ItemGroup>
     <AdditionalFiles Include="..\CodeAnalysis\stylecop.json" Link="stylecop.json" />

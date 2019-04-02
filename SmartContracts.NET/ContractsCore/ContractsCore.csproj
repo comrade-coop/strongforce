@@ -6,7 +6,7 @@
     <PackageReference Include="StyleCop.Analyzers" Version="1.1.1-rc.108"/>
   </ItemGroup>
   <PropertyGroup>
-      <CodeAnalysisRuleSet>..\CodeAnalysis\spacetime.ruleset</CodeAnalysisRuleSet>
+      <CodeAnalysisRuleSet>..\CodeAnalysis\strongforce.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <ItemGroup>
     <AdditionalFiles Include="..\CodeAnalysis\stylecop.json" Link="stylecop.json" />
