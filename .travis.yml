@@ -1,0 +1,14 @@
+language: csharp
+solution: SmartContracts.NET/Strongforce.sln
+sudo: required
+dist: xenial
+mono: none
+dotnet: 2.2
+
+install:
+  - dotnet restore SmartContracts.NET/Strongforce.sln
+  - dotnet add SmartContracts.NET/ContractsCore.Tests/ContractsCore.Tests.csproj package  xunit --version 2.4.1
+
+script:
+  - dotnet build SmartContracts.NET/Strongforce.sln
+  - dotnet test SmartContracts.NET/ContractsCore.Tests/ContractsCore.Tests.csproj
