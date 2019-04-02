@@ -1,0 +1,13 @@
+language: csharp
+solution: SmartContracts.NET/Strongforce.sln
+sudo: required
+dist: xenial
+mono: none
+dotnet: 2.2
+
+install:
+  - nuget restore SmartContracts.NET/Strongforce.sln
+  - nuget install xunit.runners -Version 2.4.0 -OutputDirectory testrunner
+script:
+  - msbuild /p:Configuration=Release SmartContracts.NET/Strongforce.sln
+  - mono ./testrunner/xunit.runners.2.4.0/tools/xunit.console.clr4.exe ./SmatrContracts.NET/ContractsCore.Tests/bin/Release/ContractsCore.Tests.dll
