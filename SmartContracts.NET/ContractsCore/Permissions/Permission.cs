@@ -11,6 +11,11 @@ namespace ContractsCore.Permissions
 
 		public Type Type { get; }
 
+		public override string ToString()
+		{
+			return this.Type.Name;
+		}
+
 		public override bool Equals(object obj)
 		{
 			if (obj == null || obj.GetType() != typeof(Permission))
