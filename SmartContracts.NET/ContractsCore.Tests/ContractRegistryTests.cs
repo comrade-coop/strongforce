@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Data;
+using ContractsCore.Contracts;
 using ContractsCore.Tests.Mocks;
 using Xunit;
 using Action = ContractsCore.Actions.Action;
@@ -65,29 +66,8 @@ namespace ContractsCore.Tests
 		}
 
 		[Fact]
-		public void HandleAction_WhenPassedValidAction_ReturnsTrue()
-		{
-			var registry = new ContractRegistry();
-			Address senderAddress = this.addressFactory.Create();
-			Address contractAddress = this.addressFactory.Create();
-			var contract = new FavoriteNumberContract(contractAddress);
-
-			registry.RegisterContract(contract);
-
-			var numberAction = new SetFavoriteNumberAction(
-				string.Empty,
-				senderAddress,
-				senderAddress,
-				contractAddress,
-				0);
-
-			Assert.True(registry.HandleAction(numberAction));
-		}
-
-		[Fact]
 		public void HandleAction_WhenPassedValidAction_SendsActionToCorrectContract()
 		{
-			const int expectedNumber = 342;
 			var registry = new ContractRegistry();
 			Address senderAddress = this.addressFactory.Create();
 			Address contractAddress = this.addressFactory.Create();
@@ -97,35 +77,40 @@ namespace ContractsCore.Tests
 
 			var numberAction = new SetFavoriteNumberAction(
 				string.Empty,
-				senderAddress,
-				senderAddress,
 				contractAddress,
-				expectedNumber);
-
-			registry.HandleAction(numberAction);
-
-			Assert.Equal(expectedNumber, contract.Number);
+				0);
+			contract.SetNumberInvoke(numberAction);
+			Assert.Equal(contract.LastOrigin, contractAddress);
+			Assert.Equal(contract.LastSender, contractAddress);
 		}
 
 		[Fact]
 		public void HandleAction_WhenPassedNull_ThrowsArgumentNullException()
 		{
 			var registry = new ContractRegistry();
-			Assert.Throws<ArgumentNullException>(() => registry.HandleAction(null));
+			Address senderAddress = this.addressFactory.Create();
+			Address contractAddress = this.addressFactory.Create();
+			var contract = new FavoriteNumberContract(contractAddress);
+
+			registry.RegisterContract(contract);
+
+			Assert.Throws<ArgumentNullException>(() => contract.SetNumberInvoke(null));
 		}
 
 		[Fact]
 		public void HandleAction_WhenPassedActionWithNonExistentAddress_ReturnsFalse()
 		{
 			var registry = new ContractRegistry();
-			Address address = this.addressFactory.Create();
-			var action = new Action(
-				string.Empty,
-				address,
-				address,
-				address);
+			Address contractAddress = this.addressFactory.Create();
+			var contract = new FavoriteNumberContract(contractAddress);
 
-			Assert.False(registry.HandleAction(action));
+			registry.RegisterContract(contract);
+			Address address = this.addressFactory.Create();
+			var action = new SetFavoriteNumberAction(
+				string.Empty,
+				null, 50);
+
+			Assert.Throws<ArgumentNullException>(() => contract.SetNumberInvoke(action));
 		}
 	}
 }

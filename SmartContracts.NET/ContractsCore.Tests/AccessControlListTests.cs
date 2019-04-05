@@ -20,7 +20,7 @@ namespace ContractsCore.Tests
 			var acl = new AccessControlList();
 			var permission = new Permission(typeof(Action));
 
-			Assert.True(acl.AddPermission(address, permission));
+			Assert.True(acl.AddPermission(address, permission, address));
 		}
 
 		[Fact]
@@ -30,15 +30,15 @@ namespace ContractsCore.Tests
 			var acl = new AccessControlList();
 			var permission = new Permission(typeof(Action));
 
-			acl.AddPermission(address, permission);
-			Assert.False(acl.AddPermission(address, permission));
+			acl.AddPermission(address, permission, address);
+			Assert.False(acl.AddPermission(address, permission, address));
 		}
 
 		[Fact]
 		public void AddPermission_WhenNullIsPassed_ReturnsFalse()
 		{
 			var acl = new AccessControlList();
-			Assert.False(acl.AddPermission(null, null));
+			Assert.False(acl.AddPermission(null, null, null));
 		}
 
 		[Fact]
@@ -48,8 +48,8 @@ namespace ContractsCore.Tests
 			var acl = new AccessControlList();
 			var permission = new Permission(typeof(Action));
 
-			acl.AddPermission(address, permission);
-			Assert.True(acl.HasPermission(address, permission));
+			acl.AddPermission(address, permission, address);
+			Assert.True(acl.HasPermission(address, permission, address));
 		}
 
 		[Fact]
@@ -59,7 +59,7 @@ namespace ContractsCore.Tests
 			var acl = new AccessControlList();
 			var permission = new Permission(typeof(Action));
 
-			Assert.False(acl.HasPermission(address, permission));
+			Assert.False(acl.HasPermission(address, permission, address));
 		}
 
 		[Fact]
@@ -69,9 +69,9 @@ namespace ContractsCore.Tests
 			var acl = new AccessControlList();
 			var permission = new Permission(typeof(Action));
 
-			acl.AddPermission(address, permission);
-			Assert.True(acl.RemovePermission(address, permission));
-			Assert.False(acl.HasPermission(address, permission));
+			acl.AddPermission(address, permission, address);
+			Assert.True(acl.RemovePermission(address, permission, address));
+			Assert.False(acl.HasPermission(address, permission, address));
 		}
 
 		[Fact]
@@ -81,14 +81,14 @@ namespace ContractsCore.Tests
 			var acl = new AccessControlList();
 			var permission = new Permission(typeof(Action));
 
-			Assert.False(acl.RemovePermission(address, permission));
+			Assert.False(acl.RemovePermission(address, permission, address));
 		}
 
 		[Fact]
 		public void RemovePermission_WhenNullIsPassed_ReturnsFalse()
 		{
 			var acl = new AccessControlList();
-			Assert.False(acl.RemovePermission(null, null));
+			Assert.False(acl.RemovePermission(null, null, null));
 		}
 	}
 }

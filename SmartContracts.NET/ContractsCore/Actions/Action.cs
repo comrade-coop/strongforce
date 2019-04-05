@@ -2,19 +2,17 @@ namespace ContractsCore.Actions
 {
 	public class Action
 	{
-		public Action(string hash, Address origin, Address sender, Address target)
+		public Action(string hash, Address target)
 		{
 			this.Hash = hash;
-			this.Origin = origin;
-			this.Sender = sender;
 			this.Target = target;
 		}
 
 		public string Hash { get; }
 
-		public Address Origin { get; }
+		public Address Origin { get; internal set; }
 
-		public Address Sender { get; }
+		public Address Sender { get; internal set; }
 
 		public Address Target { get; }
 	}

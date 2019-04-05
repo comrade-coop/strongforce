@@ -2,7 +2,7 @@ using System;
 
 namespace ContractsCore.Permissions
 {
-	public class Permission
+	public class Permission: IComparable<Permission>
 	{
 		public Permission(Type type)
 		{
@@ -10,6 +10,11 @@ namespace ContractsCore.Permissions
 		}
 
 		public Type Type { get; }
+
+		public override string ToString()
+		{
+			return this.Type.Name;
+		}
 
 		public override bool Equals(object obj)
 		{
@@ -29,6 +34,11 @@ namespace ContractsCore.Permissions
 		protected bool Equals(Permission other)
 		{
 			return this.Type == other.Type;
+		}
+
+		public int CompareTo(Permission other)
+		{
+			return this.ToString().CompareTo(other.ToString());
 		}
 	}
 }
