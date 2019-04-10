@@ -51,4 +51,4 @@ dotnet test
 
 ### Status
 
-[![Build Status](https://travis-ci.com/comrade-coop/spacetime.svg?branch=master)](https://travis-ci.com/comrade-coop/spacetime)
+[![Build Status](https://travis-ci.com/comrade-coop/strongforce.svg?branch=master)](https://travis-ci.com/comrade-coop/strongforce)
