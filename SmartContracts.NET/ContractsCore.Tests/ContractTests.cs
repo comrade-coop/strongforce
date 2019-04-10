@@ -1,17 +1,14 @@
-using ContractsCore.Actions;
+using System;
+using ContractsCore.Contracts;
 using ContractsCore.Tests.Mocks;
 using Xunit;
+using Action = ContractsCore.Actions.Action;
 
 namespace ContractsCore.Tests
 {
 	public class ContractTests
 	{
-		private readonly IAddressFactory addressFactory;
-
-		public ContractTests()
-		{
-			this.addressFactory = new RandomAddressFactory();
-		}
+		private readonly IAddressFactory addressFactory = new RandomAddressFactory();
 
 		[Fact]
 		public void Contract_WhenCreated_IsInitialisedWithSpecifiedAddress()
@@ -27,6 +24,15 @@ namespace ContractsCore.Tests
 			Address address = this.addressFactory.Create();
 			Contract contract = new FavoriteNumberContract(address);
 			Assert.NotNull(contract.GetState());
+		}
+
+		[Fact]
+		public void Receive_WhenPassedNull_ThrowsArgumentNullException()
+		{
+			Address contractAddress = this.addressFactory.Create();
+			Contract contract = new FavoriteNumberContract(contractAddress);
+
+			Assert.Throws<ArgumentNullException>(() => contract.Receive(null));
 		}
 
 		[Fact]

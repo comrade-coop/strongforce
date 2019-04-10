@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
+using ContractsCore.Contracts;
 using ContractsCore.Events;
 using Action = ContractsCore.Actions.Action;
 

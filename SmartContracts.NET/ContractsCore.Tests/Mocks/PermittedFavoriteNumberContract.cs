@@ -1,13 +1,18 @@
 using ContractsCore.Actions;
 using ContractsCore.Contracts;
-using ContractsCore.Exceptions;
+using ContractsCore.Permissions;
 
 namespace ContractsCore.Tests.Mocks
 {
-	public class FavoriteNumberContract : Contract
+	public class PermittedFavoriteNumberContract : PermittedContract
 	{
-		public FavoriteNumberContract(Address address)
-			: base(address)
+		public PermittedFavoriteNumberContract(Address address, Address permissionManager)
+			: base(address, permissionManager)
+		{
+		}
+
+		public PermittedFavoriteNumberContract(Address address, Address permissionManager, AccessControlList acl)
+			: base(address, permissionManager, acl)
 		{
 		}
 

@@ -2,7 +2,7 @@ using System;
 using ContractsCore.Events;
 using Action = ContractsCore.Actions.Action;
 
-namespace ContractsCore
+namespace ContractsCore.Contracts
 {
 	public abstract class Contract
 	{
@@ -19,7 +19,17 @@ namespace ContractsCore
 
 		protected internal abstract object GetState();
 
-		protected internal abstract bool Receive(Action action);
+		protected internal virtual bool Receive(Action action)
+		{
+			if (action == null)
+			{
+				throw new ArgumentNullException(nameof(action));
+			}
+
+			return this.HandleAcceptedAction(action);
+		}
+
+		protected abstract bool HandleAcceptedAction(Action action);
 
 		protected virtual void Redirect(Action action)
 		{

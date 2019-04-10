@@ -5,12 +5,7 @@ namespace ContractsCore.Tests
 {
 	public class FavoriteNumberContractTests
 	{
-		private readonly IAddressFactory addressFactory;
-
-		public FavoriteNumberContractTests()
-		{
-			this.addressFactory = new RandomAddressFactory();
-		}
+		private readonly IAddressFactory addressFactory = new RandomAddressFactory();
 
 		[Fact]
 		public void Receive_WhenPassedSetFavoriteNumberAction_ReturnsTrue()
