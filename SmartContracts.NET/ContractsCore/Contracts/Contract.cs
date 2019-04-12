@@ -26,10 +26,10 @@ namespace ContractsCore.Contracts
 				throw new ArgumentNullException(nameof(action));
 			}
 
-			return this.HandleAcceptedAction(action);
+			return this.HandleReceivedAction(action);
 		}
 
-		protected abstract bool HandleAcceptedAction(Action action);
+		protected abstract bool HandleReceivedAction(Action action);
 
 		protected virtual void Redirect(Action action)
 		{

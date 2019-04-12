@@ -15,7 +15,7 @@ namespace ContractsCore.Tests.Mocks
 
 		protected internal override object GetState() => this.Number;
 
-		protected override bool HandleAcceptedAction(Action action)
+		protected override bool HandleReceivedAction(Action action)
 		{
 			switch (action)
 			{

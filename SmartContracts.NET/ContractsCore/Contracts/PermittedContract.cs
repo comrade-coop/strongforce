@@ -34,8 +34,6 @@ namespace ContractsCore.Contracts
 				throw new ArgumentNullException(nameof(action));
 			}
 
-			this.CheckPermission(action);
-
 			switch (action)
 			{
 				case AddPermissionAction permissionAction:
@@ -47,7 +45,16 @@ namespace ContractsCore.Contracts
 					return true;
 
 				default:
-					return this.HandleAcceptedAction(action);
+					return this.HandleReceivedAction(action);
+			}
+		}
+
+		protected void RequirePermission(Action action)
+		{
+			var permission = new Permission(action.GetType());
+			if (!this.acl.HasPermission(action.Sender, permission))
+			{
+				throw new NoPermissionException(this, action.Sender, permission);
 			}
 		}
 
@@ -57,22 +64,15 @@ namespace ContractsCore.Contracts
 			this.acl.AddPermission(permissionManager, new Permission(typeof(RemovePermissionAction)));
 		}
 
-		private void CheckPermission(Action action)
-		{
-			var permission = new Permission(action.GetType());
-			if (!this.acl.HasPermission(action.Sender, permission))
-			{
-				throw new NoPermissionException(this, action.Sender, permission);
-			}
-		}
-
 		private void HandleAddPermissionAction(AddPermissionAction action)
 		{
+			this.RequirePermission(action);
 			this.acl.AddPermission(action.PermittedAddress, action.Permission);
 		}
 
 		private void HandleRemovePermissionAction(RemovePermissionAction action)
 		{
+			this.RequirePermission(action);
 			this.acl.RemovePermission(action.PermittedAddress, action.Permission);
 		}
 	}
