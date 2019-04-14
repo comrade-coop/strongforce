@@ -4,7 +4,7 @@ using ContractsCore.Permissions;
 
 namespace ContractsCore.Tests.Mocks
 {
-	public class PermittedFavoriteNumberContract : PermittedContract
+	public class PermittedFavoriteNumberContract : AclPermittedContract
 	{
 		public PermittedFavoriteNumberContract(Address address, Address permissionManager)
 			: base(address, permissionManager)
