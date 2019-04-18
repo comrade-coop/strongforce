@@ -58,5 +58,7 @@ namespace ContractsCore.Tests
 			Assert.Throws<NoPermissionException>(
 				() => this.Registry.HandleSendAction(addPermissionAction, permissionManager));
 		}
+
+		// TODO test acl interaction
 	}
 }

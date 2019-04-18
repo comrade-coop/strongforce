@@ -13,7 +13,7 @@ namespace ContractsCore.Permissions
 
 		public List<Address> GetMembers()
 		{
-			return null;
+			return new List<Address>();
 		}
 
 		public bool Equal(IWildCard member)

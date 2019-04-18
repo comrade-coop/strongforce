@@ -41,8 +41,24 @@ namespace ContractsCore.Contracts
 
 			switch (action)
 			{
+				case AddPermissionExecutorAction permissionAction:
+					this.acl.AddPermissionExecutor(permissionAction.PermittedAddress, permissionAction.Permission, permissionAction.NextAddress);
+					return true;
+
+				case AddPermissionNextAddressAction permissionAction:
+					this.acl.AddPermissionNextAddress(permissionAction.PermittedAddress, permissionAction.Permission, permissionAction.NextAddress);
+					return true;
+
 				case AddPermissionAction permissionAction:
 					this.HandleAddPermissionAction(permissionAction);
+					return true;
+
+				case RemovePermissionExecutorAction permissionAction:
+					this.acl.RemovePermissionExecutor(permissionAction.PermittedAddress, permissionAction.Permission, permissionAction.NextAddress);
+					return true;
+
+				case RemovePermissionNextAddressAction permissionAction:
+					this.acl.RemovePermissionNextAddress(permissionAction.PermittedAddress, permissionAction.Permission, permissionAction.NextAddress);
 					return true;
 
 				case RemovePermissionAction permissionAction:
@@ -54,20 +70,24 @@ namespace ContractsCore.Contracts
 					return true;
 
 				case ForwardAction forwardAction:
-					// TODO extract in function
-					if (forwardAction.ForwardedAction.Target.Equals(this.Address) )
-					{
-						return this.Receive(forwardAction.ForwardedAction);
-					}
-					else
-					{
-						Address target = forwardAction.WayForForwarding.Pop();
-						this.OnForward(forwardAction.ForwardedAction, target, forwardAction.WayForForwarding);
-						return true;
-					}
+					this.HandleActionForward(forwardAction);
+					return true;
 
 				default:
 					return this.HandleAcceptedAction(action);
+			}
+		}
+
+		protected void HandleActionForward(ForwardAction forwardAction)
+		{
+			if (forwardAction.ForwardedAction.Target.Equals(this.Address))
+			{
+				this.Receive(forwardAction.ForwardedAction);
+			}
+			else
+			{
+				Address target = forwardAction.WayForForwarding.Pop();
+				this.OnForward(forwardAction.ForwardedAction, target, forwardAction.WayForForwarding);
 			}
 		}
 
@@ -123,18 +143,22 @@ namespace ContractsCore.Contracts
 			var permission = new Permission(action.TracingAction.GetType());
 			foreach (var address in this.acl.GetPermittedAddresses(permission, this.Address))
 			{
-				Stack<Address> predecessors = action.Predecessors ?? new Stack<Address>();
+				Stack<Address> predecessors = new Stack<Address>();
+				if (action.Predecessors != null)
+				{
+					predecessors = new Stack<Address>(action.Predecessors.Reverse());
+				}
+
+				if (!predecessors.Contains(this.Address))
+				{
+					queue.Add(new TracingElement(address, predecessors, false));
+				}
+
 				predecessors.Push(this.Address);
-				queue.Add(new TracingElement(address, predecessors, false));
 			}
 
 			return queue;
 		}
-
-		/* protected override void BulletTaken(List<List<Address>> ways, Action targaetAction)
-		{
-
-		}*/
 
 		private void ConfigurePermissionManager(Address permissionManager)
 		{

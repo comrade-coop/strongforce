@@ -47,6 +47,12 @@ namespace ContractsCore.Permissions
 			{
 				return obj as WildCardSet;
 			}
+			else if (typeof(IWildCard).IsAssignableFrom(obj.GetType()))
+			{
+				WildCardSet cardSet = new WildCardSet();
+				cardSet.AddWildCard(obj);
+				return cardSet;
+			}
 			else if (typeof(Address).IsAssignableFrom(obj.GetType()))
 			{
 				return FromAddress(obj as Address);
@@ -59,7 +65,12 @@ namespace ContractsCore.Permissions
 
 		public bool AddWildCard(object card)
 		{
-			if (typeof(IWildCard).IsAssignableFrom(card.GetType()))
+			if (typeof(AddressWildCard).IsAssignableFrom(card.GetType()))
+			{
+				this.AddressCard.UnionWith(card as AddressWildCard);
+				return true;
+			}
+			else if(typeof(IWildCard).IsAssignableFrom(card.GetType()))
 			{
 				return this.WildCards.Add(card as IWildCard);
 			}
@@ -75,13 +86,22 @@ namespace ContractsCore.Permissions
 
 		public bool RemoveWildCard(object card)
 		{
-			if (typeof(IWildCard).IsAssignableFrom(card.GetType()))
+			if (typeof(AddressWildCard).IsAssignableFrom(card.GetType()))
+			{
+				this.AddressCard.ExceptWith(card as AddressWildCard);
+				return true;
+			}
+			else if (typeof(IWildCard).IsAssignableFrom(card.GetType()))
 			{
 				return this.WildCards.Remove(card as IWildCard);
 			}
-			else
+			else if(typeof(Address).IsAssignableFrom(card.GetType()))
 			{
 				return this.RemoveAddress(card as Address);
+			}
+			else
+			{
+				throw new UnsupportedTypeExeption(this, card, "AddWildCard()");
 			}
 		}
 
@@ -151,16 +171,16 @@ namespace ContractsCore.Permissions
 
 		public int CompareTo(WildCardSet other)
 		{
-			if (other == null) return 1;
+			if (other == null)
+			{
+				return 1;
+			}
+
 			if (this.WildCards.Count != other.WildCards.Count)
 			{
 				return this.WildCards.Count.ToString().CompareTo(other.WildCards.Count.ToString());
 			}
 
-			/*if (this.WildCards.SetEquals(other.WildCards))
-			{
-				return 0;
-			}*/
 			foreach (var card in this.WildCards)
 			{
 				if (!other.Contains(card))

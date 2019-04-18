@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using ContractsCore.Events;
 using Action = ContractsCore.Actions.Action;
+using ContractsCore.Actions;
 
 namespace ContractsCore.Tests.Mocks
 {

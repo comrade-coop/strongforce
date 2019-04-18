@@ -70,50 +70,50 @@ namespace ContractsCore.Permissions
 				return false;
 			}
 
+			WildCardSet executors = new WildCardSet();
+			executors.AddWildCard(address);
+			WildCardSet nextAddresses = new WildCardSet();
+			nextAddresses.AddWildCard(nextAddress);
 			if (!this.PermissionsToWildCards.ContainsKey(permission))
 			{
-				WildCardSet executors = new WildCardSet();
-				executors.AddWildCard(address);
-				WildCardSet nextAddresses = new WildCardSet();
-				nextAddresses.AddWildCard(nextAddress);
 				this.PermissionsToWildCards[permission] = new Dictionary<WildCardSet, WildCardSet>() { { executors, nextAddresses } };
 				return true;
 			}
+			else
+			{
+				WildCardSet executorsCheck = this.GetPermissionExecutor(permission, nextAddress);
+				WildCardSet nextAddressesCheck = this.GetPermissionNextAddress(address, permission);
+				if (executorsCheck != null && nextAddressesCheck != null)
+				{
+					return false;
+				}
 
-			return this.AddPermissionExecutor(address, permission, nextAddress) &&
-				this.AddPermissionNextAddress(address as WildCardSet, permission, nextAddress);
+				this.PermissionsToWildCards[permission].Add(executors, nextAddresses);
+			}
+
+			return true;
 		}
 
 		public bool AddPermissionExecutor(object address, Permission permission, object nextAddress)
 		{
-			if (permission == null)
+			WildCardSet executors = this.GetPermissionExecutor(permission, nextAddress);
+			if (executors == null)
 			{
 				return false;
 			}
-			else
-			{
-				WildCardSet next = WildCardSet.FromObject(nextAddress);
-				bool result = this.PermissionsToWildCards[permission]
-					.FirstOrDefault(x => x.Value.CompareTo(next) == 0)
-					.Key.AddWildCard(address);
-				return result;
-			}
+
+			return executors.AddWildCard(address);
 		}
 
-		public bool AddPermissionNextAddress(object executors, Permission permission, object nextAddress)
+		public bool AddPermissionNextAddress(object address, Permission permission, object nextAddress)
 		{
-			if (permission == null)
+			WildCardSet nextAddresses = this.GetPermissionNextAddress(address, permission);
+			if (nextAddresses == null)
 			{
 				return false;
 			}
-			else
-			{
-				WildCardSet exec = WildCardSet.FromObject(executors);
-				bool result = this.PermissionsToWildCards[permission]
-					.FirstOrDefault(x => x.Key.Equals(exec))
-					.Key.AddWildCard(nextAddress);
-				return result;
-			}
+
+			return nextAddresses.AddWildCard(address);
 		}
 
 		public bool RemovePermission(object address, Permission permission, object nextAddress)
@@ -128,12 +128,34 @@ namespace ContractsCore.Permissions
 				return false;
 			}
 
-			WildCardSet executors = this.GetPermissionExecutor(address, permission, nextAddress);
-			WildCardSet nextAddresses = this.GetPermissionNextAddress(address, permission, nextAddress);
+			WildCardSet executors = this.GetPermissionExecutor(permission, nextAddress);
+			WildCardSet nextAddresses = this.GetPermissionNextAddress(address, permission);
 			return executors.RemoveWildCard(address) && nextAddresses.RemoveWildCard(nextAddress);
 		}
 
-		public WildCardSet GetPermissionExecutor(object address, Permission permission, object nextAddress)
+		public bool RemovePermissionExecutor(object address, Permission permission, object nextAddress)
+		{
+			WildCardSet executors = this.GetPermissionExecutor(permission, nextAddress);
+			if (executors == null)
+			{
+				return false;
+			}
+
+			return executors.RemoveWildCard(address);
+		}
+
+		public bool RemovePermissionNextAddress(object address, Permission permission, object nextAddress)
+		{
+			WildCardSet nextAddresses = this.GetPermissionNextAddress(address, permission);
+			if (nextAddresses == null)
+			{
+				return false;
+			}
+
+			return nextAddresses.RemoveWildCard(nextAddress);
+		}
+
+		public WildCardSet GetPermissionExecutor(Permission permission, object nextAddress)
 		{
 			if (permission == null)
 			{
@@ -149,7 +171,7 @@ namespace ContractsCore.Permissions
 			}
 		}
 
-		public WildCardSet GetPermissionNextAddress(object executors, Permission permission, object nextAddress)
+		public WildCardSet GetPermissionNextAddress(object executors, Permission permission)
 		{
 			if (permission == null)
 			{
