@@ -8,13 +8,10 @@ namespace ContractsCore.Contracts
 {
 	public abstract class Contract
 	{
-		protected Contract(Address address, ContractRegistry registry)
+		protected Contract(Address address)
 		{
 			this.Address = address;
-			this.Registry = registry;
 		}
-
-		protected ContractRegistry Registry;
 
 		internal event EventHandler<ActionEventArgs> Send;
 
@@ -31,17 +28,10 @@ namespace ContractsCore.Contracts
 				throw new ArgumentNullException(nameof(action));
 			}
 
-			return this.HandleAcceptedAction(action);
+			return this.HandleReceivedAction(action);
 		}
 
-		protected abstract void ReceiveTracingBullet(TracingBulletAction action);
-
-		protected abstract List<TracingElement> GetAllowedForForwording(TracingBulletAction action,
-			ref List<TracingElement> queue);
-
-		protected internal abstract void BulletTaken(List<Stack<Address>> ways, Action targetAction);
-
-		protected abstract bool HandleAcceptedAction(Action action);
+		protected abstract bool HandleReceivedAction(Action action);
 
 		protected virtual void Redirect(Action action)
 		{

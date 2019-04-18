@@ -9,8 +9,8 @@ namespace ContractsCore.Tests.Mocks
 {
 	public class FavoriteNumberContract : Contract
 	{
-		public FavoriteNumberContract(Address address, ContractRegistry registry = null)
-			: base(address, registry)
+		public FavoriteNumberContract(Address address)
+			: base(address)
 		{
 		}
 
@@ -27,7 +27,7 @@ namespace ContractsCore.Tests.Mocks
 
 		protected internal override object GetState() => this.Number;
 
-		protected override bool HandleAcceptedAction(Actions.Action action)
+		protected override bool HandleReceivedAction(Actions.Action action)
 		{
 			switch (action)
 			{
@@ -45,23 +45,6 @@ namespace ContractsCore.Tests.Mocks
 			this.Number = favoriteNumberAction.Number;
 			this.LastOrigin = favoriteNumberAction.Origin;
 			this.LastSender = favoriteNumberAction.Sender;
-		}
-
-		protected override void ReceiveTracingBullet(TracingBulletAction action)
-		{
-			throw new NotImplementedException();
-		}
-
-		
-
-		protected internal override void BulletTaken(List<Stack<Address>> ways, Actions.Action targetAction)
-		{
-			throw new NotImplementedException();
-		}
-
-		protected override List<TracingElement> GetAllowedForForwording(TracingBulletAction action, ref List<TracingElement> queue)
-		{
-			throw new NotImplementedException();
 		}
 	}
 }

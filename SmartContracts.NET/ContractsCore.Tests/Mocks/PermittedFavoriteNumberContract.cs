@@ -1,15 +1,13 @@
-using System;
+
+using ContractsCore.Actions;
 using ContractsCore.Contracts;
 using ContractsCore.Permissions;
 using System.Collections.Generic;
 using System.Linq;
-using ContractsCore.Events;
-using Action = ContractsCore.Actions.Action;
-using ContractsCore.Actions;
 
 namespace ContractsCore.Tests.Mocks
 {
-	public class PermittedFavoriteNumberContract : PermittedContract
+	public class PermittedFavoriteNumberContract : AclPermittedContract
 	{
 		public PermittedFavoriteNumberContract(Address address, ContractRegistry registry, Address permissionManager)
 			: base(address, registry, permissionManager)
@@ -27,7 +25,7 @@ namespace ContractsCore.Tests.Mocks
 
 		protected internal override object GetState() => this.Number;
 
-		protected override bool HandleAcceptedAction(Action action)
+		protected override bool HandleReceivedAction(Action action)
 		{
 			switch (action)
 			{
@@ -45,17 +43,14 @@ namespace ContractsCore.Tests.Mocks
 			this.Number = favoriteNumberAction.Number;
 		}
 
-		public bool CheckPermission(Address address, Permission permission, Address target)
+		public bool CheckPermission(object address, Permission permission, object target)
 		{
-			return this.HasPermission(address, permission, target);
+			return this.acl.HasPermission(address, permission, target);
 		}
 
 		public bool GenerateActionAndFindPath(Address target, int num)
 		{
-			var setNumberAction = new SetFavoriteNumberAction(
-				string.Empty,
-				target,
-				num);
+			var setNumberAction = new SetFavoriteNumberAction( string.Empty, target, num);
 			var x = new List<TracingElement>();
 			var trace = new TracingBulletAction(string.Empty, target, setNumberAction, this.BulletTaken, null, ref x);
 			this.OnSend(trace);
