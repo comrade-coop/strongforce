@@ -13,7 +13,7 @@ namespace ContractsCore.Contracts
 	{
 		protected readonly AccessControlList acl;
 
-		protected readonly ContractRegistry Registry;
+		protected readonly ContractRegistry registry;
 
 		protected AclPermittedContract(Address address, ContractRegistry registry, Address permissionManager)
 			: this(address, registry, permissionManager, new AccessControlList())
@@ -24,7 +24,7 @@ namespace ContractsCore.Contracts
 			: base(address)
 		{
 			this.acl = acl;
-			this.Registry = registry;
+			this.registry = registry;
 			this.ConfigurePermissionManager(permissionManager);
 		}
 
@@ -78,6 +78,11 @@ namespace ContractsCore.Contracts
 
 		protected void HandleActionForward(ForwardAction forwardAction)
 		{
+			if (forwardAction == null || forwardAction.Target == null)
+			{
+				throw new ArgumentNullException(nameof(forwardAction));
+			}
+
 			if (forwardAction.ForwardedAction.Target.Equals(this.Address))
 			{
 				this.Receive(forwardAction.ForwardedAction);
@@ -112,19 +117,19 @@ namespace ContractsCore.Contracts
 			}
 			else
 			{
-				this.GetAllowedForForwording(action, ref action.BfsAddresses);
+				this.GetAllowedForForwarding(action, ref action.BfsAddresses);
 			}
 		}
 
 		protected virtual void FindBulletPaths(TracingBulletAction action)
 		{
-			List<TracingElement> bfsAddresses = new List<TracingElement>();
+			var bfsAddresses = new List<TracingElement>();
 
-			this.GetAllowedForForwording(action, ref bfsAddresses);
-			for (int i = 0; bfsAddresses.Count > i; i++)
+			this.GetAllowedForForwarding(action, ref bfsAddresses);
+			for (int i = 0; i < bfsAddresses.Count; i++)
 			{
 				TracingElement couple = bfsAddresses.Skip(i).First();
-				Contract currentContract = this.Registry.GetContract(couple.Address);
+				Contract currentContract = this.registry.GetContract(couple.Address);
 				Stack<Address> predecessors = couple.Way ?? new Stack<Address>(new[] { this.Address });
 				TracingBulletAction newAction = new TracingBulletAction(string.Empty, couple.Address, action.TracingAction,
 					null, predecessors, ref bfsAddresses);
@@ -135,13 +140,13 @@ namespace ContractsCore.Contracts
 			action.CallBack(addressQuery, action.TracingAction);
 		}
 
-		protected virtual List<TracingElement> GetAllowedForForwording(TracingBulletAction action,
+		protected virtual List<TracingElement> GetAllowedForForwarding(TracingBulletAction action,
 			ref List<TracingElement> queue)
 		{
 			var permission = new Permission(action.TracingAction.GetType());
 			foreach (var address in this.acl.GetPermittedAddresses(permission, this.Address))
 			{
-				Stack<Address> predecessors = new Stack<Address>();
+				var predecessors = new Stack<Address>();
 				if (action.Predecessors != null)
 				{
 					predecessors = new Stack<Address>(action.Predecessors.Reverse());

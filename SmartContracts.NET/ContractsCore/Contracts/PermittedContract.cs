@@ -38,7 +38,7 @@ namespace ContractsCore.Contracts
 
 		/*protected abstract void ReceiveTracingBullet(TracingBulletAction action);
 
-		protected abstract List<TracingElement> GetAllowedForForwording(TracingBulletAction action,
+		protected abstract List<TracingElement> GetAllowedForForwarding(TracingBulletAction action,
 			ref List<TracingElement> queue);
 
 		protected internal abstract void BulletTaken(List<Stack<Address>> ways, Action targetAction);*/

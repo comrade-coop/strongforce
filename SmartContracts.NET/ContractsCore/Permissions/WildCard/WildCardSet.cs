@@ -43,65 +43,59 @@ namespace ContractsCore.Permissions
 
 		public static WildCardSet FromObject(object obj)
 		{
-			if (typeof(WildCardSet).IsAssignableFrom(obj.GetType()))
+			switch (obj)
 			{
-				return obj as WildCardSet;
-			}
-			else if (typeof(IWildCard).IsAssignableFrom(obj.GetType()))
-			{
-				WildCardSet cardSet = new WildCardSet();
-				cardSet.AddWildCard(obj);
-				return cardSet;
-			}
-			else if (typeof(Address).IsAssignableFrom(obj.GetType()))
-			{
-				return FromAddress(obj as Address);
-			}
-			else
-			{
-				throw new UnsupportedTypeExeption(null, obj, "WildCardSet FormObject()");
+				case WildCardSet newObj:
+					return newObj;
+
+				case IWildCard newObj:
+					WildCardSet cardSet = new WildCardSet();
+					cardSet.AddWildCard(obj);
+					return cardSet;
+
+				case Address newObj:
+					return FromAddress(obj as Address);
+
+				default:
+					throw new UnsupportedTypeExeption(null, obj, "WildCardSet FormObject()");
 			}
 		}
 
 		public bool AddWildCard(object card)
 		{
-			if (typeof(AddressWildCard).IsAssignableFrom(card.GetType()))
+			switch (card)
 			{
-				this.AddressCard.UnionWith(card as AddressWildCard);
-				return true;
-			}
-			else if(typeof(IWildCard).IsAssignableFrom(card.GetType()))
-			{
-				return this.WildCards.Add(card as IWildCard);
-			}
-			else if (typeof(Address).IsAssignableFrom(card.GetType()))
-			{
-				return this.AddAddress(card as Address);
-			}
-			else
-			{
-				throw new UnsupportedTypeExeption(this, card, "AddWildCard()");
+				case AddressWildCard newCard:
+					this.AddressCard.UnionWith(newCard);
+					return true;
+
+				case IWildCard newCard:
+					return this.WildCards.Add(newCard);
+
+				case Address newCard:
+					return this.AddAddress(newCard);
+
+				default:
+					throw new UnsupportedTypeExeption(this, card, "AddWildCard()");
 			}
 		}
 
 		public bool RemoveWildCard(object card)
 		{
-			if (typeof(AddressWildCard).IsAssignableFrom(card.GetType()))
+			switch (card)
 			{
-				this.AddressCard.ExceptWith(card as AddressWildCard);
-				return true;
-			}
-			else if (typeof(IWildCard).IsAssignableFrom(card.GetType()))
-			{
-				return this.WildCards.Remove(card as IWildCard);
-			}
-			else if(typeof(Address).IsAssignableFrom(card.GetType()))
-			{
-				return this.RemoveAddress(card as Address);
-			}
-			else
-			{
-				throw new UnsupportedTypeExeption(this, card, "AddWildCard()");
+				case AddressWildCard newCard:
+					this.AddressCard.ExceptWith(newCard);
+					return true;
+
+				case IWildCard newCard:
+					return this.WildCards.Remove(newCard);
+
+				case Address newCard:
+					return this.RemoveAddress(newCard);
+
+				default:
+					throw new UnsupportedTypeExeption(this, card, "RemoveWildCard()");
 			}
 		}
 
