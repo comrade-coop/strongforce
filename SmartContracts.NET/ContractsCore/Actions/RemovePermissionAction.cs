@@ -6,18 +6,25 @@ namespace ContractsCore.Actions
 	{
 		public RemovePermissionAction(
 			string hash,
-			Address origin,
-			Address sender,
 			Address target,
-			Address permittedAddress,
-			Permission permission)
-			: base(hash, origin, sender, target)
+			Permission permission,
+			object permittedAddress,
+			object nextAddress = null)
+			: base(hash, target)
 		{
 			this.PermittedAddress = permittedAddress;
+			this.NextAddress = nextAddress;
+			if (nextAddress == null)
+			{
+				this.NextAddress = target;
+			}
+
 			this.Permission = permission;
 		}
 
-		public Address PermittedAddress { get; }
+		public object PermittedAddress { get; }
+
+		public object NextAddress { get; }
 
 		public Permission Permission { get; }
 	}

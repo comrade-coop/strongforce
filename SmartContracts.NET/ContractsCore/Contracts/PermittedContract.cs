@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using ContractsCore.Actions;
 using ContractsCore.Exceptions;
 using ContractsCore.Permissions;
@@ -12,8 +13,6 @@ namespace ContractsCore.Contracts
 			: base(address)
 		{
 		}
-
-		public abstract bool HasPermission(Address address, Permission permission);
 
 		protected internal override bool Receive(Action action)
 		{
@@ -37,14 +36,14 @@ namespace ContractsCore.Contracts
 			}
 		}
 
-		protected void RequirePermission(Action action)
-		{
-			var permission = new Permission(action.GetType());
-			if (!this.HasPermission(action.Sender, permission))
-			{
-				throw new NoPermissionException(this, action.Sender, permission);
-			}
-		}
+		/*protected abstract void ReceiveTracingBullet(TracingBulletAction action);
+
+		protected abstract List<TracingElement> GetAllowedForForwarding(TracingBulletAction action,
+			ref List<TracingElement> queue);
+
+		protected internal abstract void BulletTaken(List<Stack<Address>> ways, Action targetAction);*/
+
+		protected abstract bool CheckPermission(Action action);
 
 		protected abstract void HandleAddPermissionAction(AddPermissionAction action);
 

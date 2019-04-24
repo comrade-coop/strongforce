@@ -2,57 +2,63 @@ using ContractsCore.Actions;
 using ContractsCore.Exceptions;
 using ContractsCore.Permissions;
 using ContractsCore.Tests.Mocks;
+using ContractsCore.Contracts;
 using Xunit;
 
 namespace ContractsCore.Tests
 {
 	public class PermittedFavoriteNumberContractTests
 	{
-		private readonly IAddressFactory addressFactory = new RandomAddressFactory();
+		private readonly IAddressFactory AddressFactory;
+		private ContractRegistryMock Registry;
+
+		public PermittedFavoriteNumberContractTests()
+		{
+			this.AddressFactory = new RandomAddressFactory();
+			this.Registry = new ContractRegistryMock();
+		}
 
 		[Fact]
 		public void Receive_WhenPassedSetFavoriteNumberActionWithGrantedPermissions_SetsNumberCorrectly()
 		{
-			Address address = this.addressFactory.Create();
-			Address permissionManager = this.addressFactory.Create();
-			var contract = new PermittedFavoriteNumberContract(address, permissionManager);
+			Address contractAddress = this.AddressFactory.Create();
+			Address permissionManager = this.AddressFactory.Create();
+			var contract = new PermittedFavoriteNumberContract(contractAddress, Registry, permissionManager);
+			this.Registry.RegisterContract(contract);
 
 			var addPermissionAction = new AddPermissionAction(
 				string.Empty,
-				permissionManager,
-				permissionManager,
-				address,
-				address,
-				new Permission(typeof(SetFavoriteNumberAction)));
-
-			contract.Receive(addPermissionAction);
+				contractAddress,
+				new Permission(typeof(SetFavoriteNumberAction)),
+				permissionManager);
 
 			const int expectedNumber = 32;
 			var setNumberAction = new SetFavoriteNumberAction(
 				string.Empty,
-				address,
-				address,
-				address,
+				contractAddress,
 				expectedNumber);
 
-			Assert.True(contract.Receive(setNumberAction));
+			Assert.True(this.Registry.HandleSendAction(addPermissionAction, permissionManager));
+			Assert.True(this.Registry.HandleSendAction(setNumberAction, permissionManager));
 			Assert.Equal(expectedNumber, contract.Number);
 		}
 
 		[Fact]
-		public void Receive_WhenPassedSetFavoriteNumberActionWithoutPermissions_ThrowsNoPermissionException()
+		public void Receive_WhenPassedUnsupportedActionWithPermissions_ReturnsFalse()
 		{
-			Address address = this.addressFactory.Create();
-			var contract = new PermittedFavoriteNumberContract(address, address);
+			Address permissionManager = this.AddressFactory.Create();
+			Address contractAddress = this.AddressFactory.Create();
+			Contract contract = new PermittedFavoriteNumberContract(contractAddress, Registry, permissionManager);
+			this.Registry.RegisterContract(contract);
 
-			var setNumberAction = new SetFavoriteNumberAction(
+			var addPermissionAction = new Action(
 				string.Empty,
-				address,
-				address,
-				address,
-				0);
+				contractAddress);
 
-			Assert.Throws<NoPermissionException>(() => contract.Receive(setNumberAction));
+			Assert.Throws<NoPermissionException>(
+				() => this.Registry.HandleSendAction(addPermissionAction, permissionManager));
 		}
+
+		// TODO test acl interaction
 	}
 }

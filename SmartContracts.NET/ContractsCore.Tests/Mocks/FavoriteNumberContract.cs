@@ -1,5 +1,8 @@
+using System;
+using System.Collections.Generic;
 using ContractsCore.Actions;
 using ContractsCore.Contracts;
+using ContractsCore.Events;
 using ContractsCore.Exceptions;
 
 namespace ContractsCore.Tests.Mocks
@@ -13,9 +16,18 @@ namespace ContractsCore.Tests.Mocks
 
 		public int Number { get; private set; }
 
+		public Address LastSender { get; private set; }
+
+		public Address LastOrigin { get; private set; }
+
+		public void SetNumberInvoke(Actions.Action action)
+		{
+			this.OnSend(action);
+		}
+
 		protected internal override object GetState() => this.Number;
 
-		protected override bool HandleReceivedAction(Action action)
+		protected override bool HandleReceivedAction(Actions.Action action)
 		{
 			switch (action)
 			{
@@ -31,6 +43,8 @@ namespace ContractsCore.Tests.Mocks
 		private void HandleSetNumberAction(SetFavoriteNumberAction favoriteNumberAction)
 		{
 			this.Number = favoriteNumberAction.Number;
+			this.LastOrigin = favoriteNumberAction.Origin;
+			this.LastSender = favoriteNumberAction.Sender;
 		}
 	}
 }

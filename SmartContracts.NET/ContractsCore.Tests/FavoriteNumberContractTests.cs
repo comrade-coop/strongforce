@@ -15,8 +15,6 @@ namespace ContractsCore.Tests
 			var action = new SetFavoriteNumberAction(
 				string.Empty,
 				address,
-				address,
-				address,
 				0);
 			Assert.True(contract.Receive(action));
 		}
@@ -29,8 +27,6 @@ namespace ContractsCore.Tests
 			var contract = new FavoriteNumberContract(address);
 			var action = new SetFavoriteNumberAction(
 				string.Empty,
-				address,
-				address,
 				address,
 				expectedNumber);
 			contract.Receive(action);

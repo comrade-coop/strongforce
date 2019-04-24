@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using ContractsCore.Actions;
 using ContractsCore.Events;
 using Action = ContractsCore.Actions.Action;
 
@@ -35,13 +37,16 @@ namespace ContractsCore.Contracts
 		{
 		}
 
-		protected virtual void OnSend(ActionEventArgs e)
+		protected virtual void OnSend(Action action)
 		{
+			ActionEventArgs e = new ActionEventArgs(action);
 			this.Send?.Invoke(this, e);
 		}
 
-		protected virtual void OnForward(ActionEventArgs e)
+		protected virtual void OnForward(Action action, Address target, Stack<Address> ways)
 		{
+			ForwardAction forwarded = new ForwardAction(string.Empty, target, action, ways);
+			ActionEventArgs e = new ActionEventArgs(forwarded);
 			this.Forward?.Invoke(this, e);
 		}
 	}

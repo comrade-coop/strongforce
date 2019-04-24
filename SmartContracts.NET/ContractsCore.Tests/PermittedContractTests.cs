@@ -10,83 +10,106 @@ namespace ContractsCore.Tests
 {
 	public class PermittedContractTests
 	{
-		private readonly IAddressFactory addressFactory = new RandomAddressFactory();
+		private readonly IAddressFactory AddressFactory;
+		private ContractRegistryMock Registry;
+
+		public PermittedContractTests()
+		{
+			this.AddressFactory = new RandomAddressFactory();
+			this.Registry = new ContractRegistryMock();
+		}
+
+		[Fact]
+		public void Permissions_WhenContractInitialized_ReturnTrue()
+		{
+			Address permissionManager = this.AddressFactory.Create();
+			Address contractAddress = this.AddressFactory.Create();
+			PermittedFavoriteNumberContract contract = new PermittedFavoriteNumberContract(contractAddress, Registry, permissionManager);
+
+			var addPermission = new Permission(typeof(AddPermissionAction));
+			var removePermission = new Permission(typeof(RemovePermissionAction));
+			Assert.True(contract.CheckPermission(permissionManager, addPermission, contractAddress));
+			Assert.True(contract.CheckPermission(permissionManager, removePermission, contractAddress));
+		}
 
 		[Fact]
 		public void Receive_WhenPassedActionWithNoPermissions_ThrowsNoPermissionException()
 		{
-			Address address = this.addressFactory.Create();
-			Address permissionManager = this.addressFactory.Create();
-			Address contractAddress = this.addressFactory.Create();
-			Contract contract = new PermittedFavoriteNumberContract(contractAddress, permissionManager);
+			Address address = this.AddressFactory.Create();
+			Address permissionManager = this.AddressFactory.Create();
+			Address contractAddress = this.AddressFactory.Create();
+			Contract contract = new PermittedFavoriteNumberContract(contractAddress, Registry, permissionManager);
+
+			this.Registry.RegisterContract(contract);
 
 			var addPermissionAction = new AddPermissionAction(
 				string.Empty,
-				address,
 				contractAddress,
-				address,
-				address,
-				new Permission(typeof(AddPermissionAction)));
+				new Permission(typeof(AddPermissionAction)),
+				contractAddress);
 
-			Assert.Throws<NoPermissionException>(() => contract.Receive(addPermissionAction));
+			Assert.Throws<NoPermissionException>(() => this.Registry.HandleSendAction(addPermissionAction, contractAddress));
 		}
 
 		[Fact]
 		public void Receive_WhenPassedSupportedActionWithPermissions_ReturnsTrue()
 		{
-			Address permissionManager = this.addressFactory.Create();
-			Address contractAddress = this.addressFactory.Create();
-			PermittedContract contract = new PermittedFavoriteNumberContract(contractAddress, permissionManager);
-
-			var removePermission = new Permission(typeof(RemovePermissionAction));
-			var addRemovePermissionAction = new AddPermissionAction(
+			Address permissionManager = this.AddressFactory.Create();
+			Address contractAddress = this.AddressFactory.Create();
+			PermittedFavoriteNumberContract contract = new PermittedFavoriteNumberContract(contractAddress, Registry, permissionManager);
+			this.Registry.RegisterContract(contract);
+			var numberPermission = new Permission(typeof(SetFavoriteNumberAction));
+			var addPermissionAction = new AddPermissionAction(
 				string.Empty,
-				permissionManager,
-				permissionManager,
 				contractAddress,
+				numberPermission,
+				permissionManager);
+
+			Assert.True(this.Registry.HandleSendAction(addPermissionAction, permissionManager));
+			Assert.True(contract.CheckPermission(permissionManager, numberPermission, contractAddress));
+		}
+
+		[Fact]
+		public void Receive_WhenRemovePermitedAction_ReturnsTrue()
+		{
+			Address permissionManager = this.AddressFactory.Create();
+			Address contractAddress = this.AddressFactory.Create();
+			PermittedFavoriteNumberContract contract = new PermittedFavoriteNumberContract(contractAddress, Registry, permissionManager);
+			this.Registry.RegisterContract(contract);
+			var numberPermission = new Permission(typeof(SetFavoriteNumberAction));
+			var addPermissionAction = new AddPermissionAction(
+				string.Empty,
 				contractAddress,
-				removePermission);
+				numberPermission,
+				permissionManager);
 
-			Assert.True(contract.Receive(addRemovePermissionAction));
-			Assert.True(contract.HasPermission(contractAddress, removePermission));
-
-			var addPermission = new Permission(typeof(AddPermissionAction));
 			var removeAddPermissionAction = new RemovePermissionAction(
 				string.Empty,
-				permissionManager,
-				permissionManager,
 				contractAddress,
+				numberPermission,
 				permissionManager,
-				addPermission);
+				contractAddress);
 
-			Assert.True(contract.Receive(removeAddPermissionAction));
-			Assert.False(contract.HasPermission(permissionManager, addPermission));
+			Assert.True(this.Registry.HandleSendAction(addPermissionAction, permissionManager));
+			Assert.True(contract.CheckPermission(permissionManager, numberPermission, contractAddress));
+			Assert.True(this.Registry.HandleSendAction(removeAddPermissionAction, permissionManager));
+			Assert.False(contract.CheckPermission(permissionManager, numberPermission, contractAddress));
 		}
 
 		[Fact]
 		public void Receive_WhenPassedUnsupportedActionWithPermissions_ReturnsFalse()
 		{
-			Address permissionManager = this.addressFactory.Create();
-			Address contractAddress = this.addressFactory.Create();
-			Contract contract = new PermittedFavoriteNumberContract(contractAddress, permissionManager);
-
-			var addAction = new AddPermissionAction(
-				string.Empty,
-				permissionManager,
-				permissionManager,
-				contractAddress,
-				permissionManager,
-				new Permission(typeof(Action)));
-
-			contract.Receive(addAction);
+			Address permissionManager = this.AddressFactory.Create();
+			Address contractAddress = this.AddressFactory.Create();
+			Contract contract = new PermittedFavoriteNumberContract(contractAddress, Registry, permissionManager);
+			this.Registry.RegisterContract(contract);
 
 			var addPermissionAction = new Action(
 				string.Empty,
-				permissionManager,
-				permissionManager,
 				contractAddress);
 
-			Assert.False(contract.Receive(addPermissionAction));
+			Assert.Throws<NoPermissionException>(
+				() => this.Registry.HandleSendAction(addPermissionAction, permissionManager));
 		}
 	}
 }
