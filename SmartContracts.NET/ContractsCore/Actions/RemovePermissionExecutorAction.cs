@@ -8,7 +8,7 @@ namespace ContractsCore.Actions
 	public class RemovePermissionExecutorAction : RemovePermissionAction
 	{
 		public RemovePermissionExecutorAction(string hash, Address target, Permission permission, object permittedAddress,
-			object nextAddress = null)
+			object nextAddress)
 			: base(hash, target, permission, permittedAddress, nextAddress)
 		{
 			if (nextAddress == null)

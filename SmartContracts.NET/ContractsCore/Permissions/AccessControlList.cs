@@ -33,68 +33,73 @@ namespace ContractsCore.Permissions
 			return members;
 		}
 
-		public bool HasPermission(object address, Permission permission, object nextAddress)
+		public bool HasPermission(object executor, Permission permission, object nextAddress)
 		{
 			if (!this.PermissionsToWildCards.ContainsKey(permission))
 			{
 				return false;
 			}
 
-			if (address == null || nextAddress == null)
+			if (executor == null || nextAddress == null)
 			{
 				throw new ArgumentNullException();
 			}
 
-			WildCardSet exec = WildCardSet.FromObject(address);
+			WildCardSet exec = WildCardSet.FromObject(executor);
 			WildCardSet next = WildCardSet.FromObject(nextAddress);
 
-			WildCardSet permited = this.PermissionsToWildCards[permission]
-				.FirstOrDefault(x => x.Value.Contains(next))
-				.Key;
-			WildCardSet nextAddressed = this.PermissionsToWildCards[permission]
-				.FirstOrDefault(x => x.Key.Contains(exec))
-				.Value;
-			// TODO needs more acl test 
-			if (permited == null || next == null)
+			var permitedToNextAddressed = this.PermissionsToWildCards[permission]
+				.Where(x => (executor is Address ? x.Key.IsMember(executor) : x.Key.IsMember(exec)) &&
+							(nextAddress is Address ? x.Value.IsMember(nextAddress) : x.Value.IsMember(next)));
+
+			// TODO needs more acl test
+			if (permitedToNextAddressed.Count() == 0)
 			{
 				return false;
 			}
 
-			return permited.IsMember(address) && nextAddressed.IsMember(nextAddress);
+			foreach (var pair in permitedToNextAddressed)
+			{
+				if (pair.Key.IsMember(executor) && pair.Value.IsMember(nextAddress))
+				{
+					return true;
+				}
+			}
+
+			return false;
 		}
 
-		public bool AddPermission(object address, Permission permission, object nextAddress)
+		public bool AddPermission(object executor, Permission permission, object nextAddress)
 		{
-			if ((address == null && nextAddress == null) || permission == null)
+			if ((executor == null && nextAddress == null) || permission == null)
 			{
 				return false;
 			}
 
-			WildCardSet executors = new WildCardSet();
-			executors.AddWildCard(address);
-			WildCardSet nextAddresses = new WildCardSet();
-			nextAddresses.AddWildCard(nextAddress);
+			WildCardSet exec = WildCardSet.FromObject(executor);
+			WildCardSet next = WildCardSet.FromObject(nextAddress);
+
 			if (!this.PermissionsToWildCards.ContainsKey(permission))
 			{
-				this.PermissionsToWildCards[permission] = new Dictionary<WildCardSet, WildCardSet>() { { executors, nextAddresses } };
+				this.PermissionsToWildCards[permission] = new Dictionary<WildCardSet, WildCardSet>() { { exec, next } };
 				return true;
 			}
 			else
 			{
 				WildCardSet executorsCheck = this.GetPermissionExecutor(permission, nextAddress);
-				WildCardSet nextAddressesCheck = this.GetPermissionNextAddress(address, permission);
+				WildCardSet nextAddressesCheck = this.GetPermissionNextAddress(executor, permission);
 				if (executorsCheck != null && nextAddressesCheck != null)
 				{
 					return false;
 				}
 
-				this.PermissionsToWildCards[permission].Add(executors, nextAddresses);
+				this.PermissionsToWildCards[permission].Add(exec, next);
 			}
 
 			return true;
 		}
 
-		public bool AddPermissionExecutor(object address, Permission permission, object nextAddress)
+		public bool AddPermissionExecutor(object executor, Permission permission, object nextAddress)
 		{
 			WildCardSet executors = this.GetPermissionExecutor(permission, nextAddress);
 			if (executors == null)
@@ -102,38 +107,38 @@ namespace ContractsCore.Permissions
 				return false;
 			}
 
-			return executors.AddWildCard(address);
+			return executors.AddWildCard(executor);
 		}
 
-		public bool AddPermissionNextAddress(object address, Permission permission, object nextAddress)
+		public bool AddPermissionNextAddress(object executor, Permission permission, object nextAddress)
 		{
-			WildCardSet nextAddresses = this.GetPermissionNextAddress(address, permission);
+			WildCardSet nextAddresses = this.GetPermissionNextAddress(executor, permission);
 			if (nextAddresses == null)
 			{
 				return false;
 			}
 
-			return nextAddresses.AddWildCard(address);
+			return nextAddresses.AddWildCard(nextAddress);
 		}
 
-		public bool RemovePermission(object address, Permission permission, object nextAddress)
+		public bool RemovePermission(object executor, Permission permission, object nextAddress)
 		{
-			if ((address == null && nextAddress == null) || permission == null)
+			if ((executor == null && nextAddress == null) || permission == null)
 			{
 				return false;
 			}
 
-			if (!this.HasPermission(address, permission, nextAddress))
+			if (!this.HasPermission(executor, permission, nextAddress))
 			{
 				return false;
 			}
 
 			WildCardSet executors = this.GetPermissionExecutor(permission, nextAddress);
-			WildCardSet nextAddresses = this.GetPermissionNextAddress(address, permission);
-			return executors.RemoveWildCard(address) && nextAddresses.RemoveWildCard(nextAddress);
+			WildCardSet nextAddresses = this.GetPermissionNextAddress(executor, permission);
+			return executors.RemoveWildCard(executor) && nextAddresses.RemoveWildCard(nextAddress);
 		}
 
-		public bool RemovePermissionExecutor(object address, Permission permission, object nextAddress)
+		public bool RemovePermissionExecutor(object executor, Permission permission, object nextAddress)
 		{
 			WildCardSet executors = this.GetPermissionExecutor(permission, nextAddress);
 			if (executors == null)
@@ -141,12 +146,12 @@ namespace ContractsCore.Permissions
 				return false;
 			}
 
-			return executors.RemoveWildCard(address);
+			return executors.RemoveWildCard(executor);
 		}
 
-		public bool RemovePermissionNextAddress(object address, Permission permission, object nextAddress)
+		public bool RemovePermissionNextAddress(object executor, Permission permission, object nextAddress)
 		{
-			WildCardSet nextAddresses = this.GetPermissionNextAddress(address, permission);
+			WildCardSet nextAddresses = this.GetPermissionNextAddress(executor, permission);
 			if (nextAddresses == null)
 			{
 				return false;

@@ -49,14 +49,10 @@ namespace ContractsCore
 			}
 
 			this.addressesToContracts[address] = contract;
-			contract.Send += (x, actionArgs) =>
-			{
-				this.HandleSendActionEvent(contract.Address, actionArgs);
-			};
-			contract.Forward += (x, actionArgs) =>
-			{
-				this.HandleForwardActionEvent(contract.Address, actionArgs);
-			};
+
+			contract.Send += (_, actionArgs) => this.HandleSendActionEvent(contract.Address, actionArgs);
+
+			contract.Forward += (_, actionArgs) => this.HandleForwardActionEvent(contract.Address, actionArgs);
 		}
 
 		public Contract GetContractForAddress(Address address)

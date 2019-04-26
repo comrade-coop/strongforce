@@ -7,7 +7,7 @@ namespace ContractsCore.Actions
 {
 	public class AddPermissionNextAddressAction : AddPermissionAction
 	{
-		public AddPermissionNextAddressAction(string hash, Address target, Permission permission, object permittedAddress, object nextAddress = null)
+		public AddPermissionNextAddressAction(string hash, Address target, Permission permission, object permittedAddress, object nextAddress)
 			: base(hash, target, permission, permittedAddress, nextAddress)
 		{
 			if (permittedAddress == null)

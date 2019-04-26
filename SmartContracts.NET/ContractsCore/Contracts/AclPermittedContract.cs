@@ -169,6 +169,10 @@ namespace ContractsCore.Contracts
 		{
 			this.acl.AddPermission(permissionManager, new Permission(typeof(AddPermissionAction)), this.Address);
 			this.acl.AddPermission(permissionManager, new Permission(typeof(RemovePermissionAction)), this.Address);
+			this.acl.AddPermission(permissionManager, new Permission(typeof(AddPermissionExecutorAction)), this.Address);
+			this.acl.AddPermission(permissionManager, new Permission(typeof(RemovePermissionExecutorAction)), this.Address);
+			this.acl.AddPermission(permissionManager, new Permission(typeof(AddPermissionNextAddressAction)), this.Address);
+			this.acl.AddPermission(permissionManager, new Permission(typeof(RemovePermissionNextAddressAction)), this.Address);
 		}
 
 		protected override bool CheckPermission(Action action)
