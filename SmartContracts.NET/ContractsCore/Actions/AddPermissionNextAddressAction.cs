@@ -1,14 +1,16 @@
-﻿using ContractsCore.Permissions;
-using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using System;
+using ContractsCore.Permissions;
 
 namespace ContractsCore.Actions
 {
 	public class AddPermissionNextAddressAction : AddPermissionAction
 	{
-		public AddPermissionNextAddressAction(string hash, Address target, Permission permission, object permittedAddress, object nextAddress)
-			: base(hash, target, permission, permittedAddress, nextAddress)
+		public AddPermissionNextAddressAction(
+			Address target,
+			Permission permission,
+			object permittedAddress,
+			object nextAddress)
+			: base(target, permission, permittedAddress, nextAddress)
 		{
 			if (permittedAddress == null)
 			{

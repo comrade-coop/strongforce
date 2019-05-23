@@ -8,16 +8,18 @@ namespace ContractsCore.Contracts
 {
 	public abstract class Contract
 	{
-		protected Contract(Address address)
+		private readonly IContractRegistry contractRegistry = ContractRegistry.GetInstance();
+
+		protected Contract()
 		{
-			this.Address = address;
+			this.contractRegistry.RegisterContract(this);
 		}
 
 		internal event EventHandler<ActionEventArgs> Send;
 
 		internal event EventHandler<ActionEventArgs> Forward;
 
-		public Address Address { get; }
+		public Address Address { get; internal set; }
 
 		protected internal abstract object GetState();
 
@@ -45,8 +47,8 @@ namespace ContractsCore.Contracts
 
 		protected virtual void OnForward(Action action, Address target, Stack<Address> ways)
 		{
-			ForwardAction forwarded = new ForwardAction(string.Empty, target, action, ways);
-			ActionEventArgs e = new ActionEventArgs(forwarded);
+			var forwarded = new ForwardAction(target, action, ways);
+			var e = new ActionEventArgs(forwarded);
 			this.Forward?.Invoke(this, e);
 		}
 	}

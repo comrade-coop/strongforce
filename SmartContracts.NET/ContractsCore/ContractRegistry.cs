@@ -1,7 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Data;
-using System.Linq;
 using ContractsCore.Actions;
 using ContractsCore.Contracts;
 using ContractsCore.Events;
@@ -10,23 +8,50 @@ using Action = ContractsCore.Actions.Action;
 
 namespace ContractsCore
 {
-	public class ContractRegistry
+	public class ContractRegistry : IContractRegistry
 	{
-		private readonly IDictionary<Address, Contract> addressesToContracts;
+		private static ContractRegistry instance;
 
-		public ContractRegistry(object initialState)
+		private readonly IDictionary<Address, Contract> addressesToContracts;
+		private readonly IAddressFactory addressFactory;
+
+		public ContractRegistry(IAddressFactory addressFactory, object initialState)
 		{
 			this.addressesToContracts = new SortedDictionary<Address, Contract>();
+			this.addressFactory = addressFactory;
 		}
 
-		public ContractRegistry()
-			: this(new object())
+		public ContractRegistry(IAddressFactory addressFactory)
+			: this(addressFactory, new object())
 		{
 		}
 
-		public Contract GetContract(Address address)
+		public static void InitialiseInstance(IAddressFactory addressFactory, object initialState = null)
 		{
-			return this.addressesToContracts[address];
+			instance = new ContractRegistry(addressFactory, initialState);
+		}
+
+		public static IContractRegistry GetInstance()
+		{
+			if (instance == null)
+			{
+				throw new Exception("Contract Registry has not been instantiated with its dependencies.");
+			}
+
+			return instance;
+		}
+
+		public T GetContract<T>(Address address)
+			where T : Contract
+		{
+			try
+			{
+				return (T) this.addressesToContracts[address];
+			}
+			catch (KeyNotFoundException e)
+			{
+				throw new UnknownContractException(address);
+			}
 		}
 
 		public object GetState()
@@ -41,23 +66,21 @@ namespace ContractsCore
 				throw new ArgumentNullException(nameof(contract));
 			}
 
-			Address address = contract.Address;
-			if (this.addressesToContracts.ContainsKey(address))
+			Address contractAddress = contract.Address;
+			if (contractAddress != null && this.addressesToContracts.ContainsKey(contractAddress))
 			{
 				throw new ArgumentException(
-					$"Contract with same address: {address.ToBase64String()} has already been registered");
+					$"Contract with same address: {contractAddress.ToBase64String()} has already been registered");
 			}
+
+			Address address = this.addressFactory.Create();
+			contract.Address = address;
 
 			this.addressesToContracts[address] = contract;
 
 			contract.Send += (_, actionArgs) => this.HandleSendActionEvent(contract.Address, actionArgs);
 
 			contract.Forward += (_, actionArgs) => this.HandleForwardActionEvent(contract.Address, actionArgs);
-		}
-
-		public Contract GetContractForAddress(Address address)
-		{
-			return addressesToContracts[address];
 		}
 
 		protected bool HandleAction(Action action, Address targetAddress)
@@ -68,13 +91,13 @@ namespace ContractsCore
 			}
 
 			return this.addressesToContracts.ContainsKey(targetAddress)
-				&& this.addressesToContracts[targetAddress].Receive(action);
+			       && this.addressesToContracts[targetAddress].Receive(action);
 		}
 
 		private void HandleSendActionEvent(object sender, ActionEventArgs actionArgs)
 		{
 			Action action = actionArgs.Action;
-			if (action == null || action.Target == null)
+			if (action?.Target == null)
 			{
 				throw new ArgumentNullException(nameof(action));
 			}

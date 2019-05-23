@@ -5,12 +5,11 @@ namespace ContractsCore.Actions
 	public class RemovePermissionAction : Action
 	{
 		public RemovePermissionAction(
-			string hash,
 			Address target,
 			Permission permission,
 			object permittedAddress,
 			object nextAddress = null)
-			: base(hash, target)
+			: base(target)
 		{
 			this.PermittedAddress = permittedAddress;
 			this.NextAddress = nextAddress;

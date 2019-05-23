@@ -1,15 +1,16 @@
-﻿using ContractsCore.Permissions;
-using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using System;
+using ContractsCore.Permissions;
 
 namespace ContractsCore.Actions
 {
 	public class RemovePermissionExecutorAction : RemovePermissionAction
 	{
-		public RemovePermissionExecutorAction(string hash, Address target, Permission permission, object permittedAddress,
+		public RemovePermissionExecutorAction(
+			Address target,
+			Permission permission,
+			object permittedAddress,
 			object nextAddress)
-			: base(hash, target, permission, permittedAddress, nextAddress)
+			: base(target, permission, permittedAddress, nextAddress)
 		{
 			if (nextAddress == null)
 			{

@@ -7,8 +7,16 @@ namespace ContractsCore.Actions
 {
 	public class AddPermissionExecutorAction : AddPermissionAction
 	{
-		public AddPermissionExecutorAction(string hash, Address target, Permission permission, object permittedAddress, object nextAddress)
-			: base(hash, target, permission, permittedAddress, nextAddress)
+		public AddPermissionExecutorAction(
+			Address target,
+			Permission permission,
+			object permittedAddress,
+			object nextAddress)
+			: base(
+				target,
+				permission,
+				permittedAddress,
+				nextAddress)
 		{
 			if (nextAddress == null)
 			{

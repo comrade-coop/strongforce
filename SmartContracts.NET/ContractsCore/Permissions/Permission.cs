@@ -2,7 +2,7 @@ using System;
 
 namespace ContractsCore.Permissions
 {
-	public class Permission: IComparable<Permission>
+	public class Permission : IComparable<Permission>
 	{
 		public Permission(Type type)
 		{

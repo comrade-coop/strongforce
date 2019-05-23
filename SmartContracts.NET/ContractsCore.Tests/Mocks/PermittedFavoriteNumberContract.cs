@@ -1,27 +1,35 @@
-
+using System.Collections.Generic;
+using System.Linq;
 using ContractsCore.Actions;
 using ContractsCore.Contracts;
 using ContractsCore.Permissions;
-using System.Collections.Generic;
-using System.Linq;
 
 namespace ContractsCore.Tests.Mocks
 {
 	public class PermittedFavoriteNumberContract : AclPermittedContract
 	{
-		public PermittedFavoriteNumberContract(Address address, ContractRegistry registry, Address permissionManager)
-			: base(address, registry, permissionManager)
+		public PermittedFavoriteNumberContract(Address permissionManager)
+			: base(permissionManager)
 		{
 		}
 
-		public PermittedFavoriteNumberContract(Address address, ContractRegistry registry, Address permissionManager, AccessControlList acl)
-			: base(address, registry, permissionManager, acl)
+		public PermittedFavoriteNumberContract(Address permissionManager, AccessControlList acl)
+			: base(permissionManager, acl)
 		{
 		}
+
+		public List<List<Address>> LastWays { get; } = new List<List<Address>>();
 
 		public int Number { get; private set; }
 
-		public List<List<Address>> LastWays = new List<List<Address>>();
+		public bool GenerateActionAndFindPath(Address target, int num)
+		{
+			var setNumberAction = new SetFavoriteNumberAction(target, num);
+			var x = new List<TracingElement>();
+			var trace = new TracingBulletAction(target, setNumberAction, this.BulletTaken, null, ref x);
+			this.OnSend(trace);
+			return true;
+		}
 
 		protected internal override object GetState() => this.Number;
 
@@ -38,25 +46,6 @@ namespace ContractsCore.Tests.Mocks
 			}
 		}
 
-		private void HandleSetNumberAction(SetFavoriteNumberAction favoriteNumberAction)
-		{
-			this.Number = favoriteNumberAction.Number;
-		}
-
-		public bool CheckPermission(object address, Permission permission, object target)
-		{
-			return this.acl.HasPermission(address, permission, target);
-		}
-
-		public bool GenerateActionAndFindPath(Address target, int num)
-		{
-			var setNumberAction = new SetFavoriteNumberAction( string.Empty, target, num);
-			var x = new List<TracingElement>();
-			var trace = new TracingBulletAction(string.Empty, target, setNumberAction, this.BulletTaken, null, ref x);
-			this.OnSend(trace);
-			return true;
-		}
-
 		protected internal override void BulletTaken(List<Stack<Address>> ways, Action targetAction)
 		{
 			foreach (var stack in ways)
@@ -66,6 +55,11 @@ namespace ContractsCore.Tests.Mocks
 
 			Address target = ways[0].Pop();
 			this.OnForward(targetAction, target, ways[0]);
+		}
+
+		private void HandleSetNumberAction(SetFavoriteNumberAction favoriteNumberAction)
+		{
+			this.Number = favoriteNumberAction.Number;
 		}
 	}
 }

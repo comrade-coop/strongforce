@@ -11,26 +11,16 @@ namespace ContractsCore.Tests
 		private readonly IAddressFactory addressFactory = new RandomAddressFactory();
 
 		[Fact]
-		public void Contract_WhenCreated_IsInitialisedWithSpecifiedAddress()
-		{
-			Address address = this.addressFactory.Create();
-			Contract contract = new FavoriteNumberContract(address);
-			Assert.Equal(address, contract.Address);
-		}
-
-		[Fact]
 		public void Contract_WhenGetStateIsInvoked_ReturnsNonNullObject()
 		{
-			Address address = this.addressFactory.Create();
-			Contract contract = new FavoriteNumberContract(address);
+			Contract contract = new FavoriteNumberContract();
 			Assert.NotNull(contract.GetState());
 		}
 
 		[Fact]
 		public void Receive_WhenPassedNull_ThrowsArgumentNullException()
 		{
-			Address contractAddress = this.addressFactory.Create();
-			Contract contract = new FavoriteNumberContract(contractAddress);
+			Contract contract = new FavoriteNumberContract();
 
 			Assert.Throws<ArgumentNullException>(() => contract.Receive(null));
 		}
@@ -39,9 +29,8 @@ namespace ContractsCore.Tests
 		public void Receive_WhenReceivedSupportedAction_ReturnsTrue()
 		{
 			Address address = this.addressFactory.Create();
-			Contract contract = new FavoriteNumberContract(address);
+			Contract contract = new FavoriteNumberContract();
 			var action = new SetFavoriteNumberAction(
-				string.Empty,
 				address,
 				0);
 
@@ -52,10 +41,8 @@ namespace ContractsCore.Tests
 		public void Receive_WhenReceivedUnsupportedAction_ReturnsFalse()
 		{
 			Address address = this.addressFactory.Create();
-			Contract contract = new FavoriteNumberContract(address);
-			var action = new Action(
-				string.Empty,
-				address);
+			Contract contract = new FavoriteNumberContract();
+			var action = new Action(address);
 
 			Assert.False(contract.Receive(action));
 		}

@@ -2,6 +2,7 @@ using ContractsCore.Actions;
 using ContractsCore.Contracts;
 using ContractsCore.Exceptions;
 using ContractsCore.Permissions;
+using ContractsCore.Permissions.WildCard;
 using ContractsCore.Tests.Mocks;
 using Xunit;
 using Action = ContractsCore.Actions.Action;
@@ -10,286 +11,264 @@ namespace ContractsCore.Tests
 {
 	public class PermittedContractTests
 	{
-		private readonly IAddressFactory AddressFactory;
-		private ContractRegistryMock Registry;
+		private readonly IAddressFactory addressFactory;
+		private readonly ContractRegistryMock registry;
 
 		public PermittedContractTests()
 		{
-			this.AddressFactory = new RandomAddressFactory();
-			this.Registry = new ContractRegistryMock();
+			this.addressFactory = new RandomAddressFactory();
+			this.registry = new ContractRegistryMock();
 		}
 
 		[Fact]
 		public void Permissions_WhenContractInitialized_ReturnTrue()
 		{
-			Address permissionManager = this.AddressFactory.Create();
-			Address contractAddress = this.AddressFactory.Create();
-			PermittedFavoriteNumberContract contract = new PermittedFavoriteNumberContract(contractAddress, Registry, permissionManager);
+			Address permissionManager = this.addressFactory.Create();
+			var contract = new PermittedFavoriteNumberContract(permissionManager);
 
 			var addPermission = new Permission(typeof(AddPermissionAction));
 			var removePermission = new Permission(typeof(RemovePermissionAction));
-			Assert.True(contract.CheckPermission(permissionManager, addPermission, contractAddress));
-			Assert.True(contract.CheckPermission(permissionManager, removePermission, contractAddress));
+			Assert.True(contract.HasPermission(permissionManager, addPermission));
+			Assert.True(contract.HasPermission(permissionManager, removePermission));
 		}
 
 		[Fact]
 		public void Receive_WhenPassedActionWithNoPermissions_ThrowsNoPermissionException()
 		{
-			Address address = this.AddressFactory.Create();
-			Address permissionManager = this.AddressFactory.Create();
-			Address contractAddress = this.AddressFactory.Create();
-			Contract contract = new PermittedFavoriteNumberContract(contractAddress, Registry, permissionManager);
-
-			this.Registry.RegisterContract(contract);
+			Address permissionManager = this.addressFactory.Create();
+			Contract contract = new PermittedFavoriteNumberContract(permissionManager);
 
 			var addPermissionAction = new AddPermissionAction(
-				string.Empty,
-				contractAddress,
+				contract.Address,
 				new Permission(typeof(AddPermissionAction)),
-				contractAddress);
+				contract.Address);
 
-			Assert.Throws<NoPermissionException>(() => this.Registry.HandleSendAction(addPermissionAction, contractAddress));
+			Assert.Throws<NoPermissionException>(() =>
+				contract.Receive(addPermissionAction));
 		}
 
 		[Fact]
 		public void Receive_WhenPassedSupportedActionWithPermissions_ReturnsTrue()
 		{
-			Address permissionManager = this.AddressFactory.Create();
-			Address contractAddress = this.AddressFactory.Create();
-			PermittedFavoriteNumberContract contract = new PermittedFavoriteNumberContract(contractAddress, Registry, permissionManager);
-			this.Registry.RegisterContract(contract);
+			Address permissionManager = this.addressFactory.Create();
+
+			var contract = new PermittedFavoriteNumberContract(permissionManager);
 			var numberPermission = new Permission(typeof(SetFavoriteNumberAction));
 			var addPermissionAction = new AddPermissionAction(
-				string.Empty,
-				contractAddress,
+				contract.Address,
 				numberPermission,
 				permissionManager);
 
-			Assert.True(this.Registry.HandleSendAction(addPermissionAction, permissionManager));
-			Assert.True(contract.CheckPermission(permissionManager, numberPermission, contractAddress));
+			Assert.True(this.registry.HandleSendAction(addPermissionAction, permissionManager));
+			Assert.True(contract.HasPermission(permissionManager, numberPermission));
 		}
 
 		[Fact]
 		public void Receive_WhenRemovePermitedAction_ReturnsTrue()
 		{
-			Address permissionManager = this.AddressFactory.Create();
-			Address contractAddress = this.AddressFactory.Create();
-			PermittedFavoriteNumberContract contract = new PermittedFavoriteNumberContract(contractAddress, Registry, permissionManager);
-			this.Registry.RegisterContract(contract);
+			Address permissionManager = this.addressFactory.Create();
+			Address contractAddress = this.addressFactory.Create();
+			var contract =
+				new PermittedFavoriteNumberContract(permissionManager);
 			var numberPermission = new Permission(typeof(SetFavoriteNumberAction));
 			var addPermissionAction = new AddPermissionAction(
-				string.Empty,
 				contractAddress,
 				numberPermission,
 				permissionManager);
 
 			var removeAddPermissionAction = new RemovePermissionAction(
-				string.Empty,
 				contractAddress,
 				numberPermission,
 				permissionManager,
 				contractAddress);
 
-			Assert.True(this.Registry.HandleSendAction(addPermissionAction, permissionManager));
-			Assert.True(contract.CheckPermission(permissionManager, numberPermission, contractAddress));
-			Assert.True(this.Registry.HandleSendAction(removeAddPermissionAction, permissionManager));
-			Assert.False(contract.CheckPermission(permissionManager, numberPermission, contractAddress));
+			Assert.True(this.registry.HandleSendAction(addPermissionAction, permissionManager));
+			Assert.True(contract.HasPermission(permissionManager, numberPermission));
+			Assert.True(this.registry.HandleSendAction(removeAddPermissionAction, permissionManager));
+			Assert.False(contract.HasPermission(permissionManager, numberPermission));
 		}
 
 		[Fact]
 		public void Receive_WhenPassedUnsupportedActionWithPermissions_ReturnsFalse()
 		{
-			Address permissionManager = this.AddressFactory.Create();
-			Address contractAddress = this.AddressFactory.Create();
-			Contract contract = new PermittedFavoriteNumberContract(contractAddress, Registry, permissionManager);
-			this.Registry.RegisterContract(contract);
+			Address permissionManager = this.addressFactory.Create();
+			Address contractAddress = this.addressFactory.Create();
+			Contract contract = new PermittedFavoriteNumberContract(permissionManager);
 
 			var addPermissionAction = new Action(
-				string.Empty,
 				contractAddress);
 
 			Assert.Throws<NoPermissionException>(
-				() => this.Registry.HandleSendAction(addPermissionAction, permissionManager));
+				() => this.registry.HandleSendAction(addPermissionAction, permissionManager));
 		}
 
 		[Fact]
 		public void AddPermission_WhenPermissionExists_ReturnsTrue()
 		{
-			Address permissionManager = this.AddressFactory.Create();
-			Address contractAddress = this.AddressFactory.Create();
-			PermittedFavoriteNumberContract contract = new PermittedFavoriteNumberContract(contractAddress, Registry, permissionManager);
-			this.Registry.RegisterContract(contract);
+			Address permissionManager = this.addressFactory.Create();
+			Address contractAddress = this.addressFactory.Create();
+			var contract = new PermittedFavoriteNumberContract(permissionManager);
 			var permission = new Permission(typeof(Action));
 			var addPermissionAction = new AddPermissionAction(
-				string.Empty,
 				contractAddress,
 				permission,
 				permissionManager);
 
-			this.Registry.HandleSendAction(addPermissionAction, permissionManager);
+			this.registry.HandleSendAction(addPermissionAction, permissionManager);
 
 			AnyWildCard anyWildCard = new AnyWildCard();
 			addPermissionAction = new AddPermissionAction(
-				string.Empty,
 				contractAddress,
 				permission,
 				anyWildCard);
-			this.Registry.HandleSendAction(addPermissionAction, permissionManager);
-			Assert.True(contract.CheckPermission(this.AddressFactory.Create(), permission, contractAddress));
+			this.registry.HandleSendAction(addPermissionAction, permissionManager);
+			Assert.True(contract.HasPermission(this.addressFactory.Create(), permission));
 		}
 
 		[Fact]
 		public void AddExecutorPermission_WhenPermissionExists_ReturnsTrue()
 		{
-			Address permissionManager = this.AddressFactory.Create();
-			Address contractAddress = this.AddressFactory.Create();
-			PermittedFavoriteNumberContract contract = new PermittedFavoriteNumberContract(contractAddress, Registry, permissionManager);
-			this.Registry.RegisterContract(contract);
+			Address permissionManager = this.addressFactory.Create();
+			Address contractAddress = this.addressFactory.Create();
+			var contract = new PermittedFavoriteNumberContract(permissionManager);
 			var permission = new Permission(typeof(Action));
 			var addPermissionAction = new AddPermissionAction(
-				string.Empty,
 				contractAddress,
 				permission,
 				permissionManager);
 
-			this.Registry.HandleSendAction(addPermissionAction, permissionManager);
+			this.registry.HandleSendAction(addPermissionAction, permissionManager);
 
 			AnyWildCard anyWildCard = new AnyWildCard();
 			addPermissionAction = new AddPermissionExecutorAction(
-				string.Empty,
 				contractAddress,
 				permission,
 				anyWildCard,
 				contractAddress);
 
-			this.Registry.HandleSendAction(addPermissionAction, permissionManager);
+			this.registry.HandleSendAction(addPermissionAction, permissionManager);
 
-			Assert.True(contract.CheckPermission(this.AddressFactory.Create(), permission, contractAddress));
+			Assert.True(contract.HasPermission(this.addressFactory.Create(), permission));
 		}
 
 		[Fact]
 		public void AddPermissionNextAddress_WhenPermissionExists_ReturnsTrue()
 		{
-			Address permissionManager = this.AddressFactory.Create();
-			Address contractAddress = this.AddressFactory.Create();
-			PermittedFavoriteNumberContract contract = new PermittedFavoriteNumberContract(contractAddress, Registry, permissionManager);
-			this.Registry.RegisterContract(contract);
+			Address permissionManager = this.addressFactory.Create();
+			Address contractAddress = this.addressFactory.Create();
+			PermittedFavoriteNumberContract contract =
+				new PermittedFavoriteNumberContract(permissionManager);
 			var permission = new Permission(typeof(Action));
 			var addPermissionAction = new AddPermissionAction(
-				string.Empty,
 				contractAddress,
 				permission,
 				permissionManager);
 
-			this.Registry.HandleSendAction(addPermissionAction, permissionManager);
-			Address nextAddress = this.AddressFactory.Create();
+			this.registry.HandleSendAction(addPermissionAction, permissionManager);
+			Address nextAddress = this.addressFactory.Create();
 
-			Assert.True(contract.CheckPermission(permissionManager, permission, contractAddress));
+			Assert.True(contract.HasPermission(permissionManager, permission));
 
 			addPermissionAction = new AddPermissionNextAddressAction(
-				string.Empty,
 				contractAddress,
 				permission,
 				permissionManager,
 				nextAddress);
 
-			this.Registry.HandleSendAction(addPermissionAction, permissionManager);
+			this.registry.HandleSendAction(addPermissionAction, permissionManager);
 
-			Assert.True(contract.CheckPermission(permissionManager, permission, nextAddress));
+			Assert.True(contract.HasPermission(permissionManager, permission));
 		}
 
 		[Fact]
 		public void RemovePermissionExecutor_WhenPermissionExists_ReturnsTrue()
 		{
-			Address permissionManager = this.AddressFactory.Create();
-			Address contractAddress = this.AddressFactory.Create();
-			PermittedFavoriteNumberContract contract = new PermittedFavoriteNumberContract(contractAddress, Registry, permissionManager);
-			this.Registry.RegisterContract(contract);
+			Address permissionManager = this.addressFactory.Create();
+			Address contractAddress = this.addressFactory.Create();
+			PermittedFavoriteNumberContract contract =
+				new PermittedFavoriteNumberContract(permissionManager);
+
 			var permission = new Permission(typeof(Action));
-			Address permitedAddress = this.AddressFactory.Create();
+			Address permitedAddress = this.addressFactory.Create();
 			var addPermissionAction = new AddPermissionAction(
-				string.Empty,
 				contractAddress,
 				permission,
-				new AddressWildCard() { permissionManager, permitedAddress });
+				new AddressWildCard() {permissionManager, permitedAddress});
 
-			this.Registry.HandleSendAction(addPermissionAction, permissionManager);
+			this.registry.HandleSendAction(addPermissionAction, permissionManager);
 
 			AnyWildCard anyWildCard = new AnyWildCard();
 			var removePermissionAction = new RemovePermissionExecutorAction(
-				string.Empty,
 				contractAddress,
 				permission,
 				permitedAddress,
 				contractAddress);
-			this.Registry.HandleSendAction(removePermissionAction, permissionManager);
-			Assert.False(contract.CheckPermission(permitedAddress, permission, contractAddress));
+			this.registry.HandleSendAction(removePermissionAction, permissionManager);
+			Assert.False(contract.HasPermission(permitedAddress, permission));
 		}
 
 		[Fact]
 		public void RemovePermissionNextAddress_WhenRemovingSingleAddress_ReturnsFalse()
 		{
-			Address permissionManager = this.AddressFactory.Create();
-			Address contractAddress = this.AddressFactory.Create();
-			PermittedFavoriteNumberContract contract = new PermittedFavoriteNumberContract(contractAddress, Registry, permissionManager);
-			this.Registry.RegisterContract(contract);
+			Address permissionManager = this.addressFactory.Create();
+			Address contractAddress = this.addressFactory.Create();
+			var contract =
+				new PermittedFavoriteNumberContract(permissionManager);
+
 			var permission = new Permission(typeof(Action));
-			Address nextAddress1 = this.AddressFactory.Create();
-			Address nextAddress2 = this.AddressFactory.Create();
+			Address nextAddress1 = this.addressFactory.Create();
+			Address nextAddress2 = this.addressFactory.Create();
 			var addPermissionAction = new AddPermissionAction(
-				string.Empty,
 				contractAddress,
 				permission,
 				permissionManager,
-				new AddressWildCard() { nextAddress1, nextAddress2 });
+				new AddressWildCard {nextAddress1, nextAddress2});
 
-			this.Registry.HandleSendAction(addPermissionAction, permissionManager);
+			this.registry.HandleSendAction(addPermissionAction, permissionManager);
 
-			AnyWildCard anyWildCard = new AnyWildCard();
+			var anyWildCard = new AnyWildCard();
 			var removePermissionAction = new RemovePermissionNextAddressAction(
-				string.Empty,
 				contractAddress,
 				permission,
 				permissionManager,
 				nextAddress1);
-			this.Registry.HandleSendAction(removePermissionAction, permissionManager);
-			Assert.False(contract.CheckPermission(permissionManager, permission, nextAddress1));
-			Assert.True(contract.CheckPermission(permissionManager, permission, nextAddress2));
+			this.registry.HandleSendAction(removePermissionAction, permissionManager);
+			Assert.False(contract.HasPermission(permissionManager, permission));
+			Assert.True(contract.HasPermission(permissionManager, permission));
 		}
 
 		[Fact]
 		public void RemovePermissionNextAddress_WhenRemovingWildCard_ReturnsTrue()
 		{
-			Address permissionManager = this.AddressFactory.Create();
-			Address contractAddress = this.AddressFactory.Create();
-			PermittedFavoriteNumberContract contract = new PermittedFavoriteNumberContract(contractAddress, Registry, permissionManager);
-			this.Registry.RegisterContract(contract);
+			Address permissionManager = this.addressFactory.Create();
+			Address contractAddress = this.addressFactory.Create();
+			var contract =
+				new PermittedFavoriteNumberContract(permissionManager);
+
 			var permission = new Permission(typeof(Action));
-			Address address = this.AddressFactory.Create();
+			Address address = this.addressFactory.Create();
 			var anyWildCard = new AnyWildCard();
 			var set = new WildCardSet();
 			set.AddAddress(address);
 			set.AddWildCard(anyWildCard);
 			var addPermissionAction = new AddPermissionAction(
-				string.Empty,
 				contractAddress,
 				permission,
 				permissionManager,
 				set);
 
-			this.Registry.HandleSendAction(addPermissionAction, permissionManager);
+			this.registry.HandleSendAction(addPermissionAction, permissionManager);
 
-			Assert.True(contract.CheckPermission(permissionManager, permission, this.AddressFactory.Create()));
+			Assert.True(contract.HasPermission(permissionManager, permission));
 
 			var removePermissionAction = new RemovePermissionNextAddressAction(
-				string.Empty,
 				contractAddress,
 				permission,
 				permissionManager,
 				anyWildCard);
-			this.Registry.HandleSendAction(removePermissionAction, permissionManager);
-			Assert.False(contract.CheckPermission(permissionManager, permission, this.AddressFactory.Create()));
-			Assert.True(contract.CheckPermission(permissionManager, permission, address));
+			this.registry.HandleSendAction(removePermissionAction, permissionManager);
+			Assert.False(contract.HasPermission(permissionManager, permission));
+			Assert.True(contract.HasPermission(permissionManager, permission));
 		}
 	}
 }

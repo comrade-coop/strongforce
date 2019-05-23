@@ -4,8 +4,8 @@ namespace ContractsCore.Tests.Mocks
 {
 	public class SetFavoriteNumberAction : Action
 	{
-		public SetFavoriteNumberAction(string hash, Address target, int number)
-			: base(hash, target)
+		public SetFavoriteNumberAction(Address target, int number)
+			: base(target)
 		{
 			this.Number = number;
 		}

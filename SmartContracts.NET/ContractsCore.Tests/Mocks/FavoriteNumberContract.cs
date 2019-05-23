@@ -9,11 +9,6 @@ namespace ContractsCore.Tests.Mocks
 {
 	public class FavoriteNumberContract : Contract
 	{
-		public FavoriteNumberContract(Address address)
-			: base(address)
-		{
-		}
-
 		public int Number { get; private set; }
 
 		public Address LastSender { get; private set; }

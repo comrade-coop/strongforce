@@ -11,9 +11,8 @@ namespace ContractsCore.Tests
 		public void Receive_WhenPassedSetFavoriteNumberAction_ReturnsTrue()
 		{
 			Address address = this.addressFactory.Create();
-			var contract = new FavoriteNumberContract(address);
+			var contract = new FavoriteNumberContract();
 			var action = new SetFavoriteNumberAction(
-				string.Empty,
 				address,
 				0);
 			Assert.True(contract.Receive(action));
@@ -24,9 +23,8 @@ namespace ContractsCore.Tests
 		{
 			const int expectedNumber = 32;
 			Address address = this.addressFactory.Create();
-			var contract = new FavoriteNumberContract(address);
+			var contract = new FavoriteNumberContract();
 			var action = new SetFavoriteNumberAction(
-				string.Empty,
 				address,
 				expectedNumber);
 			contract.Receive(action);

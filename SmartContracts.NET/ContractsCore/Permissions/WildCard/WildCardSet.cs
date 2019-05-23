@@ -1,12 +1,11 @@
-﻿using ContractsCore.Exceptions;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
+using ContractsCore.Exceptions;
 
-namespace ContractsCore.Permissions
+namespace ContractsCore.Permissions.WildCard
 {
-	public class WildCardSet: IWildCard, IComparable<WildCardSet>
+	public class WildCardSet : IWildCard, IComparable<WildCardSet>
 	{
 		public HashSet<IWildCard> WildCards;
 		private AddressWildCard AddressCard;
@@ -31,7 +30,7 @@ namespace ContractsCore.Permissions
 				this.WildCards = wildCards;
 			}
 
-			WildCards.Add(AddressCard);
+			this.WildCards.Add(this.AddressCard);
 		}
 
 		public static WildCardSet FromAddress(Address address)
@@ -127,7 +126,7 @@ namespace ContractsCore.Permissions
 
 		public bool IsMember(Address member)
 		{
-			foreach (var card in WildCards)
+			foreach (var card in this.WildCards)
 			{
 				if (card.IsMember(member)) return true;
 			}
@@ -141,6 +140,7 @@ namespace ContractsCore.Permissions
 			{
 				return this.Equal(card);
 			}
+
 			foreach (var wildCard in this.WildCards)
 			{
 				if (wildCard.Equal(card))
@@ -155,7 +155,7 @@ namespace ContractsCore.Permissions
 		public List<Address> GetMembers()
 		{
 			List<Address> members = new List<Address>();
-			foreach (var card in WildCards)
+			foreach (var card in this.WildCards)
 			{
 				members = members.Union(card.GetMembers()).ToList();
 			}

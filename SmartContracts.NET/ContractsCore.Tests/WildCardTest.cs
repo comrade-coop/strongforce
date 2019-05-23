@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 using ContractsCore.Permissions;
+using ContractsCore.Permissions.WildCard;
 using Xunit;
 
 namespace ContractsCore.Tests

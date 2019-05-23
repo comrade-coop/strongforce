@@ -1,20 +1,18 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using System.Collections.Generic;
 
 namespace ContractsCore.Actions
 {
 	public class ForwardAction : Action
 	{
-		public Action ForwardedAction;
-
-		public Stack<Address> WayForForwarding;
-
-		public ForwardAction(string hash, Address target, Action forwarded, Stack<Address> way) : base(hash, target)
+		public ForwardAction(Address target, Action forwarded, Stack<Address> way)
+			: base(target)
 		{
 			this.ForwardedAction = forwarded;
 			this.WayForForwarding = way;
-
 		}
+
+		public Action ForwardedAction { get; }
+
+		public Stack<Address> WayForForwarding { get; }
 	}
 }

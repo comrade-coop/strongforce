@@ -9,10 +9,7 @@ namespace ContractsCore.Contracts
 {
 	public abstract class PermittedContract : Contract
 	{
-		protected PermittedContract(Address address)
-			: base(address)
-		{
-		}
+		public abstract bool HasPermission(Address permittedAddress, Permission permission);
 
 		protected internal override bool Receive(Action action)
 		{
@@ -35,15 +32,6 @@ namespace ContractsCore.Contracts
 					return this.HandleReceivedAction(action);
 			}
 		}
-
-		/*protected abstract void ReceiveTracingBullet(TracingBulletAction action);
-
-		protected abstract List<TracingElement> GetAllowedForForwarding(TracingBulletAction action,
-			ref List<TracingElement> queue);
-
-		protected internal abstract void BulletTaken(List<Stack<Address>> ways, Action targetAction);*/
-
-		protected abstract bool CheckPermission(Action action);
 
 		protected abstract void HandleAddPermissionAction(AddPermissionAction action);
 
