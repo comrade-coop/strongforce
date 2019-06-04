@@ -1,7 +1,7 @@
 using System;
 using Xunit;
 
-namespace ContractsCore.Tests
+namespace StrongForce.Core.Tests
 {
 	/// <summary>
 	/// Contains test methods for Addresses.

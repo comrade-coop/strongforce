@@ -1,11 +1,9 @@
-using ContractsCore.Actions;
-using ContractsCore.Exceptions;
-using ContractsCore.Permissions;
-using ContractsCore.Tests.Mocks;
-using ContractsCore.Contracts;
+using StrongForce.Core.Exceptions;
+using StrongForce.Core.Permissions;
+using StrongForce.Core.Tests.Mocks;
 using Xunit;
 
-namespace ContractsCore.Tests
+namespace StrongForce.Core.Tests
 {
 	public class PermittedFavoriteNumberContractTests
 	{

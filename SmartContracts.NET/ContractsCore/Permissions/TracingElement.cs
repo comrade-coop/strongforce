@@ -1,8 +1,8 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace ContractsCore.Contracts
+namespace StrongForce.Core.Permissions
 {
 	public class TracingElement : IEquatable<TracingElement>
 	{

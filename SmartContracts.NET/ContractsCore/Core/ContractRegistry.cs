@@ -1,14 +1,8 @@
+using StrongForce.Core.Exceptions;
 using System;
 using System.Collections.Generic;
-using System.Data;
-using System.Linq;
-using ContractsCore.Actions;
-using ContractsCore.Contracts;
-using ContractsCore.Events;
-using ContractsCore.Exceptions;
-using Action = ContractsCore.Actions.Action;
 
-namespace ContractsCore
+namespace StrongForce.Core
 {
 	public class ContractRegistry
 	{
@@ -89,7 +83,7 @@ namespace ContractsCore
 
 			if (action.Origin != null)
 			{
-				throw new UnknownActionOringExeption(action);
+				throw new UnknownActionOringException(action);
 			}
 
 			action.Origin = sender as Address;
@@ -106,7 +100,7 @@ namespace ContractsCore
 
 			if (action.ForwardedAction.Origin == null)
 			{
-				throw new UnknownActionOringExeption(action);
+				throw new UnknownActionOringException(action);
 			}
 
 			if (action.Origin == null)

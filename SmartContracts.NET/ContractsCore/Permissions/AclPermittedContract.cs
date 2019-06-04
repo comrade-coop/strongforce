@@ -1,13 +1,9 @@
+using StrongForce.Core.Exceptions;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using ContractsCore.Actions;
-using ContractsCore.Events;
-using ContractsCore.Exceptions;
-using ContractsCore.Permissions;
-using Action = ContractsCore.Actions.Action;
 
-namespace ContractsCore.Contracts
+namespace StrongForce.Core.Permissions
 {
 	public abstract class AclPermittedContract : PermittedContract
 	{
@@ -28,39 +24,12 @@ namespace ContractsCore.Contracts
 			this.ConfigurePermissionManager(permissionManager);
 		}
 
-		protected internal override bool Receive(Action action)
+		protected override bool HandleReceivedAction(Action action)
 		{
-			if (action == null)
-			{
-				throw new ArgumentNullException(nameof(action));
-			}
-
-			this.CheckPermission(action);
-
 			switch (action)
 			{
-				case AddPermissionExecutorAction permissionAction:
-					this.acl.AddPermissionExecutor(permissionAction.PermittedAddress, permissionAction.Permission, permissionAction.NextAddress);
-					return true;
-
-				case AddPermissionNextAddressAction permissionAction:
-					this.acl.AddPermissionNextAddress(permissionAction.PermittedAddress, permissionAction.Permission, permissionAction.NextAddress);
-					return true;
-
-				case AddPermissionAction permissionAction:
-					this.HandleAddPermissionAction(permissionAction);
-					return true;
-
-				case RemovePermissionExecutorAction permissionAction:
-					this.acl.RemovePermissionExecutor(permissionAction.PermittedAddress, permissionAction.Permission, permissionAction.NextAddress);
-					return true;
-
-				case RemovePermissionNextAddressAction permissionAction:
-					this.acl.RemovePermissionNextAddress(permissionAction.PermittedAddress, permissionAction.Permission, permissionAction.NextAddress);
-					return true;
-
-				case RemovePermissionAction permissionAction:
-					this.HandleRemovePermissionAction(permissionAction);
+				case UpdatePermissionAction permissionAction:
+					this.HandleUpdatePermissionAction(permissionAction);
 					return true;
 
 				case TracingBulletAction bulletAction:
@@ -72,7 +41,7 @@ namespace ContractsCore.Contracts
 					return true;
 
 				default:
-					return this.HandleReceivedAction(action);
+					return base.HandleReceivedAction(action);
 			}
 		}
 
@@ -90,18 +59,18 @@ namespace ContractsCore.Contracts
 			else
 			{
 				Address target = forwardAction.WayForForwarding.Pop();
-				this.OnForward(forwardAction.ForwardedAction, target, forwardAction.WayForForwarding);
+				this.ForwardEvent(forwardAction.ForwardedAction, target, forwardAction.WayForForwarding);
 			}
 		}
 
-		protected virtual void ReceiveTracingBullet(TracingBulletAction action)
+		protected override void ReceiveTracingBullet(TracingBulletAction action)
 		{
 			if (action.TracingAction.Origin == null)
 			{
 				action.TracingAction.Origin = action.Origin;
 				action.TracingAction.Sender = action.Sender;
 			}
-			// TODO replace string.Empty
+
 			Permission permission = new Permission(action.TracingAction.GetType());
 
 			if (action.TracingAction.Target == this.Address)
@@ -129,19 +98,18 @@ namespace ContractsCore.Contracts
 			for (int i = 0; i < bfsAddresses.Count; i++)
 			{
 				TracingElement couple = bfsAddresses.Skip(i).First();
-				Contract currentContract = this.registry.GetContract(couple.Address);
+
 				Stack<Address> predecessors = couple.Way ?? new Stack<Address>(new[] { this.Address });
 				TracingBulletAction newAction = new TracingBulletAction(string.Empty, couple.Address, action.TracingAction,
 					null, predecessors, ref bfsAddresses);
-				this.OnSend(newAction);
+				this.SendEvent(newAction);
 			}
 
 			List<Stack<Address>> addressQuery = bfsAddresses.Where(x => x.IsWay).Select(x => x.Way).ToList();
 			action.CallBack(addressQuery, action.TracingAction);
 		}
 
-		protected virtual List<TracingElement> GetAllowedForForwarding(TracingBulletAction action,
-			ref List<TracingElement> queue)
+		protected virtual List<TracingElement> GetAllowedForForwarding(TracingBulletAction action, ref List<TracingElement> queue)
 		{
 			var permission = new Permission(action.TracingAction.GetType());
 			foreach (var address in this.acl.GetPermittedAddresses(permission, this.Address))
@@ -163,16 +131,11 @@ namespace ContractsCore.Contracts
 			return queue;
 		}
 
-		protected internal abstract void BulletTaken(List<Stack<Address>> ways, Action targetAction);
-
 		private void ConfigurePermissionManager(Address permissionManager)
 		{
 			this.acl.AddPermission(permissionManager, new Permission(typeof(AddPermissionAction)), this.Address);
 			this.acl.AddPermission(permissionManager, new Permission(typeof(RemovePermissionAction)), this.Address);
-			this.acl.AddPermission(permissionManager, new Permission(typeof(AddPermissionExecutorAction)), this.Address);
-			this.acl.AddPermission(permissionManager, new Permission(typeof(RemovePermissionExecutorAction)), this.Address);
-			this.acl.AddPermission(permissionManager, new Permission(typeof(AddPermissionNextAddressAction)), this.Address);
-			this.acl.AddPermission(permissionManager, new Permission(typeof(RemovePermissionNextAddressAction)), this.Address);
+			this.acl.AddPermission(permissionManager, new Permission(typeof(UpdatePermissionAction)), this.Address);
 		}
 
 		protected override bool CheckPermission(Action action)
@@ -188,12 +151,17 @@ namespace ContractsCore.Contracts
 
 		protected override void HandleAddPermissionAction(AddPermissionAction action)
 		{
-			this.acl.AddPermission(action.PermittedAddress, action.Permission, action.NextAddress);
+			this.acl.AddPermission(action.PermittedAddress, action.Permission, action.Receiver);
 		}
 
 		protected override void HandleRemovePermissionAction(RemovePermissionAction action)
 		{
-			this.acl.RemovePermission(action.PermittedAddress, action.Permission, action.NextAddress);
+			this.acl.RemovePermission(action.PermittedAddress, action.Permission, action.Receiver);
+		}
+
+		protected void HandleUpdatePermissionAction(UpdatePermissionAction action)
+		{
+			this.acl.UpdatePermission(action.OldPermittedAddress, action.OldReceiver, action.Permission, action.NewPermittedAddress, action.NewReceiver);
 		}
 	}
 }

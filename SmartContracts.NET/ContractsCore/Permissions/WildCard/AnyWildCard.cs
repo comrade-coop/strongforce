@@ -1,29 +1,19 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace ContractsCore.Permissions
+namespace StrongForce.Core.Permissions
 {
-	public class AnyWildCard : IWildCard
+	public class AnyWildCard : WildCard
 	{
-		public bool IsMember(Address member)
+		public override bool IsMember(Address member)
 		{
 			return true;
 		}
 
-		public List<Address> GetMembers()
+		public override List<Address> GetMembers()
 		{
 			return new List<Address>();
-		}
-
-		public bool Equal(IWildCard member)
-		{
-			if (!typeof(AnyWildCard).IsAssignableFrom(member.GetType()))
-			{
-				return false;
-			}
-
-			return true;
 		}
 	}
 }

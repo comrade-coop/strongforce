@@ -1,4 +1,4 @@
-namespace ContractsCore
+namespace StrongForce.Core
 {
 	/// <summary>
 	/// Used to generate address values, which are to be injected in all entities in the StrongForce instance.

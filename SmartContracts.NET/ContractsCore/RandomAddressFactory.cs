@@ -1,6 +1,6 @@
 using System;
 
-namespace ContractsCore
+namespace StrongForce.Core
 {
 	public class RandomAddressFactory : IAddressFactory
 	{

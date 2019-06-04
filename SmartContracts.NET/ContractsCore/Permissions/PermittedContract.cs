@@ -1,11 +1,7 @@
 using System;
 using System.Collections.Generic;
-using ContractsCore.Actions;
-using ContractsCore.Exceptions;
-using ContractsCore.Permissions;
-using Action = ContractsCore.Actions.Action;
 
-namespace ContractsCore.Contracts
+namespace StrongForce.Core.Permissions
 {
 	public abstract class PermittedContract : Contract
 	{
@@ -14,13 +10,21 @@ namespace ContractsCore.Contracts
 		{
 		}
 
-		protected internal override bool Receive(Action action)
+		internal override bool Receive(Action action)
 		{
 			if (action == null)
 			{
 				throw new ArgumentNullException(nameof(action));
 			}
 
+			this.CheckPermission(action);
+			this.HandleReceivedAction(action);
+
+			return true;
+		}
+
+		protected override bool HandleReceivedAction(Action action)
+		{
 			switch (action)
 			{
 				case AddPermissionAction permissionAction:
@@ -32,16 +36,13 @@ namespace ContractsCore.Contracts
 					return true;
 
 				default:
-					return this.HandleReceivedAction(action);
+					return false;
 			}
 		}
 
-		/*protected abstract void ReceiveTracingBullet(TracingBulletAction action);
+		protected abstract void ReceiveTracingBullet(TracingBulletAction action);
 
-		protected abstract List<TracingElement> GetAllowedForForwarding(TracingBulletAction action,
-			ref List<TracingElement> queue);
-
-		protected internal abstract void BulletTaken(List<Stack<Address>> ways, Action targetAction);*/
+		protected abstract void BulletTaken(List<Stack<Address>> ways, Action targetAction);
 
 		protected abstract bool CheckPermission(Action action);
 

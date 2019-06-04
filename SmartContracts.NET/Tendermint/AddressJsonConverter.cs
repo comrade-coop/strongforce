@@ -1,8 +1,8 @@
 using System;
 using System.Collections.Generic;
-using ContractsCore;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
+using StrongForce.Core;
 
 namespace Tendermint
 {

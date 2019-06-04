@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using Action = ContractsCore.Actions.Action;
-
-namespace ContractsCore.Tests.Mocks
+﻿namespace StrongForce.Core.Tests.Mocks
 {
 	class ContractRegistryMock : ContractRegistry
 	{

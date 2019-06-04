@@ -1,10 +1,8 @@
 using System;
-using ContractsCore.Contracts;
-using ContractsCore.Tests.Mocks;
+using StrongForce.Core.Tests.Mocks;
 using Xunit;
-using Action = ContractsCore.Actions.Action;
 
-namespace ContractsCore.Tests
+namespace StrongForce.Core.Tests
 {
 	public class ContractTests
 	{

@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace ContractsCore.Actions
+namespace StrongForce.Core
 {
 	public class ForwardAction : Action
 	{

@@ -1,6 +1,6 @@
 using System.Runtime.Serialization;
 
-namespace ContractsCore.Actions
+namespace StrongForce.Core
 {
 	public class Action
 	{

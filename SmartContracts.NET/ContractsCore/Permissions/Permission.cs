@@ -1,6 +1,6 @@
 using System;
 
-namespace ContractsCore.Permissions
+namespace StrongForce.Core.Permissions
 {
 	public class Permission : IComparable<Permission>
 	{

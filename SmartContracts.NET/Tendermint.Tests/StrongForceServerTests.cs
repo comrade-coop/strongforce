@@ -1,10 +1,6 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using ContractsCore;
-using ContractsCore.Actions;
 using Microsoft.Extensions.Logging.Abstractions;
 using Newtonsoft.Json;
+using StrongForce.Core;
 using Tendermint;
 using Tendermint.Tests.Mocks;
 using Xunit;

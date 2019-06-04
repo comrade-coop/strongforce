@@ -1,13 +1,9 @@
-﻿using ContractsCore.Actions;
-using ContractsCore.Exceptions;
-using ContractsCore.Permissions;
-using ContractsCore.Tests.Mocks;
-using ContractsCore.Contracts;
-using Xunit;
 using System.Collections.Generic;
-using System;
+using StrongForce.Core.Permissions;
+using StrongForce.Core.Tests.Mocks;
+using Xunit;
 
-namespace ContractsCore.Tests
+namespace StrongForce.Core.Tests
 {
 	public class TraceBulletTests
 	{
@@ -226,6 +222,56 @@ namespace ContractsCore.Tests
 				new List<Address>() { addrs[5], addrs[7], addrs[8], addrs[3], addrs[2], addrs[1], addrs[0] },
 			};
 			Assert.Equal(x, contracts[6].LastWays);
+		}
+
+		[Fact]
+		public void Receive_WhenPassedSetFavoriteNumberActionWithGrantedPermissions5_ReturnPath()
+		{
+			Address permissionManager = this.AddressFactory.Create();
+			Address[] addrs = new Address[15];
+			PermittedFavoriteNumberContract[] contracts = new PermittedFavoriteNumberContract[15];
+			for (int i = 0; i <= 11; i++)
+			{
+				addrs[i] = this.AddressFactory.Create();
+				contracts[i] = new PermittedFavoriteNumberContract(addrs[i], this.Registry, permissionManager);
+				this.Registry.RegisterContract(contracts[i]);
+				var addTracingPermissionAction = new AddPermissionAction(
+					string.Empty, addrs[i], new Permission(typeof(TracingBulletAction)), new AnyWildCard(), new AnyWildCard());
+				var addForwardingPermissionAction = new AddPermissionAction(
+					string.Empty, addrs[i], new Permission(typeof(ForwardAction)), new AnyWildCard(), new AnyWildCard());
+				Assert.True(this.Registry.HandleSendAction(addTracingPermissionAction, permissionManager));
+				Assert.True(this.Registry.HandleSendAction(addForwardingPermissionAction, permissionManager));
+			}
+
+			// Path 0<-1<-2<-3<-4<-5<-6<-7<-8
+			//          \   /       \   /
+			//            9           10
+			AddPermissionAction addPermissionAction;
+			for (int i = 1; i <= 8; i++)
+			{
+				addPermissionAction = new AddPermissionAction(string.Empty, addrs[i - 1], new Permission(typeof(SetFavoriteNumberAction)), addrs[i]);
+				Assert.True(this.Registry.HandleSendAction(addPermissionAction, permissionManager));
+			}
+
+			addPermissionAction = new AddPermissionAction(string.Empty, addrs[1], new Permission(typeof(SetFavoriteNumberAction)), addrs[9]);
+			Assert.True(this.Registry.HandleSendAction(addPermissionAction, permissionManager));
+			addPermissionAction = new AddPermissionAction(string.Empty, addrs[9], new Permission(typeof(SetFavoriteNumberAction)), addrs[3]);
+			Assert.True(this.Registry.HandleSendAction(addPermissionAction, permissionManager));
+			addPermissionAction = new AddPermissionAction(string.Empty, addrs[5], new Permission(typeof(SetFavoriteNumberAction)), addrs[10]);
+			Assert.True(this.Registry.HandleSendAction(addPermissionAction, permissionManager));
+			addPermissionAction = new AddPermissionAction(string.Empty, addrs[10], new Permission(typeof(SetFavoriteNumberAction)), addrs[7]);
+			Assert.True(this.Registry.HandleSendAction(addPermissionAction, permissionManager));
+
+			contracts[8].GenerateActionAndFindPath(addrs[0], 14);
+
+			var x = new List<List<Address>>
+			{
+				new List<Address>() { addrs[7], addrs[6], addrs[5], addrs[4], addrs[3], addrs[2], addrs[1], addrs[0] },
+				new List<Address>() { addrs[7], addrs[10], addrs[5], addrs[4], addrs[3], addrs[2], addrs[1], addrs[0] },
+				new List<Address>() { addrs[7], addrs[6], addrs[5], addrs[4], addrs[3], addrs[9], addrs[1], addrs[0] },
+				new List<Address>() { addrs[7], addrs[10], addrs[5], addrs[4], addrs[3], addrs[9], addrs[1], addrs[0] },
+			};
+			Assert.Equal(x, contracts[8].LastWays);
 		}
 	}
 }

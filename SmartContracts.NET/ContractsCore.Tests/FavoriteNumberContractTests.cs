@@ -1,7 +1,7 @@
-using ContractsCore.Tests.Mocks;
+using StrongForce.Core.Tests.Mocks;
 using Xunit;
 
-namespace ContractsCore.Tests
+namespace StrongForce.Core.Tests
 {
 	public class FavoriteNumberContractTests
 	{

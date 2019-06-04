@@ -1,8 +1,7 @@
-using ContractsCore.Actions;
-using ContractsCore.Permissions;
+using StrongForce.Core.Permissions;
 using Xunit;
 
-namespace ContractsCore.Tests
+namespace StrongForce.Core.Tests
 {
 	public class AccessControlListTests
 	{
@@ -38,7 +37,7 @@ namespace ContractsCore.Tests
 		public void AddPermission_WhenNullIsPassed_ReturnsFalse()
 		{
 			var acl = new AccessControlList();
-			Assert.False(acl.AddPermission(null, null, null));
+			Assert.False(acl.AddPermission(new AnyWildCard(), null, null));
 		}
 
 		[Fact]
@@ -66,11 +65,12 @@ namespace ContractsCore.Tests
 		public void RemovePermission_WhenPermissionHasBeenAdded_RemovesPermission()
 		{
 			Address address = this.addressFactory.Create();
+			var addressCard = this.GenerateWildCard(address);
 			var acl = new AccessControlList();
 			var permission = new Permission(typeof(Action));
 
 			acl.AddPermission(address, permission, address);
-			Assert.True(acl.RemovePermission(address, permission, address));
+			Assert.True(acl.RemovePermission(addressCard, permission, addressCard));
 			Assert.False(acl.HasPermission(address, permission, address));
 		}
 
@@ -78,10 +78,11 @@ namespace ContractsCore.Tests
 		public void RemovePermission_WhenPermissionHasNotBeenAdded_ReturnsFalse()
 		{
 			Address address = this.addressFactory.Create();
+			var addressCard = this.GenerateWildCard(address);
 			var acl = new AccessControlList();
 			var permission = new Permission(typeof(Action));
 
-			Assert.False(acl.RemovePermission(address, permission, address));
+			Assert.False(acl.RemovePermission(addressCard, permission, addressCard));
 		}
 
 		[Fact]
@@ -124,83 +125,65 @@ namespace ContractsCore.Tests
 		}
 
 		[Fact]
-		public void AddPermissionExecutor_WhenPermissionExists_ReturnsTrue()
+		public void UpdatePermissionSender_WhenPermissionExists_ReturnsTrue()
 		{
-			Address address = this.addressFactory.Create();
-			Address newAddress = this.addressFactory.Create();
+			var address = this.addressFactory.Create();
+			var newAddress = this.addressFactory.Create();
+			var addressCard = this.GenerateWildCard(address);
+			var newAddressCard = this.GenerateWildCard(newAddress);
+			newAddressCard.Add(address);
 			var acl = new AccessControlList();
 			var permission = new Permission(typeof(Action));
 			AnyWildCard anyWildCard = new AnyWildCard();
 
-			Assert.True(acl.AddPermission(address, permission, anyWildCard));
+			Assert.True(acl.AddPermission(addressCard, permission, anyWildCard));
 
-			Assert.True(acl.AddPermissionExecutor(newAddress, permission, anyWildCard));
-			Assert.True(acl.HasPermission(newAddress, permission, anyWildCard));
+			Assert.True(acl.UpdatePermission(addressCard, anyWildCard, permission, newAddressCard, anyWildCard));
+			Assert.True(acl.HasPermission(address, permission, this.addressFactory.Create()));
+			Assert.True(acl.HasPermission(newAddress, permission, this.addressFactory.Create()));
 		}
 
 		[Fact]
-		public void AddPermissionNextAddress_WhenPermissionExists_ReturnsTrue()
+		public void AddPermissionReceiver_WhenPermissionExists_ReturnsTrue()
 		{
-			Address address = this.addressFactory.Create();
-			Address newAddress = this.addressFactory.Create();
+			var address = this.addressFactory.Create();
+			var newAddress = this.addressFactory.Create();
+			var addressCard = this.GenerateWildCard(address);
+			var newAddressCard = this.GenerateWildCard(newAddress);
+			newAddressCard.Add(address);
 			var acl = new AccessControlList();
 			var permission = new Permission(typeof(Action));
 			AnyWildCard anyWildCard = new AnyWildCard();
 
-			Assert.True(acl.AddPermission(anyWildCard, permission, address));
-			Assert.False(acl.HasPermission(anyWildCard, permission, newAddress));
-			Assert.True(acl.AddPermissionNextAddress(anyWildCard, permission, newAddress));
-			Assert.True(acl.HasPermission(anyWildCard, permission, newAddress));
+			Assert.True(acl.AddPermission(anyWildCard, permission, addressCard));
+
+			Assert.True(acl.UpdatePermission(anyWildCard, addressCard, permission, anyWildCard, newAddressCard));
+			Assert.True(acl.HasPermission(this.addressFactory.Create(), permission, address));
+			Assert.True(acl.HasPermission(this.addressFactory.Create(), permission, newAddress));
 		}
 
 		[Fact]
-		public void RemovePermissionExecutor_WhenPermissionExists_ReturnsTrue()
+		public void RemovePermissionSender_WhenPermissionExists_ReturnsTrue()
 		{
-			Address address = this.addressFactory.Create();
-			Address newAddress = this.addressFactory.Create();
+			var address = this.addressFactory.Create();
+			var newAddress = this.addressFactory.Create();
+			var addressCard = this.GenerateWildCard(address);
+			var newAddressCard = this.GenerateWildCard(newAddress);
+			newAddressCard.Add(address);
 			var acl = new AccessControlList();
 			var permission = new Permission(typeof(Action));
 			AnyWildCard anyWildCard = new AnyWildCard();
-			AddressWildCard addressWildCard = new AddressWildCard { address, newAddress };
 
-			Assert.True(acl.AddPermission(addressWildCard, permission, anyWildCard));
-			Assert.True(acl.HasPermission(newAddress, permission, anyWildCard));
-			Assert.True(acl.RemovePermissionExecutor(newAddress, permission, anyWildCard));
-			Assert.False(acl.HasPermission(newAddress, permission, anyWildCard));
+			Assert.True(acl.AddPermission(newAddressCard, permission, anyWildCard));
+
+			Assert.True(acl.UpdatePermission(newAddressCard, anyWildCard, permission, addressCard, anyWildCard));
+			Assert.True(acl.HasPermission(address, permission, this.addressFactory.Create()));
+			Assert.False(acl.HasPermission(newAddress, permission, this.addressFactory.Create()));
 		}
 
-		[Fact]
-		public void RemovePermissionNextAddress_WhenRemovingSingleAddress_ReturnsTrue()
+		private AddressWildCard GenerateWildCard(Address address)
 		{
-			Address address = this.addressFactory.Create();
-			Address newAddress = this.addressFactory.Create();
-			var acl = new AccessControlList();
-			var permission = new Permission(typeof(Action));
-			AnyWildCard anyWildCard = new AnyWildCard();
-			AddressWildCard addressWildCard = new AddressWildCard { address, newAddress };
-
-			Assert.True(acl.AddPermission(anyWildCard, permission, addressWildCard));
-			Assert.True(acl.HasPermission(anyWildCard, permission, addressWildCard));
-			Assert.True(acl.RemovePermissionNextAddress(anyWildCard, permission, newAddress));
-			Assert.False(acl.HasPermission(anyWildCard, permission, newAddress));
-			Assert.False(acl.HasPermission(anyWildCard, permission, addressWildCard));
-		}
-
-		[Fact]
-		public void RemovePermissionNextAddress_WhenRemovingWildCard_ReturnsTrue()
-		{
-			Address address = this.addressFactory.Create();
-			Address newAddress = this.addressFactory.Create();
-			var acl = new AccessControlList();
-			var permission = new Permission(typeof(Action));
-			AnyWildCard anyWildCard = new AnyWildCard();
-			AddressWildCard addressWildCard = new AddressWildCard { address, newAddress };
-
-			Assert.True(acl.AddPermission(anyWildCard, permission, addressWildCard));
-			Assert.True(acl.HasPermission(anyWildCard, permission, addressWildCard));
-			Assert.True(acl.RemovePermissionNextAddress(anyWildCard, permission, addressWildCard));
-			Assert.False(acl.HasPermission(anyWildCard, permission, newAddress));
-			Assert.False(acl.HasPermission(anyWildCard, permission, addressWildCard));
+			return new AddressWildCard() { address };
 		}
 	}
 }

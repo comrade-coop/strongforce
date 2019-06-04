@@ -1,8 +1,6 @@
 using System;
-using System.Collections.Generic;
-using ContractsCore;
-using ContractsCore.Actions;
-using ContractsCore.Contracts;
+using StrongForce.Core;
+using Action = StrongForce.Core.Action;
 
 namespace Tendermint.Tests.Mocks
 {
@@ -15,16 +13,12 @@ namespace Tendermint.Tests.Mocks
 
 		protected override object GetState() => new object { };
 
-		protected override bool HandleReceivedAction(ContractsCore.Actions.Action action)
+		protected override bool HandleReceivedAction(Action action)
 		{
 			switch (action)
 			{
 				case DummyAction dummy:
-					if (dummy.NextAction != null)
-					{
-						this.OnSend(dummy.NextAction);
-					}
-
+					if (dummy.NextAction != null) this.SendEvent(dummy.NextAction);
 					return true;
 
 				default:

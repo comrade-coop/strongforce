@@ -1,7 +1,7 @@
 using System;
 using System.Runtime.Serialization;
 
-namespace ContractsCore
+namespace StrongForce.Core
 {
 	[DataContract]
 	public class Address : IComparable<Address>

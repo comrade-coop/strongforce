@@ -1,16 +1,15 @@
 using System;
-using ContractsCore.Contracts;
-using ContractsCore.Permissions;
+using StrongForce.Core.Permissions;
 
-namespace ContractsCore.Exceptions
+namespace StrongForce.Core.Exceptions
 {
 	public class NoPermissionException : Exception
 	{
-		public readonly Permission Permission;
+		public Permission Permission { get; private set; }
 
-		public readonly Contract Contract;
+		public Contract Contract { get; private set; }
 
-		public readonly Address ActionSender;
+		public Address ActionSender { get; private set; }
 
 		public NoPermissionException(Contract contract, Address actionSender, Permission permission)
 			: base($"Address \"{actionSender.ToBase64String()}\" does not have permission \"{permission}\" on {contract}")

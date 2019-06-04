@@ -1,6 +1,4 @@
-using ContractsCore.Actions;
-
-namespace ContractsCore.Tests.Mocks
+namespace StrongForce.Core.Tests.Mocks
 {
 	public class SetFavoriteNumberAction : Action
 	{

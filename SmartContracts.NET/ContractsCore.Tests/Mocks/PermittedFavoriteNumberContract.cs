@@ -1,11 +1,8 @@
-
-using ContractsCore.Actions;
-using ContractsCore.Contracts;
-using ContractsCore.Permissions;
 using System.Collections.Generic;
 using System.Linq;
+using StrongForce.Core.Permissions;
 
-namespace ContractsCore.Tests.Mocks
+namespace StrongForce.Core.Tests.Mocks
 {
 	public class PermittedFavoriteNumberContract : AclPermittedContract
 	{
@@ -34,7 +31,7 @@ namespace ContractsCore.Tests.Mocks
 					return true;
 
 				default:
-					return false;
+					return base.HandleReceivedAction(action);
 			}
 		}
 
@@ -43,7 +40,7 @@ namespace ContractsCore.Tests.Mocks
 			this.Number = favoriteNumberAction.Number;
 		}
 
-		public bool CheckPermission(object address, Permission permission, object target)
+		public bool CheckPermission(Address address, Permission permission, Address target)
 		{
 			return this.acl.HasPermission(address, permission, target);
 		}
@@ -53,11 +50,11 @@ namespace ContractsCore.Tests.Mocks
 			var setNumberAction = new SetFavoriteNumberAction(string.Empty, target, num);
 			var x = new List<TracingElement>();
 			var trace = new TracingBulletAction(string.Empty, target, setNumberAction, this.BulletTaken, null, ref x);
-			this.OnSend(trace);
+			this.SendEvent(trace);
 			return true;
 		}
 
-		protected internal override void BulletTaken(List<Stack<Address>> ways, Action targetAction)
+		protected override void BulletTaken(List<Stack<Address>> ways, Action targetAction)
 		{
 			foreach (var stack in ways)
 			{
@@ -65,7 +62,7 @@ namespace ContractsCore.Tests.Mocks
 			}
 
 			Address target = ways[0].Pop();
-			this.OnForward(targetAction, target, ways[0]);
+			this.ForwardEvent(targetAction, target, ways[0]);
 		}
 	}
 }

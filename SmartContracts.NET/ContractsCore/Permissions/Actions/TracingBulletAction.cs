@@ -1,11 +1,10 @@
-﻿using ContractsCore.Contracts;
 using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace ContractsCore.Actions
+namespace StrongForce.Core.Permissions
 {
-	public class TracingBulletAction : Actions.Action
+	public class TracingBulletAction : Action
 	{
 		public Action TracingAction;
 

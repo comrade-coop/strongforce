@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 
-namespace ContractsCore.Tests
+namespace StrongForce.Core.Tests
 {
 	/// <summary>
 	/// Contains test data for AddressTest.

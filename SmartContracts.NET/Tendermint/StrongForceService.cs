@@ -32,7 +32,7 @@ namespace Tendermint
 		{
 			this.server = new Server
 			{
-				Services = { StrongForce.BindService(new StrongForceServer(this.logger)) },
+				Services = { Strongforce.StrongForce.BindService(new StrongForceServer(this.logger)) },
 				Ports = { new ServerPort(this.settings.Hostname, this.settings.Port, ServerCredentials.Insecure) },
 			};
 			this.server.Start();

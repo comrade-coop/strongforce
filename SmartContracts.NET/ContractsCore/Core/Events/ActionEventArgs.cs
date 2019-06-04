@@ -1,7 +1,7 @@
 using System;
-using Action = ContractsCore.Actions.Action;
+using Action = StrongForce.Core.Action;
 
-namespace ContractsCore.Events
+namespace StrongForce.Core
 {
 	public class ActionEventArgs : EventArgs
 	{

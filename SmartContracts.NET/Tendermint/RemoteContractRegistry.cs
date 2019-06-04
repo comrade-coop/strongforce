@@ -1,9 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using ContractsCore;
-using ContractsCore.Actions;
-using ContractsCore.Contracts;
+using StrongForce.Core;
+using Action = StrongForce.Core.Action;
 
 namespace Tendermint
 {
@@ -24,7 +23,7 @@ namespace Tendermint
 		{
 		}
 
-		public void SendAction(Address target, ContractsCore.Actions.Action action)
+		public void SendAction(Address target, Action action)
 		{
 			this.HandleAction(action, target);
 		}

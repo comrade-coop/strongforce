@@ -1,11 +1,7 @@
-using System;
-using System.Collections.Generic;
-using ContractsCore.Actions;
-using ContractsCore.Contracts;
-using ContractsCore.Events;
-using ContractsCore.Exceptions;
+using StrongForce.Core;
+using Action = StrongForce.Core.Action;
 
-namespace ContractsCore.Tests.Mocks
+namespace StrongForce.Core.Tests.Mocks
 {
 	public class FavoriteNumberContract : Contract
 	{
@@ -20,14 +16,14 @@ namespace ContractsCore.Tests.Mocks
 
 		public Address LastOrigin { get; private set; }
 
-		public void SetNumberInvoke(Actions.Action action)
+		public void SetNumberInvoke(Action action)
 		{
-			this.OnSend(action);
+			this.SendEvent(action);
 		}
 
 		protected override object GetState() => this.Number;
 
-		protected override bool HandleReceivedAction(Actions.Action action)
+		protected override bool HandleReceivedAction(Action action)
 		{
 			switch (action)
 			{
