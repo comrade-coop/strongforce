@@ -23,7 +23,7 @@ namespace ContractsCore.Tests.Mocks
 
 		public List<List<Address>> LastWays = new List<List<Address>>();
 
-		protected internal override object GetState() => this.Number;
+		protected override object GetState() => this.Number;
 
 		protected override bool HandleReceivedAction(Action action)
 		{

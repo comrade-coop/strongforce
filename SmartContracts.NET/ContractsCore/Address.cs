@@ -18,12 +18,24 @@ namespace ContractsCore
 				return false;
 			}
 
-			return this.CompareTo((Address) other) == 0;
+			return this.CompareTo((Address)other) == 0;
 		}
 
 		public override int GetHashCode()
 		{
-			return this.Value != null ? this.Value.GetHashCode() : 0;
+			unchecked
+			{
+				if (this.Value == null)
+				{
+					return 0;
+				}
+				int hash = 17;
+				foreach (byte element in this.Value)
+				{
+					hash = hash * 31 + element.GetHashCode();
+				}
+				return hash;
+			}
 		}
 
 		public int CompareTo(Address other)

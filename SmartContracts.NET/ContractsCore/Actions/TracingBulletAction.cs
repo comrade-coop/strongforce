@@ -5,7 +5,7 @@ using System.Text;
 
 namespace ContractsCore.Actions
 {
-	public class TracingBulletAction: Actions.Action
+	public class TracingBulletAction : Actions.Action
 	{
 		public Action TracingAction;
 

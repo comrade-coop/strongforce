@@ -25,7 +25,7 @@ namespace ContractsCore.Tests.Mocks
 			this.OnSend(action);
 		}
 
-		protected internal override object GetState() => this.Number;
+		protected override object GetState() => this.Number;
 
 		protected override bool HandleReceivedAction(Actions.Action action)
 		{

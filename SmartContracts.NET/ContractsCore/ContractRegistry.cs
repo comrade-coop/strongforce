@@ -24,12 +24,29 @@ namespace ContractsCore
 		{
 		}
 
-		public Contract GetContract(Address address)
+		public virtual Contract GetContract(Address address)
 		{
-			return this.addressesToContracts[address];
+			if (this.addressesToContracts.TryGetValue(address, out var contract)) {
+				return contract;
+			} else {
+				return null;
+			}
 		}
 
-		public object GetState()
+		protected virtual void SetContract(Contract contract)
+		{
+			Address address = contract.Address;
+
+			if (this.addressesToContracts.ContainsKey(address))
+			{
+				throw new ArgumentException(
+					$"Contract with same address: {address.ToBase64String()} has already been registered");
+			}
+
+			this.addressesToContracts[address] = contract;
+		}
+
+		public virtual object GetState()
 		{
 			throw new NotImplementedException();
 		}
@@ -42,22 +59,10 @@ namespace ContractsCore
 			}
 
 			Address address = contract.Address;
-			if (this.addressesToContracts.ContainsKey(address))
-			{
-				throw new ArgumentException(
-					$"Contract with same address: {address.ToBase64String()} has already been registered");
-			}
-
-			this.addressesToContracts[address] = contract;
+			SetContract(contract);
 
 			contract.Send += (_, actionArgs) => this.HandleSendActionEvent(contract.Address, actionArgs);
-
 			contract.Forward += (_, actionArgs) => this.HandleForwardActionEvent(contract.Address, actionArgs);
-		}
-
-		public Contract GetContractForAddress(Address address)
-		{
-			return addressesToContracts[address];
 		}
 
 		protected bool HandleAction(Action action, Address targetAddress)
@@ -67,8 +72,8 @@ namespace ContractsCore
 				throw new ArgumentNullException(nameof(action));
 			}
 
-			return this.addressesToContracts.ContainsKey(targetAddress)
-				&& this.addressesToContracts[targetAddress].Receive(action);
+			var contract = this.GetContract(targetAddress);
+			return contract != null ? contract.Receive(action) : false;
 		}
 
 		private void HandleSendActionEvent(object sender, ActionEventArgs actionArgs)

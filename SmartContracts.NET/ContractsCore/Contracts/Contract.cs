@@ -19,7 +19,7 @@ namespace ContractsCore.Contracts
 
 		public Address Address { get; }
 
-		protected internal abstract object GetState();
+		protected abstract object GetState();
 
 		protected internal virtual bool Receive(Action action)
 		{

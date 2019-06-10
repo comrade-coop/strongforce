@@ -6,6 +6,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/types"
 )
 
+// MsgExecuteAction represents a request to execute an action
 type MsgExecuteAction struct {
 	Doer   types.AccAddress
 	Action []byte

@@ -2,7 +2,7 @@ using System;
 
 namespace ContractsCore.Permissions
 {
-	public class Permission: IComparable<Permission>
+	public class Permission : IComparable<Permission>
 	{
 		public Permission(Type type)
 		{
@@ -23,7 +23,7 @@ namespace ContractsCore.Permissions
 				return false;
 			}
 
-			return this.Equals((Permission) obj);
+			return this.Equals((Permission)obj);
 		}
 
 		public override int GetHashCode()
