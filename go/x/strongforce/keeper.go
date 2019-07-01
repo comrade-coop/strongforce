@@ -30,3 +30,27 @@ func (k Keeper) GetState(ctx types.Context, id []byte) []byte {
 	store := ctx.KVStore(k.storeKey)
 	return store.Get(id)
 }
+
+// GetContractsIterator returns an iterator over all stored contracts
+func (k Keeper) GetContractsIterator(ctx types.Context) types.Iterator {
+	store := ctx.KVStore(k.storeKey)
+	return types.KVStorePrefixIterator(store, []byte{})
+}
+
+// DelegateCoins implements github.com/cosmos/cosmos-sdk/blob/master/x/staking/types BankKeeper
+func (k Keeper) DelegateCoins(ctx types.Context, addr types.AccAddress, amt types.Coins) (types.Tags, types.Error) {
+	// return nil, types.ErrInternal("Unimplemented")
+	return types.EmptyTags(), nil
+}
+
+// UndelegateCoins implements github.com/cosmos/cosmos-types/blob/master/x/staking/types BankKeeper
+func (k Keeper) UndelegateCoins(ctx types.Context, addr types.AccAddress, amt types.Coins) (types.Tags, types.Error) {
+	// return nil, types.ErrInternal("Unimplemented")
+	return types.EmptyTags(), nil
+}
+
+// AddCoins implements github.com/cosmos/cosmos-types/blob/master/x/distribution/types BankKeeper
+func (k Keeper) AddCoins(ctx types.Context, addr types.AccAddress, amt types.Coins) (types.Coins, types.Error) {
+	// return nil, types.ErrInternal("Unimplemented")
+	return types.NewCoins(), nil
+}

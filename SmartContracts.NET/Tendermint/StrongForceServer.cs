@@ -68,7 +68,7 @@ namespace Tendermint
 			foreach (var contract in registry.GetUsedContracts())
 			{
 				var memoryStream = new MemoryStream();
-				actionFormatter.Serialize(memoryStream, contract);
+				contractFormatter.Serialize(memoryStream, contract);
 				var data = memoryStream.ToArray();
 
 				await responseStream.WriteAsync(new ContractRequest

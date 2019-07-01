@@ -6,5 +6,5 @@ import (
 
 // RegisterCodec registers strongforce types in the codec
 func RegisterCodec(cdc *codec.Codec) {
-	cdc.RegisterConcrete(MsgExecuteAction{}, "strongforce/SetName", nil)
+	cdc.RegisterConcrete(MsgExecuteAction{}, "strongforce/ExecuteAction", nil)
 }

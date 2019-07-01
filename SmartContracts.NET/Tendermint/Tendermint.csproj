@@ -24,7 +24,7 @@
         </AssemblyAttribute>
     </ItemGroup>
     <ItemGroup>
-        <Protobuf Include="../../go/StrongForce.proto" GrpcServices="Server" />
+        <Protobuf Include="..\..\go\StrongForce.proto" GrpcServices="Server" />
     </ItemGroup>
     <ItemGroup>
       <ProjectReference Include="..\ContractsCore\ContractsCore.csproj" />

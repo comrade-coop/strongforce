@@ -20,15 +20,18 @@ namespace Tendermint
 		public override Type BindToType(string assemblyName, string typeName)
 		{
 			var type = Type.GetType(string.Format("{0}, {1}", typeName, assemblyName));
-			if (type == null) {
-				return type;
+
+			if (type == null)
+			{
+				return null;
 			}
+
 			if (this.BlacklistedTypes.Contains(type))
 			{
 				throw new FormatException("Request used a blacklisted type");
 			}
 
-			if (this.WhitelistedTypes.Contains(type) || type.IsValueType || type == typeof(String))
+			if (this.WhitelistedTypes.Contains(type) || type.IsValueType || type == typeof(string))
 			{
 				return type;
 			}
@@ -45,7 +48,6 @@ namespace Tendermint
 					testType = testType.BaseType;
 				}
 			}
-
 
 			if (type.FindInterfaces((m, _) => this.WhitelistedBaseTypes.Contains(m), null).Length != 0)
 			{

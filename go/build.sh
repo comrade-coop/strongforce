@@ -1,3 +1,10 @@
 #!/usr/bin/env bash
 
-go build -o `dirname $0`/bin/strongforced `dirname $0`/cmd/strongforced
+set -e
+
+pushd `dirname $0` > /dev/null
+
+go build -o ./bin/strongforced ./cmd/strongforced
+go build -o ./bin/strongforcecli ./cmd/strongforcecli
+
+popd > /dev/null
