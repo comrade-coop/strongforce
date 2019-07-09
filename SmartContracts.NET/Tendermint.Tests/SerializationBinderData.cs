@@ -28,7 +28,13 @@ namespace Tendermint.Tests
 			new object[] { typeof(OtherBase) },
 		};
 
+#pragma warning disable SA1201
 		public interface IBase
+#pragma warning restore SA1201
+		{
+		}
+
+		public struct Struct
 		{
 		}
 
@@ -41,10 +47,6 @@ namespace Tendermint.Tests
 		}
 
 		public class OtherBase : IBase
-		{
-		}
-
-		public struct Struct
 		{
 		}
 	}

@@ -20,7 +20,11 @@ namespace Tendermint.Tests.Mocks
 			switch (action)
 			{
 				case DummyAction dummy:
-					if (dummy.NextAction != null) this.OnSend(dummy.NextAction);
+					if (dummy.NextAction != null)
+					{
+						this.OnSend(dummy.NextAction);
+					}
+
 					return true;
 
 				default:

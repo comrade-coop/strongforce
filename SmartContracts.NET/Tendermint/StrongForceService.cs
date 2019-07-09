@@ -4,6 +4,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Grpc.Core;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Strongforce;
 
@@ -13,6 +14,7 @@ namespace Tendermint
 	{
 		private readonly StrongForceServiceSettings settings;
 
+		private ILogger<StrongForceServer> logger;
 		private Server server;
 
 		public StrongForceService()
@@ -20,8 +22,9 @@ namespace Tendermint
 			this.settings = new StrongForceServiceSettings();
 		}
 
-		public StrongForceService(IOptions<StrongForceServiceSettings> options)
+		public StrongForceService(ILogger<StrongForceServer> logger, IOptions<StrongForceServiceSettings> options)
 		{
+			this.logger = logger;
 			this.settings = options.Value;
 		}
 
@@ -29,7 +32,7 @@ namespace Tendermint
 		{
 			this.server = new Server
 			{
-				Services = { StrongForce.BindService(new StrongForceServer()) },
+				Services = { StrongForce.BindService(new StrongForceServer(this.logger)) },
 				Ports = { new ServerPort(this.settings.Hostname, this.settings.Port, ServerCredentials.Insecure) },
 			};
 			this.server.Start();

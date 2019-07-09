@@ -1,10 +1,11 @@
 using System;
 using System.Collections.Generic;
 using System.Runtime.Serialization;
+using Newtonsoft.Json.Serialization;
 
 namespace Tendermint
 {
-	public class FilteredSerializationBinder : SerializationBinder
+	public class FilteredSerializationBinder : DefaultSerializationBinder
 	{
 		public FilteredSerializationBinder()
 			: base()
@@ -28,7 +29,7 @@ namespace Tendermint
 
 			if (this.BlacklistedTypes.Contains(type))
 			{
-				throw new FormatException("Request used a blacklisted type");
+				throw new FormatException("Serialized data uses a blacklisted type");
 			}
 
 			if (this.WhitelistedTypes.Contains(type) || type.IsValueType || type == typeof(string))
@@ -54,7 +55,7 @@ namespace Tendermint
 				return type;
 			}
 
-			throw new FormatException("Request used an unknown type");
+			throw new FormatException("Serialized data uses a non-whitelisted type");
 		}
 	}
 }

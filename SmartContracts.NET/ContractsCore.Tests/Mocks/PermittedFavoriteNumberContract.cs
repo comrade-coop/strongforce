@@ -50,7 +50,7 @@ namespace ContractsCore.Tests.Mocks
 
 		public bool GenerateActionAndFindPath(Address target, int num)
 		{
-			var setNumberAction = new SetFavoriteNumberAction( string.Empty, target, num);
+			var setNumberAction = new SetFavoriteNumberAction(string.Empty, target, num);
 			var x = new List<TracingElement>();
 			var trace = new TracingBulletAction(string.Empty, target, setNumberAction, this.BulletTaken, null, ref x);
 			this.OnSend(trace);

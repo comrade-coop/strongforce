@@ -195,6 +195,5 @@ namespace ContractsCore.Contracts
 		{
 			this.acl.RemovePermission(action.PermittedAddress, action.Permission, action.NextAddress);
 		}
-
 	}
 }

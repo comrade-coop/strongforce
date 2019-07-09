@@ -9,7 +9,7 @@ using Xunit;
 
 namespace Tendermint.Tests
 {
-	public partial class FilteredSerializationBinderTests
+	public class RemoteContractRegistryTests
 	{
 		[Fact]
 		public void Calls_And_Caches_Contract_Getter()
@@ -22,7 +22,8 @@ namespace Tendermint.Tests
 				return new DummyContract(address);
 			});
 
-			for (var r = 0; r < 3; r++) // Make sure it actually caches Contracts
+			// Repeat a few times to make sure it actually caches Contracts
+			for (var r = 0; r < 3; r++)
 			{
 				for (var i = 0; i < contractCount; i++)
 				{

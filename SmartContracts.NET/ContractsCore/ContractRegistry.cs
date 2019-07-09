@@ -26,9 +26,12 @@ namespace ContractsCore
 
 		public virtual Contract GetContract(Address address)
 		{
-			if (this.addressesToContracts.TryGetValue(address, out var contract)) {
+			if (this.addressesToContracts.TryGetValue(address, out var contract))
+			{
 				return contract;
-			} else {
+			}
+			else
+			{
 				return null;
 			}
 		}

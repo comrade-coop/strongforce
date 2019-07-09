@@ -1,7 +1,9 @@
 using System;
+using System.Runtime.Serialization;
 
 namespace ContractsCore
 {
+	[DataContract]
 	public class Address : IComparable<Address>
 	{
 		public Address(byte[] value)
@@ -9,7 +11,8 @@ namespace ContractsCore
 			this.Value = value;
 		}
 
-		public byte[] Value { get; }
+		[DataMember]
+		public byte[] Value { get; private set; }
 
 		public override bool Equals(object other)
 		{
@@ -59,6 +62,11 @@ namespace ContractsCore
 		public string ToBase64String()
 		{
 			return Convert.ToBase64String(this.Value, 0, this.Value.Length);
+		}
+
+		public static Address FromBase64String(string base64String)
+		{
+			return new Address(Convert.FromBase64String(base64String));
 		}
 	}
 }
