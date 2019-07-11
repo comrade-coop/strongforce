@@ -14,7 +14,6 @@ namespace ContractsCore.Actions
 		{
 			this.ForwardedAction = forwarded;
 			this.WayForForwarding = way;
-
 		}
 	}
 }

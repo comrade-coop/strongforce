@@ -1,7 +1,9 @@
 using System;
+using System.Runtime.Serialization;
 
 namespace ContractsCore
 {
+	[DataContract]
 	public class Address : IComparable<Address>
 	{
 		public Address(byte[] value)
@@ -9,7 +11,8 @@ namespace ContractsCore
 			this.Value = value;
 		}
 
-		public byte[] Value { get; }
+		[DataMember]
+		public byte[] Value { get; private set; }
 
 		public override bool Equals(object other)
 		{
@@ -18,12 +21,24 @@ namespace ContractsCore
 				return false;
 			}
 
-			return this.CompareTo((Address) other) == 0;
+			return this.CompareTo((Address)other) == 0;
 		}
 
 		public override int GetHashCode()
 		{
-			return this.Value != null ? this.Value.GetHashCode() : 0;
+			unchecked
+			{
+				if (this.Value == null)
+				{
+					return 0;
+				}
+				int hash = 17;
+				foreach (byte element in this.Value)
+				{
+					hash = hash * 31 + element.GetHashCode();
+				}
+				return hash;
+			}
 		}
 
 		public int CompareTo(Address other)
@@ -47,6 +62,11 @@ namespace ContractsCore
 		public string ToBase64String()
 		{
 			return Convert.ToBase64String(this.Value, 0, this.Value.Length);
+		}
+
+		public static Address FromBase64String(string base64String)
+		{
+			return new Address(Convert.FromBase64String(base64String));
 		}
 	}
 }

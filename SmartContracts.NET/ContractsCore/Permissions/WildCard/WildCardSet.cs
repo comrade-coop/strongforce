@@ -6,7 +6,7 @@ using System.Text;
 
 namespace ContractsCore.Permissions
 {
-	public class WildCardSet: IWildCard, IComparable<WildCardSet>
+	public class WildCardSet : IWildCard, IComparable<WildCardSet>
 	{
 		public HashSet<IWildCard> WildCards;
 		private AddressWildCard AddressCard;

@@ -4,7 +4,7 @@ using System.Text;
 
 namespace ContractsCore.Contracts
 {
-	public class TracingElement: IEquatable<TracingElement>
+	public class TracingElement : IEquatable<TracingElement>
 	{
 		public Address Address;
 

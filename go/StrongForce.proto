@@ -1,0 +1,31 @@
+syntax = "proto3";
+
+package strongforce;
+
+service StrongForce {
+  // Only the first ActionOrContract will contain an action, all the rest will be contract data
+  rpc ExecuteAction(stream ActionOrContract) returns (stream ContractRequest) {}
+}
+
+message ActionOrContract {
+  oneof data {
+    Action action = 1;
+    ContractResponse contract = 2;
+  }
+}
+
+message Action {
+  bytes address = 1;
+  bytes data = 2;
+}
+
+message ContractRequest {
+  bytes address = 1;
+  // Warning, if data is set, writes the contract and sends no reply, else reads.
+  bytes data = 2;
+}
+
+message ContractResponse {
+  bytes address = 1;
+  bytes data = 2;
+}

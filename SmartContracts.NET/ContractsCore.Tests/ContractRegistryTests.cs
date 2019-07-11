@@ -50,12 +50,12 @@ namespace ContractsCore.Tests
 		}
 
 		[Fact]
-		public void GetContract_WhenPassedNotRegisteredContract_ThrowsKeyNotFoundException()
+		public void GetContract_WhenPassedNotRegisteredContract_ReturnsNull()
 		{
 			var registry = new ContractRegistry();
 			Address contractAddress = this.addressFactory.Create();
 
-			Assert.Throws<KeyNotFoundException>(() => registry.GetContract(contractAddress));
+			Assert.Null(registry.GetContract(contractAddress));
 		}
 
 		[Fact]
