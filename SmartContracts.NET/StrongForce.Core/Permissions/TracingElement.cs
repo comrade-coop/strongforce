@@ -6,18 +6,18 @@ namespace StrongForce.Core.Permissions
 {
 	public class TracingElement : IEquatable<TracingElement>
 	{
-		public Address Address;
-
-		public Stack<Address> Way;
-
-		public bool IsWay;
-
 		public TracingElement(Address address, Stack<Address> way, bool isWay = false)
 		{
 			this.Address = address;
 			this.Way = way;
 			this.IsWay = isWay;
 		}
+
+		public Address Address { get; set; }
+
+		public Stack<Address> Way { get; set; }
+
+		public bool IsWay { get; set; }
 
 		public bool Equals(TracingElement other)
 		{

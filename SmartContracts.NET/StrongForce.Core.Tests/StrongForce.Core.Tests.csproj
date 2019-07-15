@@ -20,6 +20,6 @@
         <AdditionalFiles Include="..\CodeAnalysis\stylecop.json" Link="stylecop.json" />
     </ItemGroup>
     <ItemGroup>
-      <ProjectReference Include="..\ContractsCore\StrongForce.Core.csproj" />
+      <ProjectReference Include="..\StrongForce.Core\StrongForce.Core.csproj" />
     </ItemGroup>
 </Project>

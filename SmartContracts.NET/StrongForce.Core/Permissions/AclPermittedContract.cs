@@ -1,28 +1,25 @@
-using StrongForce.Core.Exceptions;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using StrongForce.Core.Exceptions;
 
 namespace StrongForce.Core.Permissions
 {
 	public abstract class AclPermittedContract : PermittedContract
 	{
-		protected readonly AccessControlList acl;
-
-		protected readonly ContractRegistry registry;
-
-		protected AclPermittedContract(Address address, ContractRegistry registry, Address permissionManager)
-			: this(address, registry, permissionManager, new AccessControlList())
+		protected AclPermittedContract(Address address, Address permissionManager)
+			: this(address, permissionManager, new AccessControlList())
 		{
 		}
 
-		protected AclPermittedContract(Address address, ContractRegistry registry, Address permissionManager, AccessControlList acl)
+		protected AclPermittedContract(Address address, Address permissionManager, AccessControlList acl)
 			: base(address)
 		{
-			this.acl = acl;
-			this.registry = registry;
+			this.Acl = acl;
 			this.ConfigurePermissionManager(permissionManager);
 		}
+
+		protected AccessControlList Acl { get; set; }
 
 		protected override bool HandleReceivedAction(Action action)
 		{
@@ -77,7 +74,7 @@ namespace StrongForce.Core.Permissions
 			{
 				this.FindBulletPaths(action);
 			}
-			else if (this.acl.HasPermission(action.TracingAction.Origin, permission, this.Address))
+			else if (this.Acl.HasPermission(action.TracingAction.Origin, permission, this.Address))
 			{ // Path Found
 				TracingElement current = new TracingElement(this.Address, action.Predecessors);
 				var a = action.BfsAddresses.FirstOrDefault(x => x.Equals(current));
@@ -100,8 +97,13 @@ namespace StrongForce.Core.Permissions
 				TracingElement couple = bfsAddresses.Skip(i).First();
 
 				Stack<Address> predecessors = couple.Way ?? new Stack<Address>(new[] { this.Address });
-				TracingBulletAction newAction = new TracingBulletAction(string.Empty, couple.Address, action.TracingAction,
-					null, predecessors, ref bfsAddresses);
+				TracingBulletAction newAction = new TracingBulletAction(
+					string.Empty,
+					couple.Address,
+					action.TracingAction,
+					null,
+					predecessors,
+					ref bfsAddresses);
 				this.SendEvent(newAction);
 			}
 
@@ -112,7 +114,7 @@ namespace StrongForce.Core.Permissions
 		protected virtual List<TracingElement> GetAllowedForForwarding(TracingBulletAction action, ref List<TracingElement> queue)
 		{
 			var permission = new Permission(action.TracingAction.GetType());
-			foreach (var address in this.acl.GetPermittedAddresses(permission, this.Address))
+			foreach (var address in this.Acl.GetPermittedAddresses(permission, this.Address))
 			{
 				var predecessors = new Stack<Address>();
 				if (action.Predecessors != null)
@@ -131,17 +133,10 @@ namespace StrongForce.Core.Permissions
 			return queue;
 		}
 
-		private void ConfigurePermissionManager(Address permissionManager)
-		{
-			this.acl.AddPermission(permissionManager, new Permission(typeof(AddPermissionAction)), this.Address);
-			this.acl.AddPermission(permissionManager, new Permission(typeof(RemovePermissionAction)), this.Address);
-			this.acl.AddPermission(permissionManager, new Permission(typeof(UpdatePermissionAction)), this.Address);
-		}
-
 		protected override bool CheckPermission(Action action)
 		{
 			var permission = new Permission(action.GetType());
-			if (!this.acl.HasPermission(action.Sender, permission, this.Address))
+			if (!this.Acl.HasPermission(action.Sender, permission, this.Address))
 			{
 				throw new NoPermissionException(this, action.Sender, permission);
 			}
@@ -149,19 +144,31 @@ namespace StrongForce.Core.Permissions
 			return true;
 		}
 
+		protected override void BulletTaken(List<Stack<Address>> ways, Action targetAction)
+		{
+			throw new NotImplementedException();
+		}
+
 		protected override void HandleAddPermissionAction(AddPermissionAction action)
 		{
-			this.acl.AddPermission(action.PermittedAddress, action.Permission, action.Receiver);
+			this.Acl.AddPermission(action.PermittedAddress, action.Permission, action.Receiver);
 		}
 
 		protected override void HandleRemovePermissionAction(RemovePermissionAction action)
 		{
-			this.acl.RemovePermission(action.PermittedAddress, action.Permission, action.Receiver);
+			this.Acl.RemovePermission(action.PermittedAddress, action.Permission, action.Receiver);
 		}
 
 		protected void HandleUpdatePermissionAction(UpdatePermissionAction action)
 		{
-			this.acl.UpdatePermission(action.OldPermittedAddress, action.OldReceiver, action.Permission, action.NewPermittedAddress, action.NewReceiver);
+			this.Acl.UpdatePermission(action.OldPermittedAddress, action.OldReceiver, action.Permission, action.NewPermittedAddress, action.NewReceiver);
+		}
+
+		private void ConfigurePermissionManager(Address permissionManager)
+		{
+			this.Acl.AddPermission(permissionManager, new Permission(typeof(AddPermissionAction)), this.Address);
+			this.Acl.AddPermission(permissionManager, new Permission(typeof(RemovePermissionAction)), this.Address);
+			this.Acl.AddPermission(permissionManager, new Permission(typeof(UpdatePermissionAction)), this.Address);
 		}
 	}
 }

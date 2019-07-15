@@ -31,14 +31,14 @@ namespace StrongForce.Core.Permissions
 			return this.Type != null ? this.Type.GetHashCode() : 0;
 		}
 
-		protected bool Equals(Permission other)
-		{
-			return this.Type == other.Type;
-		}
-
 		public int CompareTo(Permission other)
 		{
 			return this.ToString().CompareTo(other.ToString());
+		}
+
+		protected bool Equals(Permission other)
+		{
+			return this.Type == other.Type;
 		}
 	}
 }

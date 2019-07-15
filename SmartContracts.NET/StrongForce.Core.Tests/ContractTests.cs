@@ -16,14 +16,6 @@ namespace StrongForce.Core.Tests
 			Assert.Equal(address, contract.Address);
 		}
 
-		// [Fact]
-		// public void Contract_WhenGetStateIsInvoked_ReturnsNonNullObject()
-		// {
-		//   Address address = this.addressFactory.Create();
-		//   Contract contract = new FavoriteNumberContract(address);
-		//   Assert.NotNull(contract.GetState());
-		// }
-
 		[Fact]
 		public void Receive_WhenPassedNull_ThrowsArgumentNullException()
 		{

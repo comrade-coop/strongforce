@@ -1,8 +1,9 @@
-﻿namespace StrongForce.Core.Tests.Mocks
+namespace StrongForce.Core.Tests.Mocks
 {
-	class ContractRegistryMock : ContractRegistry
+	public class ContractRegistryMock : ContractRegistry
 	{
-		public ContractRegistryMock(object initialState = null) : base(initialState)
+		public ContractRegistryMock(object initialState = null)
+			: base(initialState)
 		{
 		}
 

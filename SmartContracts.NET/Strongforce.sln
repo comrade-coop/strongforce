@@ -3,9 +3,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.26124.0
 MinimumVisualStudioVersion = 15.0.26124.0
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "StrongForce.Core", "ContractsCore\StrongForce.Core.csproj", "{50643AB8-8017-4B3B-AFEF-F65AD41AF58E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "StrongForce.Core", "StrongForce.Core\StrongForce.Core.csproj", "{50643AB8-8017-4B3B-AFEF-F65AD41AF58E}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "StrongForce.Core.Tests", "ContractsCore.Tests\StrongForce.Core.Tests.csproj", "{C0080490-F39F-44BC-9C14-9AC2909D8E8A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "StrongForce.Core.Tests", "StrongForce.Core.Tests\StrongForce.Core.Tests.csproj", "{C0080490-F39F-44BC-9C14-9AC2909D8E8A}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Tendermint", "Tendermint\Tendermint.csproj", "{79C9F71C-4F82-4228-AF2B-49AF98DB8A57}"
 EndProject

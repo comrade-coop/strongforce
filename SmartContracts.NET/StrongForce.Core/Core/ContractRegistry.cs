@@ -1,6 +1,6 @@
-using StrongForce.Core.Exceptions;
 using System;
 using System.Collections.Generic;
+using StrongForce.Core.Exceptions;
 
 namespace StrongForce.Core
 {
@@ -30,19 +30,6 @@ namespace StrongForce.Core
 			}
 		}
 
-		protected virtual void SetContract(Contract contract)
-		{
-			Address address = contract.Address;
-
-			if (this.addressesToContracts.ContainsKey(address))
-			{
-				throw new ArgumentException(
-					$"Contract with same address: {address.ToBase64String()} has already been registered");
-			}
-
-			this.addressesToContracts[address] = contract;
-		}
-
 		public virtual object GetState()
 		{
 			throw new NotImplementedException();
@@ -56,10 +43,23 @@ namespace StrongForce.Core
 			}
 
 			Address address = contract.Address;
-			SetContract(contract);
+			this.SetContract(contract);
 
 			contract.Send += (_, actionArgs) => this.HandleSendActionEvent(contract.Address, actionArgs);
 			contract.Forward += (_, actionArgs) => this.HandleForwardActionEvent(contract.Address, actionArgs);
+		}
+
+		protected virtual void SetContract(Contract contract)
+		{
+			Address address = contract.Address;
+
+			if (this.addressesToContracts.ContainsKey(address))
+			{
+				throw new ArgumentException(
+					$"Contract with same address: {address.ToBase64String()} has already been registered");
+			}
+
+			this.addressesToContracts[address] = contract;
 		}
 
 		protected bool HandleAction(Action action, Address targetAddress)

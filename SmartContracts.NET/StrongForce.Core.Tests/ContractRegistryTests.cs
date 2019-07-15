@@ -104,7 +104,8 @@ namespace StrongForce.Core.Tests
 			Address address = this.addressFactory.Create();
 			var action = new SetFavoriteNumberAction(
 				string.Empty,
-				null, 50);
+				null,
+				50);
 
 			Assert.Throws<ArgumentNullException>(() => contract.SetNumberInvoke(action));
 		}

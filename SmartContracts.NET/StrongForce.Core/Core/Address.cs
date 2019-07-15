@@ -14,6 +14,11 @@ namespace StrongForce.Core
 		[DataMember]
 		public byte[] Value { get; private set; }
 
+		public static Address FromBase64String(string base64String)
+		{
+			return new Address(Convert.FromBase64String(base64String));
+		}
+
 		public override bool Equals(object other)
 		{
 			if (other == null || other.GetType() != typeof(Address))
@@ -32,11 +37,13 @@ namespace StrongForce.Core
 				{
 					return 0;
 				}
+
 				int hash = 17;
 				foreach (byte element in this.Value)
 				{
-					hash = hash * 31 + element.GetHashCode();
+					hash = (hash * 31) + element.GetHashCode();
 				}
+
 				return hash;
 			}
 		}
@@ -62,11 +69,6 @@ namespace StrongForce.Core
 		public string ToBase64String()
 		{
 			return Convert.ToBase64String(this.Value, 0, this.Value.Length);
-		}
-
-		public static Address FromBase64String(string base64String)
-		{
-			return new Address(Convert.FromBase64String(base64String));
 		}
 	}
 }

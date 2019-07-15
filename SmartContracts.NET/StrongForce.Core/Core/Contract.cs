@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+
 namespace StrongForce.Core
 {
 	public abstract class Contract
@@ -15,8 +16,6 @@ namespace StrongForce.Core
 
 		public Address Address { get; }
 
-		protected abstract object GetState();
-
 		internal virtual bool Receive(Action action)
 		{
 			if (action == null)
@@ -26,6 +25,8 @@ namespace StrongForce.Core
 
 			return this.HandleReceivedAction(action);
 		}
+
+		protected abstract object GetState();
 
 		protected abstract bool HandleReceivedAction(Action action);
 

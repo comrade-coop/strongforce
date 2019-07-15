@@ -6,13 +6,7 @@ namespace StrongForce.Core.Permissions
 {
 	public class TracingBulletAction : Action
 	{
-		public Action TracingAction;
-
 		public List<TracingElement> BfsAddresses;
-
-		public Stack<Address> Predecessors = new Stack<Address>();
-
-		public Action<List<Stack<Address>>, Action> CallBack;
 
 		public TracingBulletAction(
 			string hash,
@@ -28,5 +22,11 @@ namespace StrongForce.Core.Permissions
 			this.Predecessors = predecessors;
 			this.BfsAddresses = bfsAddresses;
 		}
+
+		public Action TracingAction { get; set; }
+
+		public Stack<Address> Predecessors { get; set; }
+
+		public Action<List<Stack<Address>>, Action> CallBack { get; set; }
 	}
 }

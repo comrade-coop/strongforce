@@ -1,28 +1,28 @@
 using System;
-using System.Linq;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace StrongForce.Core.Permissions
 {
 	public class AccessControlList
 	{
-		private readonly IDictionary<Permission, Dictionary<WildCard, HashSet<WildCard>>> permissionsToWildCardToWildCard;
+		private readonly IDictionary<Permission, IDictionary<WildCard, HashSet<WildCard>>> permissionsToWildCardToWildCard;
 
-		public AccessControlList(IDictionary<Permission, Dictionary<WildCard, HashSet<WildCard>>> initialWildCards)
+		public AccessControlList(IDictionary<Permission, IDictionary<WildCard, HashSet<WildCard>>> initialWildCards)
 		{
 			this.permissionsToWildCardToWildCard = initialWildCards;
 		}
 
 		public AccessControlList()
-			: this(new SortedDictionary<Permission, Dictionary<WildCard, HashSet<WildCard>>>())
+			: this(new SortedDictionary<Permission, IDictionary<WildCard, HashSet<WildCard>>>())
 		{
 		}
 
 		public List<Address> GetPermittedAddresses(Permission permission, Address target)
 		{
-			Dictionary<WildCard, HashSet<WildCard>> WildCardsSets = this.permissionsToWildCardToWildCard[permission];
+			IDictionary<WildCard, HashSet<WildCard>> wildCardsSets = this.permissionsToWildCardToWildCard[permission];
 			List<Address> members = new List<Address>();
-			foreach (var cardSet in WildCardsSets)
+			foreach (var cardSet in wildCardsSets)
 			{
 				foreach (var card in cardSet.Value)
 				{
@@ -63,7 +63,7 @@ namespace StrongForce.Core.Permissions
 
 			if (!this.permissionsToWildCardToWildCard.ContainsKey(permission))
 			{
-				this.permissionsToWildCardToWildCard[permission] = new Dictionary<WildCard, HashSet<WildCard>>() { { sender, new HashSet<WildCard>() { receiver } } };
+				this.permissionsToWildCardToWildCard[permission] = new SortedDictionary<WildCard, HashSet<WildCard>>() { { sender, new HashSet<WildCard>() { receiver } } };
 				return true;
 			}
 			else

@@ -1,4 +1,3 @@
-
 namespace StrongForce.Core.Permissions
 {
 	public class RemovePermissionAction : Action
