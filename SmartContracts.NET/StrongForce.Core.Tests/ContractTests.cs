@@ -30,10 +30,7 @@ namespace StrongForce.Core.Tests
 		{
 			Address address = this.addressFactory.Create();
 			Contract contract = new FavoriteNumberContract(address);
-			var action = new SetFavoriteNumberAction(
-				string.Empty,
-				address,
-				0);
+			var action = new SetFavoriteNumberAction(address, 0);
 
 			Assert.True(contract.Receive(action));
 		}
@@ -43,9 +40,7 @@ namespace StrongForce.Core.Tests
 		{
 			Address address = this.addressFactory.Create();
 			Contract contract = new FavoriteNumberContract(address);
-			var action = new Action(
-				string.Empty,
-				address);
+			var action = new Action(address);
 
 			Assert.False(contract.Receive(action));
 		}

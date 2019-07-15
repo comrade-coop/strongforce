@@ -47,9 +47,8 @@ namespace Tendermint.Tests
 				for (var i = 0; i < messageCount; i++)
 				{
 					registry.SendAction(new Address(new byte[] { 0, (byte)i }), new DummyAction(
-						string.Empty,
 						new Address(new byte[] { 0, (byte)i }),
-						new DummyAction(string.Empty, new Address(new byte[] { 1, (byte)i }))));
+						new DummyAction(new Address(new byte[] { 1, (byte)i }))));
 				}
 			}
 
@@ -73,9 +72,8 @@ namespace Tendermint.Tests
 					expectedAddresses.Add(new Address(new byte[] { 0, (byte)i }));
 					expectedAddresses.Add(new Address(new byte[] { 1, (byte)i }));
 					registry.SendAction(new Address(new byte[] { 0, (byte)i }), new DummyAction(
-						string.Empty,
 						new Address(new byte[] { 0, (byte)i }),
-						new DummyAction(string.Empty, new Address(new byte[] { 1, (byte)i }))));
+						new DummyAction(new Address(new byte[] { 1, (byte)i }))));
 				}
 			}
 

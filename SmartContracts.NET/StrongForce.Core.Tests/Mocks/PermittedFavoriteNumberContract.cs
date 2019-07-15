@@ -28,16 +28,16 @@ namespace StrongForce.Core.Tests.Mocks
 
 		public bool GenerateActionAndFindPath(Address target, int num)
 		{
-			var setNumberAction = new SetFavoriteNumberAction(string.Empty, target, num);
+			var setNumberAction = new SetFavoriteNumberAction(target, num);
 			var x = new List<TracingElement>();
-			var trace = new TracingBulletAction(string.Empty, target, setNumberAction, this.BulletTaken, null, ref x);
-			this.SendEvent(trace);
+			var trace = new TracingBulletAction(target, setNumberAction, this.BulletTaken, null, ref x);
+			this.SendAction(trace);
 			return true;
 		}
 
 		protected override object GetState() => this.Number;
 
-		protected override bool HandleReceivedAction(Action action)
+		protected override bool HandleAction(Action action)
 		{
 			switch (action)
 			{
@@ -46,7 +46,7 @@ namespace StrongForce.Core.Tests.Mocks
 					return true;
 
 				default:
-					return base.HandleReceivedAction(action);
+					return base.HandleAction(action);
 			}
 		}
 
@@ -58,7 +58,7 @@ namespace StrongForce.Core.Tests.Mocks
 			}
 
 			Address target = ways[0].Pop();
-			this.ForwardEvent(targetAction, target, ways[0]);
+			this.ForwardAction(targetAction, target, ways[0]);
 		}
 
 		private void HandleSetNumberAction(SetFavoriteNumberAction favoriteNumberAction)

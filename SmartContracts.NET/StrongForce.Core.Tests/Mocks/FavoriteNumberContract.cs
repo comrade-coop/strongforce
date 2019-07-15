@@ -18,12 +18,12 @@ namespace StrongForce.Core.Tests.Mocks
 
 		public void SetNumberInvoke(Action action)
 		{
-			this.SendEvent(action);
+			this.SendAction(action);
 		}
 
 		protected override object GetState() => this.Number;
 
-		protected override bool HandleReceivedAction(Action action)
+		protected override bool HandleAction(Action action)
 		{
 			switch (action)
 			{

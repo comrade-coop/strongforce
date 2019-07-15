@@ -13,14 +13,14 @@ namespace Tendermint.Tests.Mocks
 
 		protected override object GetState() => new object { };
 
-		protected override bool HandleReceivedAction(Action action)
+		protected override bool HandleAction(Action action)
 		{
 			switch (action)
 			{
 				case DummyAction dummy:
 					if (dummy.NextAction != null)
 					{
-						this.SendEvent(dummy.NextAction);
+						this.SendAction(dummy.NextAction);
 					}
 
 					return true;

@@ -4,13 +4,10 @@ namespace StrongForce.Core
 {
 	public class Action
 	{
-		public Action(string hash, Address target)
+		public Action(Address target)
 		{
-			this.Hash = hash;
 			this.Target = target;
 		}
-
-		public string Hash { get; }
 
 		[IgnoreDataMember]
 		public Address Origin { get; internal set; }

@@ -4,16 +4,36 @@ using System.Text;
 
 namespace StrongForce.Core.Permissions
 {
-	public class AnyWildCard : WildCard
+	public class AnyWildCard : IWildCard
 	{
-		public override bool IsMember(Address member)
+		public bool IsMember(Address member)
 		{
 			return true;
 		}
 
-		public override List<Address> GetMembers()
+		public List<Address> GetMembers()
 		{
 			return new List<Address>();
+		}
+
+		public int CompareTo(IWildCard other)
+		{
+			if (this.ToString() != other.ToString())
+			{
+				return 1;
+			}
+
+			return 0;
+		}
+
+		public override int GetHashCode()
+		{
+			return this.ToString().GetHashCode();
+		}
+
+		public override bool Equals(object obj)
+		{
+			return this.CompareTo(obj as AnyWildCard) == 0;
 		}
 	}
 }

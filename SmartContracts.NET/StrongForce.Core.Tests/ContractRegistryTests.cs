@@ -71,10 +71,7 @@ namespace StrongForce.Core.Tests
 
 			registry.RegisterContract(contract);
 
-			var numberAction = new SetFavoriteNumberAction(
-				string.Empty,
-				contractAddress,
-				0);
+			var numberAction = new SetFavoriteNumberAction(contractAddress, 0);
 			contract.SetNumberInvoke(numberAction);
 			Assert.Equal(contract.LastOrigin, contractAddress);
 			Assert.Equal(contract.LastSender, contractAddress);
@@ -103,7 +100,6 @@ namespace StrongForce.Core.Tests
 			registry.RegisterContract(contract);
 			Address address = this.addressFactory.Create();
 			var action = new SetFavoriteNumberAction(
-				string.Empty,
 				null,
 				50);
 

@@ -18,12 +18,12 @@ namespace StrongForce.Core.Permissions
 			}
 
 			this.CheckPermission(action);
-			this.HandleReceivedAction(action);
+			this.HandleAction(action);
 
 			return true;
 		}
 
-		protected override bool HandleReceivedAction(Action action)
+		protected override bool HandleAction(Action action)
 		{
 			switch (action)
 			{

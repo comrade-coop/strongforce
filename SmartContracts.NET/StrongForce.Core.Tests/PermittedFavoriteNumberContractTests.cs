@@ -25,14 +25,12 @@ namespace StrongForce.Core.Tests
 			this.registry.RegisterContract(contract);
 
 			var addPermissionAction = new AddPermissionAction(
-				string.Empty,
 				contractAddress,
 				new Permission(typeof(SetFavoriteNumberAction)),
 				permissionManager);
 
 			const int expectedNumber = 32;
 			var setNumberAction = new SetFavoriteNumberAction(
-				string.Empty,
 				contractAddress,
 				expectedNumber);
 
@@ -49,9 +47,7 @@ namespace StrongForce.Core.Tests
 			Contract contract = new PermittedFavoriteNumberContract(contractAddress, permissionManager);
 			this.registry.RegisterContract(contract);
 
-			var addPermissionAction = new Action(
-				string.Empty,
-				contractAddress);
+			var addPermissionAction = new Action(contractAddress);
 
 			Assert.Throws<NoPermissionException>(
 				() => this.registry.HandleSendAction(addPermissionAction, permissionManager));

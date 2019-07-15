@@ -6,21 +6,21 @@ namespace StrongForce.Core.Permissions
 {
 	public class AccessControlList
 	{
-		private readonly IDictionary<Permission, IDictionary<WildCard, HashSet<WildCard>>> permissionsToWildCardToWildCard;
+		private readonly IDictionary<Permission, IDictionary<IWildCard, HashSet<IWildCard>>> permissionsToWildCardToWildCard;
 
-		public AccessControlList(IDictionary<Permission, IDictionary<WildCard, HashSet<WildCard>>> initialWildCards)
+		public AccessControlList(IDictionary<Permission, IDictionary<IWildCard, HashSet<IWildCard>>> initialWildCards)
 		{
 			this.permissionsToWildCardToWildCard = initialWildCards;
 		}
 
 		public AccessControlList()
-			: this(new SortedDictionary<Permission, IDictionary<WildCard, HashSet<WildCard>>>())
+			: this(new SortedDictionary<Permission, IDictionary<IWildCard, HashSet<IWildCard>>>())
 		{
 		}
 
 		public List<Address> GetPermittedAddresses(Permission permission, Address target)
 		{
-			IDictionary<WildCard, HashSet<WildCard>> wildCardsSets = this.permissionsToWildCardToWildCard[permission];
+			IDictionary<IWildCard, HashSet<IWildCard>> wildCardsSets = this.permissionsToWildCardToWildCard[permission];
 			List<Address> members = new List<Address>();
 			foreach (var cardSet in wildCardsSets)
 			{
@@ -54,7 +54,7 @@ namespace StrongForce.Core.Permissions
 			return permissionCheck.Count() > 0;
 		}
 
-		public bool AddPermission(WildCard sender, Permission permission, WildCard receiver)
+		public bool AddPermission(IWildCard sender, Permission permission, IWildCard receiver)
 		{
 			if (sender == null || receiver == null || permission == null)
 			{
@@ -63,7 +63,7 @@ namespace StrongForce.Core.Permissions
 
 			if (!this.permissionsToWildCardToWildCard.ContainsKey(permission))
 			{
-				this.permissionsToWildCardToWildCard[permission] = new SortedDictionary<WildCard, HashSet<WildCard>>() { { sender, new HashSet<WildCard>() { receiver } } };
+				this.permissionsToWildCardToWildCard[permission] = new SortedDictionary<IWildCard, HashSet<IWildCard>>() { { sender, new HashSet<IWildCard>() { receiver } } };
 				return true;
 			}
 			else
@@ -74,7 +74,7 @@ namespace StrongForce.Core.Permissions
 				}
 				else
 				{
-					this.permissionsToWildCardToWildCard[permission].Add(sender, new HashSet<WildCard>() { receiver });
+					this.permissionsToWildCardToWildCard[permission].Add(sender, new HashSet<IWildCard>() { receiver });
 				}
 			}
 
@@ -94,7 +94,7 @@ namespace StrongForce.Core.Permissions
 			return this.AddPermission(senderCard, permission, receiverCard);
 		}
 
-		public bool UpdatePermission(WildCard oldSender, WildCard oldReceiver, Permission permission, WildCard newSender, WildCard newReceiver)
+		public bool UpdatePermission(IWildCard oldSender, IWildCard oldReceiver, Permission permission, IWildCard newSender, IWildCard newReceiver)
 		{
 			if (oldSender == null || newSender == null || newReceiver == null || permission == null
 				|| !this.permissionsToWildCardToWildCard.ContainsKey(permission)
@@ -111,7 +111,7 @@ namespace StrongForce.Core.Permissions
 			return true;
 		}
 
-		public bool RemovePermission(WildCard sender, Permission permission, WildCard receiver)
+		public bool RemovePermission(IWildCard sender, Permission permission, IWildCard receiver)
 		{
 			if (sender == null || permission == null || !this.permissionsToWildCardToWildCard.ContainsKey(permission)
 				|| !this.permissionsToWildCardToWildCard[permission].ContainsKey(sender))

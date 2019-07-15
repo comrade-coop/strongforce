@@ -5,12 +5,11 @@ namespace StrongForce.Core.Permissions
 	public class AddPermissionAction : Action
 	{
 		public AddPermissionAction(
-			string hash,
 			Address target,
 			Permission permission,
-			WildCard permittedAddress,
-			WildCard receiver = null)
-			: base(hash, target)
+			IWildCard permittedAddress,
+			IWildCard receiver = null)
+			: base(target)
 		{
 			this.PermittedAddress = permittedAddress;
 			this.Receiver = receiver ?? new AddressWildCard() { target };
@@ -18,21 +17,20 @@ namespace StrongForce.Core.Permissions
 		}
 
 		public AddPermissionAction(
-			string hash,
 			Address target,
 			Permission permission,
 			Address permittedAddress,
 			Address receiver = null)
-			: base(hash, target)
+			: base(target)
 		{
 			this.PermittedAddress = new AddressWildCard() { permittedAddress };
 			this.Receiver = receiver != null ? new AddressWildCard() { receiver } : new AddressWildCard() { target };
 			this.Permission = permission;
 		}
 
-		public WildCard PermittedAddress { get; }
+		public IWildCard PermittedAddress { get; }
 
-		public WildCard Receiver { get; }
+		public IWildCard Receiver { get; }
 
 		public Permission Permission { get; }
 

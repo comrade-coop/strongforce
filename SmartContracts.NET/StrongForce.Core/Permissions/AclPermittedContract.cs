@@ -21,7 +21,7 @@ namespace StrongForce.Core.Permissions
 
 		protected AccessControlList Acl { get; set; }
 
-		protected override bool HandleReceivedAction(Action action)
+		protected override bool HandleAction(Action action)
 		{
 			switch (action)
 			{
@@ -38,7 +38,7 @@ namespace StrongForce.Core.Permissions
 					return true;
 
 				default:
-					return base.HandleReceivedAction(action);
+					return base.HandleAction(action);
 			}
 		}
 
@@ -56,7 +56,7 @@ namespace StrongForce.Core.Permissions
 			else
 			{
 				Address target = forwardAction.WayForForwarding.Pop();
-				this.ForwardEvent(forwardAction.ForwardedAction, target, forwardAction.WayForForwarding);
+				this.ForwardAction(forwardAction.ForwardedAction, target, forwardAction.WayForForwarding);
 			}
 		}
 
@@ -98,13 +98,12 @@ namespace StrongForce.Core.Permissions
 
 				Stack<Address> predecessors = couple.Way ?? new Stack<Address>(new[] { this.Address });
 				TracingBulletAction newAction = new TracingBulletAction(
-					string.Empty,
 					couple.Address,
 					action.TracingAction,
 					null,
 					predecessors,
 					ref bfsAddresses);
-				this.SendEvent(newAction);
+				this.SendAction(newAction);
 			}
 
 			List<Stack<Address>> addressQuery = bfsAddresses.Where(x => x.IsWay).Select(x => x.Way).ToList();

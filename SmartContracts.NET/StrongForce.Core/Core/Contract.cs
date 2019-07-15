@@ -23,22 +23,25 @@ namespace StrongForce.Core
 				throw new ArgumentNullException(nameof(action));
 			}
 
-			return this.HandleReceivedAction(action);
+			return this.HandleAction(action);
 		}
 
 		protected abstract object GetState();
 
-		protected abstract bool HandleReceivedAction(Action action);
+		protected virtual bool HandleAction(Action action)
+		{
+			return false;
+		}
 
-		protected virtual void SendEvent(Action action)
+		protected virtual void SendAction(Action action)
 		{
 			ActionEventArgs e = new ActionEventArgs(action);
 			this.Send?.Invoke(this, e);
 		}
 
-		protected virtual void ForwardEvent(Action action, Address target, Stack<Address> ways)
+		protected virtual void ForwardAction(Action action, Address target, Stack<Address> ways)
 		{
-			ForwardAction forwarded = new ForwardAction(string.Empty, target, action, ways);
+			ForwardAction forwarded = new ForwardAction(target, action, ways);
 			ActionEventArgs e = new ActionEventArgs(forwarded);
 			this.Forward?.Invoke(this, e);
 		}

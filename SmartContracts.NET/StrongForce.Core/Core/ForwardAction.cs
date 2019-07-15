@@ -6,8 +6,8 @@ namespace StrongForce.Core
 {
 	public class ForwardAction : Action
 	{
-		public ForwardAction(string hash, Address target, Action forwarded, Stack<Address> way)
-			: base(hash, target)
+		public ForwardAction(Address target, Action forwarded, Stack<Address> way)
+			: base(target)
 		{
 			this.ForwardedAction = forwarded;
 			this.WayForForwarding = way;

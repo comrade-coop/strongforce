@@ -3,14 +3,13 @@ namespace StrongForce.Core.Permissions
 	public class UpdatePermissionAction : Action
 	{
 		public UpdatePermissionAction(
-			string hash,
 			Address target,
-			WildCard oldPermittedAddress,
-			WildCard oldReceiver,
+			IWildCard oldPermittedAddress,
+			IWildCard oldReceiver,
 			Permission permission,
-			WildCard newPermitedAddress,
-			WildCard newReceiver)
-			: base(hash, target)
+			IWildCard newPermitedAddress,
+			IWildCard newReceiver)
+			: base(target)
 		{
 			this.OldPermittedAddress = oldPermittedAddress;
 			this.NewPermittedAddress = newPermitedAddress;
@@ -19,13 +18,13 @@ namespace StrongForce.Core.Permissions
 			this.Permission = permission;
 		}
 
-		public WildCard OldPermittedAddress { get; }
+		public IWildCard OldPermittedAddress { get; }
 
-		public WildCard NewPermittedAddress { get; }
+		public IWildCard NewPermittedAddress { get; }
 
-		public WildCard OldReceiver { get; }
+		public IWildCard OldReceiver { get; }
 
-		public WildCard NewReceiver { get; }
+		public IWildCard NewReceiver { get; }
 
 		public Permission Permission { get; }
 	}

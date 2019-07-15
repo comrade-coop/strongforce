@@ -40,7 +40,6 @@ namespace StrongForce.Core.Tests
 			this.registry.RegisterContract(contract);
 
 			var addPermissionAction = new AddPermissionAction(
-				string.Empty,
 				contractAddress,
 				new Permission(typeof(AddPermissionAction)),
 				contractAddress);
@@ -57,7 +56,6 @@ namespace StrongForce.Core.Tests
 			this.registry.RegisterContract(contract);
 			var numberPermission = new Permission(typeof(SetFavoriteNumberAction));
 			var addPermissionAction = new AddPermissionAction(
-				string.Empty,
 				contractAddress,
 				numberPermission,
 				permissionManager);
@@ -75,13 +73,11 @@ namespace StrongForce.Core.Tests
 			this.registry.RegisterContract(contract);
 			var numberPermission = new Permission(typeof(SetFavoriteNumberAction));
 			var addPermissionAction = new AddPermissionAction(
-				string.Empty,
 				contractAddress,
 				numberPermission,
 				permissionManager);
 
 			var removeAddPermissionAction = new RemovePermissionAction(
-				string.Empty,
 				contractAddress,
 				numberPermission,
 				new AddressWildCard() { permissionManager },
@@ -101,9 +97,7 @@ namespace StrongForce.Core.Tests
 			Contract contract = new PermittedFavoriteNumberContract(contractAddress, permissionManager);
 			this.registry.RegisterContract(contract);
 
-			var addPermissionAction = new Action(
-				string.Empty,
-				contractAddress);
+			var addPermissionAction = new Action(contractAddress);
 
 			Assert.Throws<NoPermissionException>(
 				() => this.registry.HandleSendAction(addPermissionAction, permissionManager));
@@ -118,7 +112,6 @@ namespace StrongForce.Core.Tests
 			this.registry.RegisterContract(contract);
 			var permission = new Permission(typeof(Action));
 			var addPermissionAction = new AddPermissionAction(
-				string.Empty,
 				contractAddress,
 				permission,
 				permissionManager);
@@ -127,7 +120,6 @@ namespace StrongForce.Core.Tests
 
 			AnyWildCard anyWildCard = new AnyWildCard();
 			addPermissionAction = new AddPermissionAction(
-				string.Empty,
 				contractAddress,
 				permission,
 				anyWildCard);
@@ -145,7 +137,6 @@ namespace StrongForce.Core.Tests
 			this.registry.RegisterContract(contract);
 			var permission = new Permission(typeof(Action));
 			var addPermissionAction = new AddPermissionAction(
-				string.Empty,
 				contractAddress,
 				permission,
 				permissionManager);
@@ -153,7 +144,6 @@ namespace StrongForce.Core.Tests
 			this.registry.HandleSendAction(addPermissionAction, permissionManager);
 
 			var updatePermissionAction = new UpdatePermissionAction(
-				string.Empty,
 				contractAddress,
 				new AddressWildCard() { permissionManager },
 				new AddressWildCard() { contractAddress },
@@ -176,7 +166,6 @@ namespace StrongForce.Core.Tests
 			this.registry.RegisterContract(contract);
 			var permission = new Permission(typeof(Action));
 			var addPermissionAction = new AddPermissionAction(
-				string.Empty,
 				contractAddress,
 				permission,
 				permissionManager);
@@ -187,7 +176,6 @@ namespace StrongForce.Core.Tests
 			Assert.True(contract.CheckPermission(permissionManager, permission, contractAddress));
 
 			var updatePermissionAction = new UpdatePermissionAction(
-				string.Empty,
 				contractAddress,
 				new AddressWildCard() { permissionManager },
 				new AddressWildCard() { contractAddress },
@@ -211,7 +199,6 @@ namespace StrongForce.Core.Tests
 			var permission = new Permission(typeof(Action));
 			Address permitedAddress = this.addressFactory.Create();
 			var addPermissionAction = new AddPermissionAction(
-				string.Empty,
 				contractAddress,
 				permission,
 				new AddressWildCard() { permissionManager, permitedAddress });
@@ -220,7 +207,6 @@ namespace StrongForce.Core.Tests
 
 			AnyWildCard anyWildCard = new AnyWildCard();
 			var updatePermissionAction = new UpdatePermissionAction(
-				string.Empty,
 				contractAddress,
 				new AddressWildCard() { permissionManager, permitedAddress },
 				new AddressWildCard() { contractAddress },
@@ -243,7 +229,6 @@ namespace StrongForce.Core.Tests
 			Address nextAddress1 = this.addressFactory.Create();
 			Address nextAddress2 = this.addressFactory.Create();
 			var addPermissionAction = new AddPermissionAction(
-				string.Empty,
 				contractAddress,
 				permission,
 				new AddressWildCard() { permissionManager },
@@ -253,7 +238,6 @@ namespace StrongForce.Core.Tests
 
 			AnyWildCard anyWildCard = new AnyWildCard();
 			var updatePermissionAction = new UpdatePermissionAction(
-				string.Empty,
 				contractAddress,
 				new AddressWildCard() { permissionManager },
 				new AddressWildCard() { nextAddress1, nextAddress2 },
@@ -278,7 +262,6 @@ namespace StrongForce.Core.Tests
 			var anyWildCard = new AnyWildCard();
 
 			var addPermissionAction = new AddPermissionAction(
-				string.Empty,
 				contractAddress,
 				permission,
 				new AddressWildCard() { permissionManager });
@@ -287,7 +270,6 @@ namespace StrongForce.Core.Tests
 			Assert.True(contract.CheckPermission(permissionManager, permission, contractAddress));
 
 			addPermissionAction = new AddPermissionAction(
-				string.Empty,
 				contractAddress,
 				permission,
 				new AddressWildCard() { permissionManager },
@@ -297,7 +279,6 @@ namespace StrongForce.Core.Tests
 			Assert.True(contract.CheckPermission(permissionManager, permission, this.addressFactory.Create()));
 
 			var removePermissionAction = new RemovePermissionAction(
-				string.Empty,
 				contractAddress,
 				permission,
 				new AddressWildCard() { permissionManager },

@@ -9,13 +9,12 @@ namespace StrongForce.Core.Permissions
 		public List<TracingElement> BfsAddresses;
 
 		public TracingBulletAction(
-			string hash,
 			Address target,
 			Action action,
 			Action<List<Stack<Address>>, Action> returnWais,
 			Stack<Address> predecessors,
 			ref List<TracingElement> bfsAddresses)
-			: base(hash, target)
+			: base(target)
 		{
 			this.TracingAction = action;
 			this.CallBack = returnWais;
