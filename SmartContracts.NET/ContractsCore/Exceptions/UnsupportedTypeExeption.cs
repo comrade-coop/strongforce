@@ -8,7 +8,7 @@ namespace ContractsCore.Exceptions
 	{
 		public UnsupportedTypeExeption(object origin, object type, string method)
 			: base(
-				$"\"{type.GetType()}\" is not supported in {origin.GetType()} {method}")
+				$"\"{type?.GetType()}\" is not supported in {origin?.GetType()} {method}")
 		{
 		}
 	}

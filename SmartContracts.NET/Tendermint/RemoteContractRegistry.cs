@@ -24,9 +24,9 @@ namespace Tendermint
 		{
 		}
 
-		public void SendAction(Address target, ContractsCore.Actions.Action action)
+		public void SendAction(ContractsCore.Actions.Action action)
 		{
-			this.HandleAction(action, target);
+			this.HandleAction(action);
 		}
 
 		public IEnumerable<Contract> GetUsedContracts()

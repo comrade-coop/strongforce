@@ -15,13 +15,12 @@ namespace ContractsCore.Contracts
 
 		protected readonly ContractRegistry Registry;
 
-		protected AclPermittedContract(Address address, ContractRegistry registry, Address permissionManager)
-			: this(address, registry, permissionManager, new AccessControlList())
+		protected AclPermittedContract(ContractRegistry registry, Address permissionManager)
+			: this(registry, permissionManager, new AccessControlList())
 		{
 		}
 
 		protected AclPermittedContract(
-			Address address,
 			ContractRegistry registry,
 			Address permissionManager,
 			AccessControlList acl)

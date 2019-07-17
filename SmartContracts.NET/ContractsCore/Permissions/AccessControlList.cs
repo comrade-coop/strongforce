@@ -18,7 +18,7 @@ namespace ContractsCore.Permissions
 		{
 		}
 
-		public List<Address> GetPermittedAddresses(Permission permission, Address target)
+		public IEnumerable<Address> GetPermittedAddresses(Permission permission, Address target)
 		{
 			Dictionary<WildCardSet, WildCardSet> WildCardsSets = this.PermissionsToWildCards[permission];
 			List<Address> members = new List<Address>();

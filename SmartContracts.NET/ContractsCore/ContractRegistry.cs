@@ -47,21 +47,23 @@ namespace ContractsCore
 			throw new NotImplementedException();
 		}
 
-		public void RegisterContract(Contract contract)
+		public Address RegisterContract(Contract contract)
 		{
 			if (contract == null)
 			{
 				throw new ArgumentNullException(nameof(contract));
 			}
 
-			Address address = contract.Address;
+			contract.Address = this.addressFactory.Create();
 			this.SetContract(contract);
 
 			contract.Send += (_, actionArgs) => this.HandleSendActionEvent(contract.Address, actionArgs);
 			contract.Forward += (_, actionArgs) => this.HandleForwardActionEvent(contract.Address, actionArgs);
+
+			return contract.Address;
 		}
 
-		protected bool HandleAction(Action action, Address targetAddress)
+		protected bool HandleAction(Action action)
 		{
 			if (action.GetType() == typeof(CreateContractAction))
 			{
@@ -76,12 +78,12 @@ namespace ContractsCore
 			}
 			else
 			{
-				if (targetAddress == null)
+				if (action.Target == null)
 				{
 					throw new ArgumentNullException(nameof(action));
 				}
 
-				Contract contract = this.GetContract(targetAddress);
+				Contract contract = this.GetContract(action.Target);
 				return contract?.Receive(action) ?? false;
 			}
 		}
@@ -101,7 +103,7 @@ namespace ContractsCore
 
 			action.Origin = sender as Address;
 			action.Sender = sender as Address;
-			this.HandleAction(actionArgs.Action, action.Target);
+			this.HandleAction(actionArgs.Action);
 		}
 
 		private void HandleForwardActionEvent(object sender, ActionEventArgs actionArgs)
@@ -123,7 +125,7 @@ namespace ContractsCore
 
 			action.Sender = sender as Address;
 			action.ForwardedAction.Sender = sender as Address;
-			this.HandleAction(action, action.Target);
+			this.HandleAction(action);
 		}
 	}
 }

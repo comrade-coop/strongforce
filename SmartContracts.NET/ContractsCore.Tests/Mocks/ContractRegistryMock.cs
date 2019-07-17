@@ -7,7 +7,8 @@ namespace ContractsCore.Tests.Mocks
 {
 	class ContractRegistryMock : ContractRegistry
 	{
-		public ContractRegistryMock(object initialState = null) : base(initialState)
+		public ContractRegistryMock(object initialState = null)
+			: base(initialState)
 		{
 		}
 
@@ -15,7 +16,7 @@ namespace ContractsCore.Tests.Mocks
 		{
 			action.Origin = sender;
 			action.Sender = sender;
-			return this.HandleAction(action, action.Target);
+			return this.HandleAction(action);
 		}
 	}
 }

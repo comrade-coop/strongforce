@@ -22,11 +22,11 @@ namespace Tendermint
 		{
 			SerializationBinder = new FilteredSerializationBinder()
 			{
-				WhitelistedBaseTypes = new HashSet<Type> { typeof(Action), typeof(Address) },
-				BlacklistedTypes = new HashSet<Type> { typeof(TracingBulletAction) },
+				WhitelistedBaseTypes = new HashSet<Type> {typeof(Action), typeof(Address)},
+				BlacklistedTypes = new HashSet<Type> {typeof(TracingBulletAction)},
 			},
 			TypeNameHandling = TypeNameHandling.Auto,
-			Converters = new List<JsonConverter> { new AddressJsonConverter() },
+			Converters = new List<JsonConverter> {new AddressJsonConverter()},
 		};
 
 		private JsonSerializerSettings contractSerializationSettings = new JsonSerializerSettings()
@@ -55,7 +55,8 @@ namespace Tendermint
 
 		public byte[] SerializeContract(Contract contract)
 		{
-			var serialized = JsonConvert.SerializeObject(contract, typeof(Contract), this.contractSerializationSettings);
+			var serialized =
+				JsonConvert.SerializeObject(contract, typeof(Contract), this.contractSerializationSettings);
 			return Encoding.UTF8.GetBytes(serialized);
 		}
 
@@ -65,7 +66,8 @@ namespace Tendermint
 			return JsonConvert.DeserializeObject<Contract>(serialized, this.contractSerializationSettings);
 		}
 
-		public override async Task ExecuteAction(IAsyncStreamReader<ActionOrContract> requestStream, IServerStreamWriter<ContractRequest> responseStream, ServerCallContext context)
+		public override async Task ExecuteAction(IAsyncStreamReader<ActionOrContract> requestStream,
+			IServerStreamWriter<ContractRequest> responseStream, ServerCallContext context)
 		{
 			try
 			{
@@ -98,16 +100,17 @@ namespace Tendermint
 					{
 						var address = new Address(actionOrContract.Action.Address.ToByteArray());
 
-						var action = this.DeserializeAction(actionOrContract.Action.Data.ToByteArray());
+						Action action = this.DeserializeAction(actionOrContract.Action.Data.ToByteArray());
 
-						this.logger.LogInformation("Received an action with type: ", action != null ? action.GetType().ToString() : "null");
+						this.logger.LogInformation("Received an action with type: ",
+							action != null ? action.GetType().ToString() : "null");
 
 #pragma warning disable CS4014 // Awaiting will deadlock
 						Task.Run(() =>
 						{
 							try
 							{
-								registry.SendAction(address, action);
+								registry.SendAction(action);
 							}
 							catch (Exception e)
 							{
@@ -123,7 +126,8 @@ namespace Tendermint
 
 						var contract = this.DeserializeContract(actionOrContract.Contract.Data.ToByteArray());
 
-						this.logger.LogTrace("Received a contract with type: ", contract != null ? contract.GetType().ToString() : "null");
+						this.logger.LogTrace("Received a contract with type: ",
+							contract != null ? contract.GetType().ToString() : "null");
 
 						pendingTasks[address].SetResult(contract);
 					}

@@ -9,13 +9,13 @@ namespace ContractsCore.Tests.Mocks
 {
 	public class PermittedFavoriteNumberContract : AclPermittedContract
 	{
-		public PermittedFavoriteNumberContract(Address address, ContractRegistry registry, Address permissionManager)
-			: base(address, registry, permissionManager)
+		public PermittedFavoriteNumberContract(ContractRegistry registry, Address permissionManager)
+			: base(registry, permissionManager)
 		{
 		}
 
-		public PermittedFavoriteNumberContract(Address address, ContractRegistry registry, Address permissionManager, AccessControlList acl)
-			: base(address, registry, permissionManager, acl)
+		public PermittedFavoriteNumberContract(ContractRegistry registry, Address permissionManager, AccessControlList acl)
+			: base(registry, permissionManager, acl)
 		{
 		}
 

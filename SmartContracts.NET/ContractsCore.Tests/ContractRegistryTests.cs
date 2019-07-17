@@ -21,12 +21,11 @@ namespace ContractsCore.Tests
 		public void RegisterContract_WhenPassedNewContract_AddsItCorrectly()
 		{
 			var registry = new ContractRegistry();
-			Address contractAddress = this.addressFactory.Create();
 			Contract contract = new FavoriteNumberContract();
 
-			registry.RegisterContract(contract);
+			Address address = registry.RegisterContract(contract);
 
-			Assert.Equal(contract, registry.GetContract(contractAddress));
+			Assert.Equal(contract, registry.GetContract(address));
 		}
 
 		[Fact]
@@ -98,17 +97,17 @@ namespace ContractsCore.Tests
 		}
 
 		[Fact]
-		public void HandleAction_WhenPassedActionWithNonExistentAddress_ReturnsFalse()
+		public void HandleAction_WhenPassedActionWithNonExistentAddress_Throws()
 		{
 			var registry = new ContractRegistry();
 			Address contractAddress = this.addressFactory.Create();
 			var contract = new FavoriteNumberContract();
 
 			registry.RegisterContract(contract);
-			Address address = this.addressFactory.Create();
 			var action = new SetFavoriteNumberAction(
 				string.Empty,
-				null, 50);
+				null,
+				50);
 
 			Assert.Throws<ArgumentNullException>(() => contract.SetNumberInvoke(action));
 		}
