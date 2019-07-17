@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+
 namespace StrongForce.Core.Permissions
 {
 	public class RemovePermissionAction : Action
@@ -5,18 +7,14 @@ namespace StrongForce.Core.Permissions
 		public RemovePermissionAction(
 			Address target,
 			Permission permission,
-			IWildCard permittedAddress,
-			IWildCard receiver)
+			HashSet<Address> permittedAddress)
 			: base(target)
 		{
 			this.PermittedAddress = permittedAddress;
-			this.Receiver = receiver;
 			this.Permission = permission;
 		}
 
-		public IWildCard PermittedAddress { get; }
-
-		public IWildCard Receiver { get; }
+		public HashSet<Address> PermittedAddress { get; }
 
 		public Permission Permission { get; }
 	}

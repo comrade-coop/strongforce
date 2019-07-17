@@ -8,7 +8,7 @@ namespace StrongForce.Core.Permissions
 	public abstract class AclPermittedContract : PermittedContract
 	{
 		protected AclPermittedContract(Address address, Address permissionManager)
-			: this(address, permissionManager, new AccessControlList())
+			: this(address, permissionManager, new AccessControlList(null))
 		{
 		}
 
@@ -155,12 +155,12 @@ namespace StrongForce.Core.Permissions
 
 		protected override void HandleRemovePermissionAction(RemovePermissionAction action)
 		{
-			this.Acl.RemovePermission(action.PermittedAddress, action.Permission, action.Receiver);
+			this.Acl.RemovePermission(action.PermittedAddress, action.Permission);
 		}
 
 		protected void HandleUpdatePermissionAction(UpdatePermissionAction action)
 		{
-			this.Acl.UpdatePermission(action.OldPermittedAddress, action.OldReceiver, action.Permission, action.NewPermittedAddress, action.NewReceiver);
+			this.Acl.UpdatePermission(action.OldPermittedAddress, action.Permission, action.NewPermittedAddress, action.NewReceiver);
 		}
 
 		private void ConfigurePermissionManager(Address permissionManager)

@@ -6,8 +6,8 @@ namespace StrongForce.Core.Tests.Mocks
 {
 	public class PermittedFavoriteNumberContract : AclPermittedContract
 	{
-		public PermittedFavoriteNumberContract(Address address, Address permissionManager)
-			: this(address, permissionManager, new AccessControlList())
+		public PermittedFavoriteNumberContract(Address address, Address anyAddress, Address permissionManager)
+			: this(address, permissionManager, new AccessControlList(anyAddress))
 		{
 		}
 

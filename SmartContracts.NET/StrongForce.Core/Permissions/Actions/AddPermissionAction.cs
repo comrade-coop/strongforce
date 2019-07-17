@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 
 namespace StrongForce.Core.Permissions
 {
@@ -7,12 +8,12 @@ namespace StrongForce.Core.Permissions
 		public AddPermissionAction(
 			Address target,
 			Permission permission,
-			IWildCard permittedAddress,
-			IWildCard receiver = null)
+			HashSet<Address> permittedAddress,
+			HashSet<Address> receiver = null)
 			: base(target)
 		{
 			this.PermittedAddress = permittedAddress;
-			this.Receiver = receiver ?? new AddressWildCard() { target };
+			this.Receiver = receiver ?? new HashSet<Address> { target };
 			this.Permission = permission;
 		}
 
@@ -23,14 +24,14 @@ namespace StrongForce.Core.Permissions
 			Address receiver = null)
 			: base(target)
 		{
-			this.PermittedAddress = new AddressWildCard() { permittedAddress };
-			this.Receiver = receiver != null ? new AddressWildCard() { receiver } : new AddressWildCard() { target };
+			this.PermittedAddress = new HashSet<Address> { permittedAddress };
+			this.Receiver = receiver != null ? new HashSet<Address> { receiver } : new HashSet<Address> { target };
 			this.Permission = permission;
 		}
 
-		public IWildCard PermittedAddress { get; }
+		public HashSet<Address> PermittedAddress { get; }
 
-		public IWildCard Receiver { get; }
+		public HashSet<Address> Receiver { get; }
 
 		public Permission Permission { get; }
 
