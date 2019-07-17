@@ -19,7 +19,7 @@ namespace Tendermint.Tests
 			var registry = new RemoteContractRegistry(address =>
 			{
 				count++;
-				return new DummyContract(address);
+				return new DummyContract();
 			});
 
 			// Repeat a few times to make sure it actually caches Contracts
@@ -42,7 +42,7 @@ namespace Tendermint.Tests
 			var registry = new RemoteContractRegistry(address =>
 			{
 				count++;
-				return new DummyContract(address);
+				return new DummyContract();
 			});
 
 			for (var r = 0; r < 3; r++)
@@ -66,7 +66,7 @@ namespace Tendermint.Tests
 			var messageCount = 10;
 			var registry = new RemoteContractRegistry(address =>
 			{
-				return new DummyContract(address);
+				return new DummyContract();
 			});
 
 			for (var r = 0; r < 3; r++)

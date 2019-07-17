@@ -11,20 +11,23 @@ namespace ContractsCore.Contracts
 {
 	public abstract class AclPermittedContract : PermittedContract
 	{
-		protected readonly AccessControlList acl;
+		protected readonly AccessControlList Acl;
 
-		protected readonly ContractRegistry registry;
+		protected readonly ContractRegistry Registry;
 
 		protected AclPermittedContract(Address address, ContractRegistry registry, Address permissionManager)
 			: this(address, registry, permissionManager, new AccessControlList())
 		{
 		}
 
-		protected AclPermittedContract(Address address, ContractRegistry registry, Address permissionManager, AccessControlList acl)
-			: base(address)
+		protected AclPermittedContract(
+			Address address,
+			ContractRegistry registry,
+			Address permissionManager,
+			AccessControlList acl)
 		{
-			this.acl = acl;
-			this.registry = registry;
+			this.Acl = acl;
+			this.Registry = registry;
 			this.ConfigurePermissionManager(permissionManager);
 		}
 
@@ -40,11 +43,13 @@ namespace ContractsCore.Contracts
 			switch (action)
 			{
 				case AddPermissionExecutorAction permissionAction:
-					this.acl.AddPermissionExecutor(permissionAction.PermittedAddress, permissionAction.Permission, permissionAction.NextAddress);
+					this.Acl.AddPermissionExecutor(permissionAction.PermittedAddress, permissionAction.Permission,
+						permissionAction.NextAddress);
 					return true;
 
 				case AddPermissionNextAddressAction permissionAction:
-					this.acl.AddPermissionNextAddress(permissionAction.PermittedAddress, permissionAction.Permission, permissionAction.NextAddress);
+					this.Acl.AddPermissionNextAddress(permissionAction.PermittedAddress, permissionAction.Permission,
+						permissionAction.NextAddress);
 					return true;
 
 				case AddPermissionAction permissionAction:
@@ -52,11 +57,13 @@ namespace ContractsCore.Contracts
 					return true;
 
 				case RemovePermissionExecutorAction permissionAction:
-					this.acl.RemovePermissionExecutor(permissionAction.PermittedAddress, permissionAction.Permission, permissionAction.NextAddress);
+					this.Acl.RemovePermissionExecutor(permissionAction.PermittedAddress, permissionAction.Permission,
+						permissionAction.NextAddress);
 					return true;
 
 				case RemovePermissionNextAddressAction permissionAction:
-					this.acl.RemovePermissionNextAddress(permissionAction.PermittedAddress, permissionAction.Permission, permissionAction.NextAddress);
+					this.Acl.RemovePermissionNextAddress(permissionAction.PermittedAddress, permissionAction.Permission,
+						permissionAction.NextAddress);
 					return true;
 
 				case RemovePermissionAction permissionAction:
@@ -101,6 +108,7 @@ namespace ContractsCore.Contracts
 				action.TracingAction.Origin = action.Origin;
 				action.TracingAction.Sender = action.Sender;
 			}
+
 			// TODO replace string.Empty
 			Permission permission = new Permission(action.TracingAction.GetType());
 
@@ -108,8 +116,9 @@ namespace ContractsCore.Contracts
 			{
 				this.FindBulletPaths(action);
 			}
-			else if (this.acl.HasPermission(action.TracingAction.Origin, permission, this.Address))
-			{ // Path Found
+			else if (this.Acl.HasPermission(action.TracingAction.Origin, permission, this.Address))
+			{
+				// Path Found
 				TracingElement current = new TracingElement(this.Address, action.Predecessors);
 				var a = action.BfsAddresses.FirstOrDefault(x => x.Equals(current));
 				a.IsWay = true;
@@ -129,9 +138,10 @@ namespace ContractsCore.Contracts
 			for (int i = 0; i < bfsAddresses.Count; i++)
 			{
 				TracingElement couple = bfsAddresses.Skip(i).First();
-				Contract currentContract = this.registry.GetContract(couple.Address);
-				Stack<Address> predecessors = couple.Way ?? new Stack<Address>(new[] { this.Address });
-				TracingBulletAction newAction = new TracingBulletAction(string.Empty, couple.Address, action.TracingAction,
+				Contract currentContract = this.Registry.GetContract(couple.Address);
+				Stack<Address> predecessors = couple.Way ?? new Stack<Address>(new[] {this.Address});
+				TracingBulletAction newAction = new TracingBulletAction(string.Empty, couple.Address,
+					action.TracingAction,
 					null, predecessors, ref bfsAddresses);
 				this.OnSend(newAction);
 			}
@@ -144,7 +154,7 @@ namespace ContractsCore.Contracts
 			ref List<TracingElement> queue)
 		{
 			var permission = new Permission(action.TracingAction.GetType());
-			foreach (var address in this.acl.GetPermittedAddresses(permission, this.Address))
+			foreach (var address in this.Acl.GetPermittedAddresses(permission, this.Address))
 			{
 				var predecessors = new Stack<Address>();
 				if (action.Predecessors != null)
@@ -167,18 +177,22 @@ namespace ContractsCore.Contracts
 
 		private void ConfigurePermissionManager(Address permissionManager)
 		{
-			this.acl.AddPermission(permissionManager, new Permission(typeof(AddPermissionAction)), this.Address);
-			this.acl.AddPermission(permissionManager, new Permission(typeof(RemovePermissionAction)), this.Address);
-			this.acl.AddPermission(permissionManager, new Permission(typeof(AddPermissionExecutorAction)), this.Address);
-			this.acl.AddPermission(permissionManager, new Permission(typeof(RemovePermissionExecutorAction)), this.Address);
-			this.acl.AddPermission(permissionManager, new Permission(typeof(AddPermissionNextAddressAction)), this.Address);
-			this.acl.AddPermission(permissionManager, new Permission(typeof(RemovePermissionNextAddressAction)), this.Address);
+			this.Acl.AddPermission(permissionManager, new Permission(typeof(AddPermissionAction)), this.Address);
+			this.Acl.AddPermission(permissionManager, new Permission(typeof(RemovePermissionAction)), this.Address);
+			this.Acl.AddPermission(permissionManager, new Permission(typeof(AddPermissionExecutorAction)),
+				this.Address);
+			this.Acl.AddPermission(permissionManager, new Permission(typeof(RemovePermissionExecutorAction)),
+				this.Address);
+			this.Acl.AddPermission(permissionManager, new Permission(typeof(AddPermissionNextAddressAction)),
+				this.Address);
+			this.Acl.AddPermission(permissionManager, new Permission(typeof(RemovePermissionNextAddressAction)),
+				this.Address);
 		}
 
 		protected override bool CheckPermission(Action action)
 		{
 			var permission = new Permission(action.GetType());
-			if (!this.acl.HasPermission(action.Sender, permission, this.Address))
+			if (!this.Acl.HasPermission(action.Sender, permission, this.Address))
 			{
 				throw new NoPermissionException(this, action.Sender, permission);
 			}
@@ -188,12 +202,12 @@ namespace ContractsCore.Contracts
 
 		protected override void HandleAddPermissionAction(AddPermissionAction action)
 		{
-			this.acl.AddPermission(action.PermittedAddress, action.Permission, action.NextAddress);
+			this.Acl.AddPermission(action.PermittedAddress, action.Permission, action.NextAddress);
 		}
 
 		protected override void HandleRemovePermissionAction(RemovePermissionAction action)
 		{
-			this.acl.RemovePermission(action.PermittedAddress, action.Permission, action.NextAddress);
+			this.Acl.RemovePermission(action.PermittedAddress, action.Permission, action.NextAddress);
 		}
 	}
 }

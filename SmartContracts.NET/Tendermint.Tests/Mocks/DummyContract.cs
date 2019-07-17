@@ -8,11 +8,6 @@ namespace Tendermint.Tests.Mocks
 {
 	public class DummyContract : Contract
 	{
-		public DummyContract(Address address)
-			: base(address)
-		{
-		}
-
 		protected override object GetState() => new object { };
 
 		protected override bool HandleReceivedAction(ContractsCore.Actions.Action action)

@@ -45,7 +45,7 @@ namespace ContractsCore.Tests.Mocks
 
 		public bool CheckPermission(object address, Permission permission, object target)
 		{
-			return this.acl.HasPermission(address, permission, target);
+			return this.Acl.HasPermission(address, permission, target);
 		}
 
 		public bool GenerateActionAndFindPath(Address target, int num)

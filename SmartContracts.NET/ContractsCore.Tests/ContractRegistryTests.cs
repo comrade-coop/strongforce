@@ -22,7 +22,7 @@ namespace ContractsCore.Tests
 		{
 			var registry = new ContractRegistry();
 			Address contractAddress = this.addressFactory.Create();
-			Contract contract = new FavoriteNumberContract(contractAddress);
+			Contract contract = new FavoriteNumberContract();
 
 			registry.RegisterContract(contract);
 
@@ -34,8 +34,8 @@ namespace ContractsCore.Tests
 		{
 			var registry = new ContractRegistry();
 			Address contractsAddress = this.addressFactory.Create();
-			Contract firstContract = new FavoriteNumberContract(contractsAddress);
-			Contract secondContract = new FavoriteNumberContract(contractsAddress);
+			Contract firstContract = new FavoriteNumberContract();
+			Contract secondContract = new FavoriteNumberContract();
 
 			registry.RegisterContract(firstContract);
 
@@ -71,7 +71,7 @@ namespace ContractsCore.Tests
 			var registry = new ContractRegistry();
 			Address senderAddress = this.addressFactory.Create();
 			Address contractAddress = this.addressFactory.Create();
-			var contract = new FavoriteNumberContract(contractAddress);
+			var contract = new FavoriteNumberContract();
 
 			registry.RegisterContract(contract);
 
@@ -90,7 +90,7 @@ namespace ContractsCore.Tests
 			var registry = new ContractRegistry();
 			Address senderAddress = this.addressFactory.Create();
 			Address contractAddress = this.addressFactory.Create();
-			var contract = new FavoriteNumberContract(contractAddress);
+			var contract = new FavoriteNumberContract();
 
 			registry.RegisterContract(contract);
 
@@ -102,7 +102,7 @@ namespace ContractsCore.Tests
 		{
 			var registry = new ContractRegistry();
 			Address contractAddress = this.addressFactory.Create();
-			var contract = new FavoriteNumberContract(contractAddress);
+			var contract = new FavoriteNumberContract();
 
 			registry.RegisterContract(contract);
 			Address address = this.addressFactory.Create();

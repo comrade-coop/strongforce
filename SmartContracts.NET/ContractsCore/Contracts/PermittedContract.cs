@@ -9,11 +9,6 @@ namespace ContractsCore.Contracts
 {
 	public abstract class PermittedContract : Contract
 	{
-		protected PermittedContract(Address address)
-			: base(address)
-		{
-		}
-
 		protected internal override bool Receive(Action action)
 		{
 			if (action == null)

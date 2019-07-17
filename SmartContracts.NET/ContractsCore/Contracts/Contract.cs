@@ -8,16 +8,11 @@ namespace ContractsCore.Contracts
 {
 	public abstract class Contract
 	{
-		protected Contract(Address address)
-		{
-			this.Address = address;
-		}
-
 		internal event EventHandler<ActionEventArgs> Send;
 
 		internal event EventHandler<ActionEventArgs> Forward;
 
-		public Address Address { get; }
+		public Address Address { get; internal set; }
 
 		protected abstract object GetState();
 

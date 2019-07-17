@@ -1,7 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Data;
-using System.Linq;
 using ContractsCore.Actions;
 using ContractsCore.Contracts;
 using ContractsCore.Events;
@@ -13,10 +11,12 @@ namespace ContractsCore
 	public class ContractRegistry
 	{
 		private readonly IDictionary<Address, Contract> addressesToContracts;
+		private readonly IAddressFactory addressFactory;
 
 		public ContractRegistry(object initialState)
 		{
 			this.addressesToContracts = new SortedDictionary<Address, Contract>();
+			this.addressFactory = new RandomAddressFactory();
 		}
 
 		public ContractRegistry()
@@ -26,14 +26,7 @@ namespace ContractsCore
 
 		public virtual Contract GetContract(Address address)
 		{
-			if (this.addressesToContracts.TryGetValue(address, out var contract))
-			{
-				return contract;
-			}
-			else
-			{
-				return null;
-			}
+			return this.addressesToContracts.TryGetValue(address, out Contract contract) ? contract : null;
 		}
 
 		protected virtual void SetContract(Contract contract)
@@ -62,7 +55,7 @@ namespace ContractsCore
 			}
 
 			Address address = contract.Address;
-			SetContract(contract);
+			this.SetContract(contract);
 
 			contract.Send += (_, actionArgs) => this.HandleSendActionEvent(contract.Address, actionArgs);
 			contract.Forward += (_, actionArgs) => this.HandleForwardActionEvent(contract.Address, actionArgs);
@@ -70,19 +63,33 @@ namespace ContractsCore
 
 		protected bool HandleAction(Action action, Address targetAddress)
 		{
-			if (targetAddress == null)
+			if (action.GetType() == typeof(CreateContractAction))
 			{
-				throw new ArgumentNullException(nameof(action));
-			}
+				var contractAction = (CreateContractAction) action;
+				var contract = (Contract) Activator.CreateInstance(
+					contractAction.ContractType, contractAction.ConstructorArgs);
+				contract.Address = this.addressFactory.Create();
+				this.addressesToContracts[contract.Address] = contract;
+				contractAction.ContractAddress = contract.Address;
 
-			var contract = this.GetContract(targetAddress);
-			return contract != null ? contract.Receive(action) : false;
+				return true;
+			}
+			else
+			{
+				if (targetAddress == null)
+				{
+					throw new ArgumentNullException(nameof(action));
+				}
+
+				Contract contract = this.GetContract(targetAddress);
+				return contract?.Receive(action) ?? false;
+			}
 		}
 
 		private void HandleSendActionEvent(object sender, ActionEventArgs actionArgs)
 		{
 			Action action = actionArgs.Action;
-			if (action == null || action.Target == null)
+			if (action?.Target == null)
 			{
 				throw new ArgumentNullException(nameof(action));
 			}
