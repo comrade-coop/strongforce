@@ -6,81 +6,69 @@ namespace StrongForce.Core.Permissions
 {
 	public class AccessControlList
 	{
-		public IDictionary<Permission, IDictionary<HashSet<Address>, HashSet<Address>>> PermissionsoToSendersToReceivers { get; set; }
+		public IDictionary<Permission, IDictionary<Address, HashSet<Address>>> PermissionsoToReceiverToSenders { get; set; }
 
-		public Address AnyAddressPermitted { get; set; }
+		public AccessControlList(IDictionary<Permission, IDictionary<Address, HashSet<Address>>> initialWildCards)
+			=> this.PermissionsoToReceiverToSenders = initialWildCards;
 
-		public AccessControlList(Address anyAddressPermitted, IDictionary<Permission, IDictionary<HashSet<Address>, HashSet<Address>>> initialWildCards)
-		{
-			this.AnyAddressPermitted = anyAddressPermitted;
-			this.PermissionsoToSendersToReceivers = initialWildCards;
-		}
-
-		public AccessControlList(Address anyAddressPermitted)
-			: this(anyAddressPermitted, new SortedDictionary<Permission, IDictionary<HashSet<Address>, HashSet<Address>>>())
+		public AccessControlList()
+			: this(new SortedDictionary<Permission, IDictionary<Address, HashSet<Address>>>())
 		{
 		}
 
-		public List<Address> GetPermittedAddresses(Permission permission, Address target)
+		public IEnumerable<Address> GetPermittedAddresses(Permission permission, Address target)
 		{
-			IDictionary<HashSet<Address>, HashSet<Address>> sendersToReceivers = this.PermissionsoToSendersToReceivers[permission];
-			List<Address> members = new List<Address>();
-			foreach (var pair in sendersToReceivers)
-			{
-				if (pair.Value.Contains(target))
-				{
-					members = members.Union(pair.Key).ToList();
-				}
-			}
+			var sendersToReceivers = this.PermissionsoToReceiverToSenders[permission];
 
-			return members;
+			return this.PermissionsoToReceiverToSenders[permission][target];
 		}
 
 		public bool HasPermission(Address sender, Permission permission, Address receiver)
 		{
-			if (permission == null || !this.PermissionsoToSendersToReceivers.ContainsKey(permission))
+			if (sender == null || permission == null || receiver == null || !this.PermissionsoToReceiverToSenders.ContainsKey(permission))
 			{
 				return false;
 			}
 
-			var permissionCheck =
-				from pair in this.PermissionsoToSendersToReceivers[permission]
-				where (pair.Key.Contains(sender) && pair.Value.Contains(receiver))
-				|| (pair.Key.Contains(this.AnyAddressPermitted) && pair.Value.Contains(receiver))
-				|| (pair.Key.Contains(this.AnyAddressPermitted) && pair.Value.Contains(this.AnyAddressPermitted))
-				|| (pair.Key.Contains(sender) && pair.Value.Contains(this.AnyAddressPermitted))
-				select pair;
+			var permissionCheck = this.PermissionsoToReceiverToSenders[permission]
+				.Where(pair =>
+					(pair.Key.Equals(receiver) && pair.Value.Contains(sender)) ||
+					(pair.Key.Equals(receiver) && pair.Value.Contains(Address.Null())) ||
+					(pair.Key.Equals(Address.Null()) && pair.Value.Contains(sender)) ||
+					(pair.Key.Equals(Address.Null()) && pair.Value.Contains(Address.Null())))
+				.Select(pair => pair.Value);
 
-			return permissionCheck.Count() > 0;
+			int count = permissionCheck.Count();
+			return count > 0;
 		}
 
-		public bool AddPermission(HashSet<Address> sender, Permission permission, HashSet<Address> receiver)
+		public bool AddPermission(HashSet<Address> sender, Permission permission, Address receiver)
 		{
 			if (permission == null)
 			{
 				return false;
 			}
 
-			if (!this.PermissionsoToSendersToReceivers.ContainsKey(permission))
+			if (!this.PermissionsoToReceiverToSenders.ContainsKey(permission))
 			{
-				this.PermissionsoToSendersToReceivers[permission] =
-					new SortedDictionary<HashSet<Address>, HashSet<Address>>(new AddressHashSetCompararer())
+				this.PermissionsoToReceiverToSenders[permission] =
+					new SortedDictionary<Address, HashSet<Address>>()
 					{
-						{ sender, receiver },
+						{ receiver, sender },
 					};
 				return true;
 			}
 			else
 			{
-				if (this.PermissionsoToSendersToReceivers[permission].ContainsKey(sender))
+				if (this.PermissionsoToReceiverToSenders[permission].ContainsKey(receiver))
 				{
-					HashSet<Address> old = new HashSet<Address>(this.PermissionsoToSendersToReceivers[permission][sender]);
-					this.PermissionsoToSendersToReceivers[permission][sender].UnionWith(receiver);
-					return !old.SetEquals(this.PermissionsoToSendersToReceivers[permission][sender]);
+					HashSet<Address> old = new HashSet<Address>(this.PermissionsoToReceiverToSenders[permission][receiver]);
+					this.PermissionsoToReceiverToSenders[permission][receiver].UnionWith(sender);
+					return !old.SetEquals(this.PermissionsoToReceiverToSenders[permission][receiver]);
 				}
 				else
 				{
-					this.PermissionsoToSendersToReceivers[permission].Add(sender, receiver);
+					this.PermissionsoToReceiverToSenders[permission].Add(receiver, sender);
 				}
 			}
 
@@ -95,37 +83,31 @@ namespace StrongForce.Core.Permissions
 			}
 
 			var senderCard = new HashSet<Address> { sender };
-			var receiverCard = new HashSet<Address> { receiver };
 
-			return this.AddPermission(senderCard, permission, receiverCard);
+			return this.AddPermission(senderCard, permission, receiver);
 		}
 
-		public bool UpdatePermission(HashSet<Address> oldSender, Permission permission, HashSet<Address> newSender, HashSet<Address> newReceiver)
+		public bool RemovePermittedAddress(HashSet<Address> sender, Permission permission, Address receiver)
 		{
-			if (permission == null
-				|| !this.PermissionsoToSendersToReceivers.ContainsKey(permission)
-				|| !this.PermissionsoToSendersToReceivers[permission].ContainsKey(oldSender))
+			if (receiver == null || permission == null || !this.PermissionsoToReceiverToSenders.ContainsKey(permission)
+				|| !this.PermissionsoToReceiverToSenders[permission].ContainsKey(receiver))
 			{
 				return false;
 			}
 
-			if (this.PermissionsoToSendersToReceivers[permission].Remove(oldSender))
-			{
-				this.AddPermission(newSender, permission, newReceiver);
-			}
-
+			this.PermissionsoToReceiverToSenders[permission][receiver].ExceptWith(sender);
 			return true;
 		}
 
-		public bool RemovePermission(HashSet<Address> sender, Permission permission)
+		public bool RemovePermission(Permission permission, Address receiver)
 		{
-			if (permission == null || !this.PermissionsoToSendersToReceivers.ContainsKey(permission)
-				|| !this.PermissionsoToSendersToReceivers[permission].ContainsKey(sender))
+			if (receiver == null || permission == null || !this.PermissionsoToReceiverToSenders.ContainsKey(permission)
+				|| !this.PermissionsoToReceiverToSenders[permission].ContainsKey(receiver))
 			{
 				return false;
 			}
 
-			return this.PermissionsoToSendersToReceivers[permission].Remove(sender);
+			return this.PermissionsoToReceiverToSenders[permission].Remove(receiver);
 		}
 	}
 }

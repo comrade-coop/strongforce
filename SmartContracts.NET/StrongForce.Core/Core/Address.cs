@@ -11,6 +11,11 @@ namespace StrongForce.Core
 			this.Value = value;
 		}
 
+		public static Address Null()
+		{
+			return new Address(new byte[20]);
+		}
+
 		[DataMember]
 		public byte[] Value { get; private set; }
 

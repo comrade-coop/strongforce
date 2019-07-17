@@ -25,7 +25,7 @@ namespace StrongForce.Core.Permissions
 		{
 			switch (action)
 			{
-				case UpdatePermissionAction permissionAction:
+				case RemovePermittedAddressAction permissionAction:
 					this.HandleUpdatePermissionAction(permissionAction);
 					return true;
 
@@ -155,19 +155,19 @@ namespace StrongForce.Core.Permissions
 
 		protected override void HandleRemovePermissionAction(RemovePermissionAction action)
 		{
-			this.Acl.RemovePermission(action.PermittedAddress, action.Permission);
+			this.Acl.RemovePermission(action.Permission, action.Receiver);
 		}
 
-		protected void HandleUpdatePermissionAction(UpdatePermissionAction action)
+		protected void HandleUpdatePermissionAction(RemovePermittedAddressAction action)
 		{
-			this.Acl.UpdatePermission(action.OldPermittedAddress, action.Permission, action.NewPermittedAddress, action.NewReceiver);
+			this.Acl.RemovePermittedAddress(action.PermittedAddress, action.Permission, action.Receiver);
 		}
 
 		private void ConfigurePermissionManager(Address permissionManager)
 		{
 			this.Acl.AddPermission(permissionManager, new Permission(typeof(AddPermissionAction)), this.Address);
 			this.Acl.AddPermission(permissionManager, new Permission(typeof(RemovePermissionAction)), this.Address);
-			this.Acl.AddPermission(permissionManager, new Permission(typeof(UpdatePermissionAction)), this.Address);
+			this.Acl.AddPermission(permissionManager, new Permission(typeof(RemovePermittedAddressAction)), this.Address);
 		}
 	}
 }

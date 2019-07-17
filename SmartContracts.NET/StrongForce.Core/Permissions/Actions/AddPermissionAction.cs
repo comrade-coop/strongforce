@@ -9,11 +9,11 @@ namespace StrongForce.Core.Permissions
 			Address target,
 			Permission permission,
 			HashSet<Address> permittedAddress,
-			HashSet<Address> receiver = null)
+			Address receiver = null)
 			: base(target)
 		{
 			this.PermittedAddress = permittedAddress;
-			this.Receiver = receiver ?? new HashSet<Address> { target };
+			this.Receiver = receiver ?? target;
 			this.Permission = permission;
 		}
 
@@ -25,17 +25,17 @@ namespace StrongForce.Core.Permissions
 			: base(target)
 		{
 			this.PermittedAddress = new HashSet<Address> { permittedAddress };
-			this.Receiver = receiver != null ? new HashSet<Address> { receiver } : new HashSet<Address> { target };
+			this.Receiver = receiver ?? target;
 			this.Permission = permission;
 		}
 
 		public HashSet<Address> PermittedAddress { get; }
 
-		public HashSet<Address> Receiver { get; }
+		public Address Receiver { get; }
 
 		public Permission Permission { get; }
 
-		public static implicit operator AddPermissionAction(UpdatePermissionAction v)
+		public static implicit operator AddPermissionAction(RemovePermittedAddressAction v)
 		{
 			throw new NotImplementedException();
 		}

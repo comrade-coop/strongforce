@@ -21,7 +21,7 @@ namespace StrongForce.Core.Tests
 		{
 			Address contractAddress = this.addressFactory.Create();
 			Address permissionManager = this.addressFactory.Create();
-			var contract = new PermittedFavoriteNumberContract(contractAddress, null, permissionManager);
+			var contract = new PermittedFavoriteNumberContract(contractAddress, permissionManager);
 			this.registry.RegisterContract(contract);
 
 			var addPermissionAction = new AddPermissionAction(
@@ -44,7 +44,7 @@ namespace StrongForce.Core.Tests
 		{
 			Address permissionManager = this.addressFactory.Create();
 			Address contractAddress = this.addressFactory.Create();
-			Contract contract = new PermittedFavoriteNumberContract(contractAddress, null, permissionManager);
+			Contract contract = new PermittedFavoriteNumberContract(contractAddress, permissionManager);
 			this.registry.RegisterContract(contract);
 
 			var addPermissionAction = new Action(contractAddress);

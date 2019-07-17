@@ -9,15 +9,13 @@ namespace StrongForce.Core.Tests
 	{
 		private readonly IAddressFactory addressFactory;
 		private ContractRegistryMock registry;
-		private HashSet<Address> anyWildCard;
-		private Address anyAddress;
+		private Address anyWildCard;
 
 		public TraceBulletTests()
 		{
 			this.addressFactory = new RandomAddressFactory();
 			this.registry = new ContractRegistryMock();
-			this.anyAddress = this.addressFactory.Create();
-			this.anyWildCard = new HashSet<Address> { this.anyAddress };
+			this.anyWildCard = Address.Null();
 		}
 
 		[Fact]
@@ -29,7 +27,7 @@ namespace StrongForce.Core.Tests
 			for (int i = 0; i < 4; i++)
 			{
 				addrs[i] = this.addressFactory.Create();
-				contracts[i] = new PermittedFavoriteNumberContract(addrs[i], this.anyAddress, permissionManager);
+				contracts[i] = new PermittedFavoriteNumberContract(addrs[i], permissionManager);
 				this.registry.RegisterContract(contracts[i]);
 				var addTracingPermissionAction = new AddPermissionAction(
 					 addrs[i], new Permission(typeof(TracingBulletAction)), this.anyWildCard, this.anyWildCard);
@@ -58,7 +56,7 @@ namespace StrongForce.Core.Tests
 			for (int i = 0; i <= 3; i++)
 			{
 				addrs[i] = this.addressFactory.Create();
-				contracts[i] = new PermittedFavoriteNumberContract(addrs[i], this.anyAddress, permissionManager);
+				contracts[i] = new PermittedFavoriteNumberContract(addrs[i], permissionManager);
 				this.registry.RegisterContract(contracts[i]);
 				var addTracingPermissionAction = new AddPermissionAction(
 					 addrs[i], new Permission(typeof(TracingBulletAction)), this.anyWildCard, this.anyWildCard);
@@ -92,7 +90,7 @@ namespace StrongForce.Core.Tests
 			for (int i = 0; i <= 5; i++)
 			{
 				addrs[i] = this.addressFactory.Create();
-				contracts[i] = new PermittedFavoriteNumberContract(addrs[i], this.anyAddress, permissionManager);
+				contracts[i] = new PermittedFavoriteNumberContract(addrs[i], permissionManager);
 				this.registry.RegisterContract(contracts[i]);
 				var addTracingPermissionAction = new AddPermissionAction(
 					 addrs[i], new Permission(typeof(TracingBulletAction)), this.anyWildCard, this.anyWildCard);
@@ -136,7 +134,7 @@ namespace StrongForce.Core.Tests
 			for (int i = 0; i <= 8; i++)
 			{
 				addrs[i] = this.addressFactory.Create();
-				contracts[i] = new PermittedFavoriteNumberContract(addrs[i], this.anyAddress, permissionManager);
+				contracts[i] = new PermittedFavoriteNumberContract(addrs[i], permissionManager);
 				this.registry.RegisterContract(contracts[i]);
 				var addTracingPermissionAction = new AddPermissionAction(
 					 addrs[i], new Permission(typeof(TracingBulletAction)), this.anyWildCard, this.anyWildCard);
@@ -185,7 +183,7 @@ namespace StrongForce.Core.Tests
 			for (int i = 0; i <= 8; i++)
 			{
 				addrs[i] = this.addressFactory.Create();
-				contracts[i] = new PermittedFavoriteNumberContract(addrs[i], this.anyAddress, permissionManager);
+				contracts[i] = new PermittedFavoriteNumberContract(addrs[i], permissionManager);
 				this.registry.RegisterContract(contracts[i]);
 				var addTracingPermissionAction = new AddPermissionAction(
 					 addrs[i], new Permission(typeof(TracingBulletAction)), this.anyWildCard, this.anyWildCard);
@@ -237,7 +235,7 @@ namespace StrongForce.Core.Tests
 			for (int i = 0; i <= 11; i++)
 			{
 				addrs[i] = this.addressFactory.Create();
-				contracts[i] = new PermittedFavoriteNumberContract(addrs[i], this.anyAddress, permissionManager);
+				contracts[i] = new PermittedFavoriteNumberContract(addrs[i], permissionManager);
 				this.registry.RegisterContract(contracts[i]);
 				var addTracingPermissionAction = new AddPermissionAction(
 					 addrs[i], new Permission(typeof(TracingBulletAction)), this.anyWildCard, this.anyWildCard);
