@@ -16,7 +16,7 @@ namespace Tendermint.Tests
 		{
 			var count = 0;
 			var contractCount = 10;
-			var registry = new RemoteContractRegistry(address =>
+			var registry = new RemoteContractRegistry(new RandomAddressFactory(), address =>
 			{
 				count++;
 				return new DummyContract(address);
@@ -27,7 +27,7 @@ namespace Tendermint.Tests
 			{
 				for (var i = 0; i < contractCount; i++)
 				{
-					registry.GetContract(new Address(new byte[] { (byte)i }));
+					registry.GetContract(new Address(new byte[] {(byte) i}));
 				}
 			}
 
@@ -39,7 +39,7 @@ namespace Tendermint.Tests
 		{
 			var count = 0;
 			var messageCount = 10;
-			var registry = new RemoteContractRegistry(address =>
+			var registry = new RemoteContractRegistry(new RandomAddressFactory(), address =>
 			{
 				count++;
 				return new DummyContract(address);
@@ -49,10 +49,10 @@ namespace Tendermint.Tests
 			{
 				for (var i = 0; i < messageCount; i++)
 				{
-					registry.SendAction(new Address(new byte[] { 0, (byte)i }), new DummyAction(
+					registry.SendAction(new Address(new byte[] {0, (byte) i}), new DummyAction(
 						string.Empty,
-						new Address(new byte[] { 0, (byte)i }),
-						new DummyAction(string.Empty, new Address(new byte[] { 1, (byte)i }))));
+						new Address(new byte[] {0, (byte) i}),
+						new DummyAction(string.Empty, new Address(new byte[] {1, (byte) i}))));
 				}
 			}
 
@@ -64,21 +64,20 @@ namespace Tendermint.Tests
 		{
 			var expectedAddresses = new HashSet<Address>();
 			var messageCount = 10;
-			var registry = new RemoteContractRegistry(address =>
-			{
-				return new DummyContract(address);
-			});
+			var registry = new RemoteContractRegistry(
+				new RandomAddressFactory(),
+				address => new DummyContract(address));
 
 			for (var r = 0; r < 3; r++)
 			{
 				for (var i = 0; i < messageCount; i++)
 				{
-					expectedAddresses.Add(new Address(new byte[] { 0, (byte)i }));
-					expectedAddresses.Add(new Address(new byte[] { 1, (byte)i }));
-					registry.SendAction(new Address(new byte[] { 0, (byte)i }), new DummyAction(
+					expectedAddresses.Add(new Address(new byte[] {0, (byte) i}));
+					expectedAddresses.Add(new Address(new byte[] {1, (byte) i}));
+					registry.SendAction(new Address(new byte[] {0, (byte) i}), new DummyAction(
 						string.Empty,
-						new Address(new byte[] { 0, (byte)i }),
-						new DummyAction(string.Empty, new Address(new byte[] { 1, (byte)i }))));
+						new Address(new byte[] {0, (byte) i}),
+						new DummyAction(string.Empty, new Address(new byte[] {1, (byte) i}))));
 				}
 			}
 

@@ -15,7 +15,7 @@ namespace ContractsCore.Tests
 		public PermittedFavoriteNumberContractTests()
 		{
 			this.AddressFactory = new RandomAddressFactory();
-			this.Registry = new ContractRegistryMock();
+			this.Registry = new ContractRegistryMock(this.AddressFactory);
 		}
 
 		[Fact]

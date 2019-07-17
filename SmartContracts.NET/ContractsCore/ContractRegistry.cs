@@ -1,7 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Data;
-using System.Linq;
 using ContractsCore.Actions;
 using ContractsCore.Contracts;
 using ContractsCore.Events;
@@ -12,28 +10,43 @@ namespace ContractsCore
 {
 	public class ContractRegistry
 	{
-		private readonly IDictionary<Address, Contract> addressesToContracts;
+		private static ContractRegistry instance;
 
-		public ContractRegistry(object initialState)
+		private readonly IDictionary<Address, Contract> addressesToContracts;
+		private readonly IAddressFactory addressFactory;
+
+		protected ContractRegistry(IAddressFactory addressFactory, object initialState)
 		{
 			this.addressesToContracts = new SortedDictionary<Address, Contract>();
+			this.addressFactory = addressFactory;
 		}
 
-		public ContractRegistry()
-			: this(new object())
+		protected ContractRegistry(IAddressFactory addressFactory)
+			: this(addressFactory, new object())
 		{
+		}
+
+		public static ContractRegistry Instance
+		{
+			get
+			{
+				if (instance == null)
+				{
+					throw new Exception("Contract Registry has not been instantiated with its dependencies.");
+				}
+
+				return instance;
+			}
+		}
+
+		public static void Initialise(IAddressFactory addressFactory, object initialState = null)
+		{
+			instance = new ContractRegistry(addressFactory, initialState);
 		}
 
 		public virtual Contract GetContract(Address address)
 		{
-			if (this.addressesToContracts.TryGetValue(address, out var contract))
-			{
-				return contract;
-			}
-			else
-			{
-				return null;
-			}
+			return this.addressesToContracts.TryGetValue(address, out Contract contract) ? contract : null;
 		}
 
 		protected virtual void SetContract(Contract contract)
@@ -75,14 +88,15 @@ namespace ContractsCore
 				throw new ArgumentNullException(nameof(action));
 			}
 
-			var contract = this.GetContract(targetAddress);
-			return contract != null ? contract.Receive(action) : false;
+
+			Contract contract = this.GetContract(targetAddress);
+			return contract?.Receive(action) ?? false;
 		}
 
 		private void HandleSendActionEvent(object sender, ActionEventArgs actionArgs)
 		{
 			Action action = actionArgs.Action;
-			if (action == null || action.Target == null)
+			if (action?.Target == null)
 			{
 				throw new ArgumentNullException(nameof(action));
 			}

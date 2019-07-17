@@ -16,7 +16,7 @@ namespace ContractsCore.Tests
 		public PermittedContractTests()
 		{
 			this.AddressFactory = new RandomAddressFactory();
-			this.Registry = new ContractRegistryMock();
+			this.Registry = new ContractRegistryMock(this.AddressFactory);
 		}
 
 		[Fact]
@@ -24,7 +24,8 @@ namespace ContractsCore.Tests
 		{
 			Address permissionManager = this.AddressFactory.Create();
 			Address contractAddress = this.AddressFactory.Create();
-			PermittedFavoriteNumberContract contract = new PermittedFavoriteNumberContract(contractAddress, Registry, permissionManager);
+			PermittedFavoriteNumberContract contract =
+				new PermittedFavoriteNumberContract(contractAddress, Registry, permissionManager);
 
 			var addPermission = new Permission(typeof(AddPermissionAction));
 			var removePermission = new Permission(typeof(RemovePermissionAction));
@@ -48,7 +49,8 @@ namespace ContractsCore.Tests
 				new Permission(typeof(AddPermissionAction)),
 				contractAddress);
 
-			Assert.Throws<NoPermissionException>(() => this.Registry.HandleSendAction(addPermissionAction, contractAddress));
+			Assert.Throws<NoPermissionException>(() =>
+				this.Registry.HandleSendAction(addPermissionAction, contractAddress));
 		}
 
 		[Fact]
@@ -56,7 +58,8 @@ namespace ContractsCore.Tests
 		{
 			Address permissionManager = this.AddressFactory.Create();
 			Address contractAddress = this.AddressFactory.Create();
-			PermittedFavoriteNumberContract contract = new PermittedFavoriteNumberContract(contractAddress, Registry, permissionManager);
+			PermittedFavoriteNumberContract contract =
+				new PermittedFavoriteNumberContract(contractAddress, Registry, permissionManager);
 			this.Registry.RegisterContract(contract);
 			var numberPermission = new Permission(typeof(SetFavoriteNumberAction));
 			var addPermissionAction = new AddPermissionAction(
@@ -74,7 +77,8 @@ namespace ContractsCore.Tests
 		{
 			Address permissionManager = this.AddressFactory.Create();
 			Address contractAddress = this.AddressFactory.Create();
-			PermittedFavoriteNumberContract contract = new PermittedFavoriteNumberContract(contractAddress, Registry, permissionManager);
+			PermittedFavoriteNumberContract contract =
+				new PermittedFavoriteNumberContract(contractAddress, Registry, permissionManager);
 			this.Registry.RegisterContract(contract);
 			var numberPermission = new Permission(typeof(SetFavoriteNumberAction));
 			var addPermissionAction = new AddPermissionAction(
@@ -117,7 +121,8 @@ namespace ContractsCore.Tests
 		{
 			Address permissionManager = this.AddressFactory.Create();
 			Address contractAddress = this.AddressFactory.Create();
-			PermittedFavoriteNumberContract contract = new PermittedFavoriteNumberContract(contractAddress, Registry, permissionManager);
+			PermittedFavoriteNumberContract contract =
+				new PermittedFavoriteNumberContract(contractAddress, Registry, permissionManager);
 			this.Registry.RegisterContract(contract);
 			var permission = new Permission(typeof(Action));
 			var addPermissionAction = new AddPermissionAction(
@@ -143,7 +148,8 @@ namespace ContractsCore.Tests
 		{
 			Address permissionManager = this.AddressFactory.Create();
 			Address contractAddress = this.AddressFactory.Create();
-			PermittedFavoriteNumberContract contract = new PermittedFavoriteNumberContract(contractAddress, Registry, permissionManager);
+			PermittedFavoriteNumberContract contract =
+				new PermittedFavoriteNumberContract(contractAddress, Registry, permissionManager);
 			this.Registry.RegisterContract(contract);
 			var permission = new Permission(typeof(Action));
 			var addPermissionAction = new AddPermissionAction(
@@ -172,7 +178,8 @@ namespace ContractsCore.Tests
 		{
 			Address permissionManager = this.AddressFactory.Create();
 			Address contractAddress = this.AddressFactory.Create();
-			PermittedFavoriteNumberContract contract = new PermittedFavoriteNumberContract(contractAddress, Registry, permissionManager);
+			PermittedFavoriteNumberContract contract =
+				new PermittedFavoriteNumberContract(contractAddress, Registry, permissionManager);
 			this.Registry.RegisterContract(contract);
 			var permission = new Permission(typeof(Action));
 			var addPermissionAction = new AddPermissionAction(
@@ -203,7 +210,8 @@ namespace ContractsCore.Tests
 		{
 			Address permissionManager = this.AddressFactory.Create();
 			Address contractAddress = this.AddressFactory.Create();
-			PermittedFavoriteNumberContract contract = new PermittedFavoriteNumberContract(contractAddress, Registry, permissionManager);
+			PermittedFavoriteNumberContract contract =
+				new PermittedFavoriteNumberContract(contractAddress, Registry, permissionManager);
 			this.Registry.RegisterContract(contract);
 			var permission = new Permission(typeof(Action));
 			Address permitedAddress = this.AddressFactory.Create();
@@ -211,7 +219,7 @@ namespace ContractsCore.Tests
 				string.Empty,
 				contractAddress,
 				permission,
-				new AddressWildCard() { permissionManager, permitedAddress });
+				new AddressWildCard() {permissionManager, permitedAddress});
 
 			this.Registry.HandleSendAction(addPermissionAction, permissionManager);
 
@@ -231,7 +239,8 @@ namespace ContractsCore.Tests
 		{
 			Address permissionManager = this.AddressFactory.Create();
 			Address contractAddress = this.AddressFactory.Create();
-			PermittedFavoriteNumberContract contract = new PermittedFavoriteNumberContract(contractAddress, Registry, permissionManager);
+			PermittedFavoriteNumberContract contract =
+				new PermittedFavoriteNumberContract(contractAddress, Registry, permissionManager);
 			this.Registry.RegisterContract(contract);
 			var permission = new Permission(typeof(Action));
 			Address nextAddress1 = this.AddressFactory.Create();
@@ -241,7 +250,7 @@ namespace ContractsCore.Tests
 				contractAddress,
 				permission,
 				permissionManager,
-				new AddressWildCard() { nextAddress1, nextAddress2 });
+				new AddressWildCard() {nextAddress1, nextAddress2});
 
 			this.Registry.HandleSendAction(addPermissionAction, permissionManager);
 
@@ -262,7 +271,8 @@ namespace ContractsCore.Tests
 		{
 			Address permissionManager = this.AddressFactory.Create();
 			Address contractAddress = this.AddressFactory.Create();
-			PermittedFavoriteNumberContract contract = new PermittedFavoriteNumberContract(contractAddress, Registry, permissionManager);
+			PermittedFavoriteNumberContract contract =
+				new PermittedFavoriteNumberContract(contractAddress, Registry, permissionManager);
 			this.Registry.RegisterContract(contract);
 			var permission = new Permission(typeof(Action));
 			Address address = this.AddressFactory.Create();

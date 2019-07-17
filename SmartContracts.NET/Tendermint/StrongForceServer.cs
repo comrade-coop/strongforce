@@ -18,15 +18,17 @@ namespace Tendermint
 {
 	public class StrongForceServer : StrongForce.StrongForceBase
 	{
+		private readonly IAddressFactory addressFactory;
+
 		private JsonSerializerSettings actionSerializationSettings = new JsonSerializerSettings()
 		{
 			SerializationBinder = new FilteredSerializationBinder()
 			{
-				WhitelistedBaseTypes = new HashSet<Type> { typeof(Action), typeof(Address) },
-				BlacklistedTypes = new HashSet<Type> { typeof(TracingBulletAction) },
+				WhitelistedBaseTypes = new HashSet<Type> {typeof(Action), typeof(Address)},
+				BlacklistedTypes = new HashSet<Type> {typeof(TracingBulletAction)},
 			},
 			TypeNameHandling = TypeNameHandling.Auto,
-			Converters = new List<JsonConverter> { new AddressJsonConverter() },
+			Converters = new List<JsonConverter> {new AddressJsonConverter()},
 		};
 
 		private JsonSerializerSettings contractSerializationSettings = new JsonSerializerSettings()
@@ -39,6 +41,7 @@ namespace Tendermint
 		public StrongForceServer(ILogger<StrongForceServer> logger)
 		{
 			this.logger = logger;
+			this.addressFactory = new RandomAddressFactory();
 		}
 
 		public byte[] SerializeAction(Action action)
@@ -55,7 +58,8 @@ namespace Tendermint
 
 		public byte[] SerializeContract(Contract contract)
 		{
-			var serialized = JsonConvert.SerializeObject(contract, typeof(Contract), this.contractSerializationSettings);
+			var serialized =
+				JsonConvert.SerializeObject(contract, typeof(Contract), this.contractSerializationSettings);
 			return Encoding.UTF8.GetBytes(serialized);
 		}
 
@@ -65,13 +69,14 @@ namespace Tendermint
 			return JsonConvert.DeserializeObject<Contract>(serialized, this.contractSerializationSettings);
 		}
 
-		public override async Task ExecuteAction(IAsyncStreamReader<ActionOrContract> requestStream, IServerStreamWriter<ContractRequest> responseStream, ServerCallContext context)
+		public override async Task ExecuteAction(IAsyncStreamReader<ActionOrContract> requestStream,
+			IServerStreamWriter<ContractRequest> responseStream, ServerCallContext context)
 		{
 			try
 			{
 				var pendingTasks = new Dictionary<Address, TaskCompletionSource<Contract>>();
 
-				var registry = new RemoteContractRegistry((address) =>
+				var registry = new RemoteContractRegistry(this.addressFactory, (address) =>
 				{
 					pendingTasks[address] = new TaskCompletionSource<Contract>();
 					responseStream.WriteAsync(new ContractRequest
@@ -100,7 +105,8 @@ namespace Tendermint
 
 						var action = this.DeserializeAction(actionOrContract.Action.Data.ToByteArray());
 
-						this.logger.LogInformation("Received an action with type: ", action != null ? action.GetType().ToString() : "null");
+						this.logger.LogInformation("Received an action with type: ",
+							action != null ? action.GetType().ToString() : "null");
 
 #pragma warning disable CS4014 // Awaiting will deadlock
 						Task.Run(() =>
@@ -123,7 +129,8 @@ namespace Tendermint
 
 						var contract = this.DeserializeContract(actionOrContract.Contract.Data.ToByteArray());
 
-						this.logger.LogTrace("Received a contract with type: ", contract != null ? contract.GetType().ToString() : "null");
+						this.logger.LogTrace("Received a contract with type: ",
+							contract != null ? contract.GetType().ToString() : "null");
 
 						pendingTasks[address].SetResult(contract);
 					}

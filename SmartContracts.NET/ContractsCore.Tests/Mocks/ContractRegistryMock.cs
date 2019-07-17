@@ -7,7 +7,8 @@ namespace ContractsCore.Tests.Mocks
 {
 	class ContractRegistryMock : ContractRegistry
 	{
-		public ContractRegistryMock(object initialState = null) : base(initialState)
+		public ContractRegistryMock(IAddressFactory addressFactory, object initialState = null)
+			: base(addressFactory, initialState)
 		{
 		}
 

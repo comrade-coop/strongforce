@@ -12,15 +12,18 @@ namespace Tendermint
 		private readonly ISet<Address> contractsUsed;
 		private readonly Func<Address, Contract> contractGetter;
 
-		public RemoteContractRegistry(object initialState, Func<Address, Contract> contractGetter)
-		 : base(initialState)
+		public RemoteContractRegistry(
+			IAddressFactory addressFactory,
+			object initialState,
+			Func<Address, Contract> contractGetter)
+			: base(addressFactory, initialState)
 		{
 			this.contractsUsed = new HashSet<Address>();
 			this.contractGetter = contractGetter;
 		}
 
-		public RemoteContractRegistry(Func<Address, Contract> contractGetter)
-		 : this(new object(), contractGetter)
+		public RemoteContractRegistry(IAddressFactory addressFactory, Func<Address, Contract> contractGetter)
+			: this(addressFactory, new object(), contractGetter)
 		{
 		}
 
