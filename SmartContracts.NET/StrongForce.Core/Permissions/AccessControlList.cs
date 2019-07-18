@@ -30,49 +30,20 @@ namespace StrongForce.Core.Permissions
 				return false;
 			}
 
-			var permissionCheck = this.PermissionsoToReceiverToSenders[permission]
-				.Where(pair =>
-					(pair.Key.Equals(receiver) && pair.Value.Contains(sender)) ||
-					(pair.Key.Equals(receiver) && pair.Value.Contains(Address.Null())) ||
-					(pair.Key.Equals(Address.Null()) && pair.Value.Contains(sender)) ||
-					(pair.Key.Equals(Address.Null()) && pair.Value.Contains(Address.Null())))
-				.Select(pair => pair.Value);
-
-			int count = permissionCheck.Count();
-			return count > 0;
-		}
-
-		public bool AddPermission(HashSet<Address> sender, Permission permission, Address receiver)
-		{
-			if (permission == null)
+			bool check1 = false, check2 = false;
+			this.PermissionsoToReceiverToSenders[permission].TryGetValue(receiver, out HashSet<Address> perm1);
+			this.PermissionsoToReceiverToSenders[permission].TryGetValue(Address.Null(), out HashSet<Address> perm2);
+			if (perm1 != null)
 			{
-				return false;
+				check1 = perm1.Contains(sender) || perm1.Contains(Address.Null());
 			}
 
-			if (!this.PermissionsoToReceiverToSenders.ContainsKey(permission))
+			if (perm2 != null)
 			{
-				this.PermissionsoToReceiverToSenders[permission] =
-					new SortedDictionary<Address, HashSet<Address>>()
-					{
-						{ receiver, sender },
-					};
-				return true;
-			}
-			else
-			{
-				if (this.PermissionsoToReceiverToSenders[permission].ContainsKey(receiver))
-				{
-					HashSet<Address> old = new HashSet<Address>(this.PermissionsoToReceiverToSenders[permission][receiver]);
-					this.PermissionsoToReceiverToSenders[permission][receiver].UnionWith(sender);
-					return !old.SetEquals(this.PermissionsoToReceiverToSenders[permission][receiver]);
-				}
-				else
-				{
-					this.PermissionsoToReceiverToSenders[permission].Add(receiver, sender);
-				}
+				check2 = perm2.Contains(sender) || perm2.Contains(Address.Null());
 			}
 
-			return true;
+			return check1 || check2;
 		}
 
 		public bool AddPermission(Address sender, Permission permission, Address receiver)
@@ -82,12 +53,20 @@ namespace StrongForce.Core.Permissions
 				return false;
 			}
 
-			var senderCard = new HashSet<Address> { sender };
+			if (!this.PermissionsoToReceiverToSenders.ContainsKey(permission))
+			{
+				this.PermissionsoToReceiverToSenders[permission] = new SortedDictionary<Address, HashSet<Address>>();
+			}
 
-			return this.AddPermission(senderCard, permission, receiver);
+			if (!this.PermissionsoToReceiverToSenders[permission].ContainsKey(receiver))
+			{
+				this.PermissionsoToReceiverToSenders[permission].Add(receiver, new HashSet<Address>());
+			}
+
+			return this.PermissionsoToReceiverToSenders[permission][receiver].Add(sender); ;
 		}
 
-		public bool RemovePermittedAddress(HashSet<Address> sender, Permission permission, Address receiver)
+		public bool RemovePermittedAddress(Address sender, Permission permission, Address receiver)
 		{
 			if (receiver == null || permission == null || !this.PermissionsoToReceiverToSenders.ContainsKey(permission)
 				|| !this.PermissionsoToReceiverToSenders[permission].ContainsKey(receiver))
@@ -95,7 +74,7 @@ namespace StrongForce.Core.Permissions
 				return false;
 			}
 
-			this.PermissionsoToReceiverToSenders[permission][receiver].ExceptWith(sender);
+			this.PermissionsoToReceiverToSenders[permission][receiver].Remove(sender);
 			return true;
 		}
 

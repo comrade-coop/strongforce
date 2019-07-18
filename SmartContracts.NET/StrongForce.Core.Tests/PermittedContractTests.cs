@@ -145,7 +145,7 @@ namespace StrongForce.Core.Tests
 			var updatePermissionAction = new AddPermissionAction(
 				contractAddress,
 				permission,
-				new HashSet<Address> { address },
+				address,
 				contractAddress);
 
 			this.registry.HandleSendAction(updatePermissionAction, permissionManager);
@@ -197,14 +197,19 @@ namespace StrongForce.Core.Tests
 			var addPermissionAction = new AddPermissionAction(
 				contractAddress,
 				permission,
-				new HashSet<Address> { permissionManager, permitedAddress });
+				permissionManager);
 
 			this.registry.HandleSendAction(addPermissionAction, permissionManager);
+			addPermissionAction = new AddPermissionAction(
+				contractAddress,
+				permission,
+				permitedAddress);
 
+			this.registry.HandleSendAction(addPermissionAction, permissionManager);
 			var updatePermissionAction = new RemovePermittedAddressAction(
 				contractAddress,
 				permission,
-				new HashSet<Address> { permissionManager },
+				permissionManager,
 				contractAddress);
 
 			this.registry.HandleSendAction(updatePermissionAction, permissionManager);

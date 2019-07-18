@@ -7,7 +7,7 @@ namespace StrongForce.Core.Permissions
 		public RemovePermittedAddressAction(
 			Address target,
 			Permission permission,
-			HashSet<Address> permittedAddress,
+			Address permittedAddress,
 			Address receiver)
 			: base(target)
 		{
@@ -16,7 +16,7 @@ namespace StrongForce.Core.Permissions
 			this.Permission = permission;
 		}
 
-		public HashSet<Address> PermittedAddress { get; }
+		public Address PermittedAddress { get; }
 
 		public Address Receiver { get; }
 
