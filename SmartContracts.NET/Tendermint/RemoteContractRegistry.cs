@@ -23,11 +23,6 @@ namespace Tendermint
 		{
 		}
 
-		public void SendAction(Address target, Action action)
-		{
-			this.HandleAction(action, target);
-		}
-
 		public IEnumerable<Contract> GetUsedContracts()
 		{
 			return this.contractsUsed.Select(x => base.GetContract(x));

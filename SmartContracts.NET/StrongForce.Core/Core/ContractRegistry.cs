@@ -45,8 +45,7 @@ namespace StrongForce.Core
 			Address address = contract.Address;
 			this.SetContract(contract);
 
-			contract.Send += (_, actionArgs) => this.HandleSendActionEvent(contract.Address, actionArgs);
-			contract.Forward += (_, actionArgs) => this.HandleForwardActionEvent(contract.Address, actionArgs);
+			contract.Registry = this;
 		}
 
 		protected virtual void SetContract(Contract contract)
@@ -62,55 +61,15 @@ namespace StrongForce.Core
 			this.addressesToContracts[address] = contract;
 		}
 
-		protected bool HandleAction(Action action, Address targetAddress)
+		public bool HandleAction(Action action)
 		{
-			if (targetAddress == null)
+			if (action.Target == null || action.Sender == null || action.Origin == null)
 			{
 				throw new ArgumentNullException(nameof(action));
 			}
 
-			var contract = this.GetContract(targetAddress);
+			var contract = this.GetContract(action.Target);
 			return contract != null ? contract.Receive(action) : false;
-		}
-
-		private void HandleSendActionEvent(object sender, ActionEventArgs actionArgs)
-		{
-			Action action = actionArgs.Action;
-			if (action == null || action.Target == null)
-			{
-				throw new ArgumentNullException(nameof(action));
-			}
-
-			if (action.Origin != null)
-			{
-				throw new UnknownActionOringException(action);
-			}
-
-			action.Origin = sender as Address;
-			action.Sender = sender as Address;
-			this.HandleAction(actionArgs.Action, action.Target);
-		}
-
-		private void HandleForwardActionEvent(object sender, ActionEventArgs actionArgs)
-		{
-			if (!(actionArgs.Action is ForwardAction action) || action.ForwardedAction == null)
-			{
-				throw new ArgumentNullException(nameof(action));
-			}
-
-			if (action.ForwardedAction.Origin == null)
-			{
-				throw new UnknownActionOringException(action);
-			}
-
-			if (action.Origin == null)
-			{
-				action.Origin = sender as Address;
-			}
-
-			action.Sender = sender as Address;
-			action.ForwardedAction.Sender = sender as Address;
-			this.HandleAction(action, action.Target);
 		}
 	}
 }

@@ -5,14 +5,12 @@ namespace StrongForce.Core
 {
 	public abstract class Contract
 	{
+		internal ContractRegistry Registry;
+
 		protected Contract(Address address)
 		{
 			this.Address = address;
 		}
-
-		internal event EventHandler<ActionEventArgs> Send;
-
-		internal event EventHandler<ActionEventArgs> Forward;
 
 		public Address Address { get; }
 
@@ -35,15 +33,25 @@ namespace StrongForce.Core
 
 		protected virtual void SendAction(Action action)
 		{
-			ActionEventArgs e = new ActionEventArgs(action);
-			this.Send?.Invoke(this, e);
+			if (action == null)
+			{
+				throw new ArgumentNullException();
+			}
+
+			action.Sender = this.Address;
+			action.Origin = this.Address;
+			this.Registry.HandleAction(action);
 		}
 
 		protected virtual void ForwardAction(Action action, Address target, Stack<Address> ways)
 		{
-			ForwardAction forwarded = new ForwardAction(target, action, ways);
-			ActionEventArgs e = new ActionEventArgs(forwarded);
-			this.Forward?.Invoke(this, e);
+			action.Sender = this.Address;
+			ForwardAction forwarded = new ForwardAction(target, action, ways)
+			{
+				Sender = this.Address,
+				Origin = this.Address,
+			};
+			this.Registry.HandleAction(forwarded);
 		}
 	}
 }

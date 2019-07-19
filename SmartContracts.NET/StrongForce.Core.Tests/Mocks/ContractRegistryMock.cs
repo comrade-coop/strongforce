@@ -11,7 +11,7 @@ namespace StrongForce.Core.Tests.Mocks
 		{
 			action.Origin = sender;
 			action.Sender = sender;
-			return this.HandleAction(action, action.Target);
+			return this.HandleAction(action);
 		}
 	}
 }
