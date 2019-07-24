@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using StrongForce.Core.Exceptions;
+using StrongForce.Core.Permissions.Actions;
 
 namespace StrongForce.Core.Permissions
 {
@@ -19,7 +20,7 @@ namespace StrongForce.Core.Permissions
 			this.ConfigurePermissionManager(permissionManager);
 		}
 
-		protected AccessControlList Acl { get; set; }
+		protected AccessControlList Acl { get; }
 
 		protected override bool HandleAction(Action action)
 		{
@@ -34,7 +35,7 @@ namespace StrongForce.Core.Permissions
 					return true;
 
 				case ForwardAction forwardAction:
-					this.HandleActionForward(forwardAction);
+					this.HandleForwardAction(forwardAction);
 					return true;
 
 				default:
@@ -42,21 +43,25 @@ namespace StrongForce.Core.Permissions
 			}
 		}
 
-		protected void HandleActionForward(ForwardAction forwardAction)
+		protected virtual void HandleForwardAction(ForwardAction action)
 		{
-			if (forwardAction == null || forwardAction.Target == null)
+			if (action.Target == null)
 			{
-				throw new ArgumentNullException(nameof(forwardAction));
+				throw new ArgumentNullException(nameof(action.Target));
 			}
 
-			if (forwardAction.ForwardedAction.Target.Equals(this.Address))
+			Action forwarded = action.ForwardedAction;
+
+			if (action.ForwardingPath.Count == 1)
 			{
-				this.Receive(forwardAction.ForwardedAction);
+				forwarded.Sender = this.Address;
+				this.SendAction(forwarded);
 			}
 			else
 			{
-				Address target = forwardAction.WayForForwarding.Pop();
-				this.ForwardAction(forwardAction.ForwardedAction, target, forwardAction.WayForForwarding);
+				Address nextAddress = action.ForwardingPath.Pop();
+				action.Target = nextAddress;
+				this.SendAction(action);
 			}
 		}
 
@@ -68,22 +73,28 @@ namespace StrongForce.Core.Permissions
 				action.TracingAction.Sender = action.Sender;
 			}
 
-			Permission permission = new Permission(action.TracingAction.GetType());
+			var permission = new Permission(action.TracingAction.GetType());
 
-			if (action.TracingAction.Target == this.Address)
+			if (Equals(action.TracingAction.Target, this.Address))
 			{
 				this.FindBulletPaths(action);
 			}
 			else if (this.Acl.HasPermission(action.TracingAction.Origin, permission, this.Address))
-			{ // Path Found
-				TracingElement current = new TracingElement(this.Address, action.Predecessors);
-				var a = action.BfsAddresses.FirstOrDefault(x => x.Equals(current));
-				a.IsWay = true;
-				a.Way.Push(this.Address);
+			{
+				// Path Found
+				var current = new TracingElement(this.Address, action.Predecessors);
+				TracingElement a = action.SearchAddresses.FirstOrDefault(x => x.Equals(current));
+				if (a == null)
+				{
+					return;
+				}
+
+				a.IsPath = true;
+				a.Path.Push(this.Address);
 			}
 			else
 			{
-				this.GetAllowedForForwarding(action, ref action.BfsAddresses);
+				this.GetAllowedForForwarding(action, action.SearchAddresses);
 			}
 		}
 
@@ -91,29 +102,31 @@ namespace StrongForce.Core.Permissions
 		{
 			var bfsAddresses = new List<TracingElement>();
 
-			this.GetAllowedForForwarding(action, ref bfsAddresses);
+			this.GetAllowedForForwarding(action, bfsAddresses);
 			for (int i = 0; i < bfsAddresses.Count; i++)
 			{
 				TracingElement couple = bfsAddresses.Skip(i).First();
 
-				Stack<Address> predecessors = couple.Way ?? new Stack<Address>(new[] { this.Address });
-				TracingBulletAction newAction = new TracingBulletAction(
+				Stack<Address> predecessors = couple.Path ?? new Stack<Address>(new[] {this.Address});
+				var newAction = new TracingBulletAction(
 					couple.Address,
 					action.TracingAction,
 					null,
 					predecessors,
-					ref bfsAddresses);
+					bfsAddresses);
 				this.SendAction(newAction);
 			}
 
-			List<Stack<Address>> addressQuery = bfsAddresses.Where(x => x.IsWay).Select(x => x.Way).ToList();
+			List<Stack<Address>> addressQuery = bfsAddresses.Where(x => x.IsPath).Select(x => x.Path).ToList();
 			action.CallBack(addressQuery, action.TracingAction);
 		}
 
-		protected virtual List<TracingElement> GetAllowedForForwarding(TracingBulletAction action, ref List<TracingElement> queue)
+		protected virtual List<TracingElement> GetAllowedForForwarding(
+			TracingBulletAction action,
+			List<TracingElement> searchAddresses)
 		{
 			var permission = new Permission(action.TracingAction.GetType());
-			foreach (var address in this.Acl.GetPermittedAddresses(permission, this.Address))
+			foreach (Address address in this.Acl.GetPermittedAddresses(permission, this.Address))
 			{
 				var predecessors = new Stack<Address>();
 				if (action.Predecessors != null)
@@ -123,13 +136,13 @@ namespace StrongForce.Core.Permissions
 
 				if (!predecessors.Contains(this.Address))
 				{
-					queue.Add(new TracingElement(address, predecessors, false));
+					searchAddresses.Add(new TracingElement(address, predecessors, false));
 				}
 
 				predecessors.Push(this.Address);
 			}
 
-			return queue;
+			return searchAddresses;
 		}
 
 		protected override bool CheckPermission(Action action)
@@ -143,7 +156,7 @@ namespace StrongForce.Core.Permissions
 			return true;
 		}
 
-		protected override void BulletTaken(List<Stack<Address>> ways, Action targetAction)
+		protected override void BulletTaken(List<Stack<Address>> paths, Action targetAction)
 		{
 			throw new NotImplementedException();
 		}
@@ -165,9 +178,18 @@ namespace StrongForce.Core.Permissions
 
 		private void ConfigurePermissionManager(Address permissionManager)
 		{
-			this.Acl.AddPermission(permissionManager, new Permission(typeof(AddPermissionAction)), this.Address);
-			this.Acl.AddPermission(permissionManager, new Permission(typeof(RemovePermissionAction)), this.Address);
-			this.Acl.AddPermission(permissionManager, new Permission(typeof(RemovePermittedAddressAction)), this.Address);
+			this.Acl.AddPermission(
+				permissionManager,
+				new Permission(typeof(AddPermissionAction)),
+				this.Address);
+			this.Acl.AddPermission(
+				permissionManager,
+				new Permission(typeof(RemovePermissionAction)),
+				this.Address);
+			this.Acl.AddPermission(
+				permissionManager,
+				new Permission(typeof(RemovePermittedAddressAction)),
+				this.Address);
 		}
 	}
 }

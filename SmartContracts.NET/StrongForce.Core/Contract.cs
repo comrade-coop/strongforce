@@ -1,18 +1,20 @@
 using System;
 using System.Collections.Generic;
+using StrongForce.Core.Permissions.Actions;
 
 namespace StrongForce.Core
 {
 	public abstract class Contract
 	{
-		internal ContractRegistry Registry;
-
 		protected Contract(Address address)
 		{
 			this.Address = address;
 		}
 
+
 		public Address Address { get; }
+
+		internal ContractRegistry Registry { private get; set; }
 
 		internal virtual bool Receive(Action action)
 		{
@@ -31,7 +33,7 @@ namespace StrongForce.Core
 			return false;
 		}
 
-		protected virtual void SendAction(Action action)
+		protected void SendAction(Action action)
 		{
 			if (action == null)
 			{
@@ -43,15 +45,20 @@ namespace StrongForce.Core
 			this.Registry.HandleAction(action);
 		}
 
-		protected virtual void ForwardAction(Action action, Address target, Stack<Address> ways)
+		protected void SendAction(ForwardAction action)
 		{
-			action.Sender = this.Address;
-			ForwardAction forwarded = new ForwardAction(target, action, ways)
+			if (action == null)
 			{
-				Sender = this.Address,
-				Origin = this.Address,
-			};
-			this.Registry.HandleAction(forwarded);
+				throw new ArgumentNullException();
+			}
+
+			if (action.Origin == null)
+			{
+				action.Origin = this.Address;
+			}
+
+			action.Sender = this.Address;
+			this.Registry.HandleAction(action);
 		}
 	}
 }

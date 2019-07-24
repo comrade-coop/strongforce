@@ -6,29 +6,29 @@ namespace StrongForce.Core.Permissions
 {
 	public class TracingElement : IEquatable<TracingElement>
 	{
-		public TracingElement(Address address, Stack<Address> way, bool isWay = false)
+		public TracingElement(Address address, Stack<Address> path, bool isPath = false)
 		{
 			this.Address = address;
-			this.Way = way;
-			this.IsWay = isWay;
+			this.Path = path;
+			this.IsPath = isPath;
 		}
 
 		public Address Address { get; set; }
 
-		public Stack<Address> Way { get; set; }
+		public Stack<Address> Path { get; set; }
 
-		public bool IsWay { get; set; }
+		public bool IsPath { get; set; }
 
 		public bool Equals(TracingElement other)
 		{
-			if (!this.Address.Equals(other.Address) || this.IsWay != other.IsWay || this.Way.Count != other.Way.Count)
+			if (!this.Address.Equals(other.Address) || this.IsPath != other.IsPath || this.Path.Count != other.Path.Count)
 			{
 				return false;
 			}
 
-			foreach (var addr in this.Way)
+			foreach (var addr in this.Path)
 			{
-				if (!other.Way.Contains(addr))
+				if (!other.Path.Contains(addr))
 				{
 					return false;
 				}

@@ -11,6 +11,7 @@ using Newtonsoft.Json;
 using Strongforce;
 using StrongForce.Core;
 using StrongForce.Core.Permissions;
+using StrongForce.Core.Permissions.Actions;
 using Action = StrongForce.Core.Action;
 
 namespace Tendermint

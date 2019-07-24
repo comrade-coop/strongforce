@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using StrongForce.Core.Permissions;
+using StrongForce.Core.Permissions.Actions;
 
 namespace StrongForce.Core.Tests.Mocks
 {
@@ -14,12 +15,12 @@ namespace StrongForce.Core.Tests.Mocks
 		public PermittedFavoriteNumberContract(Address address, Address permissionManager, AccessControlList acl)
 			: base(address, permissionManager, acl)
 		{
-			this.LastWays = new List<List<Address>>();
+			this.LastPaths = new List<List<Address>>();
 		}
 
 		public int Number { get; private set; }
 
-		public List<List<Address>> LastWays { get; set; }
+		public List<List<Address>> LastPaths { get; }
 
 		public bool CheckPermission(Address address, Permission permission, Address target)
 		{
@@ -29,8 +30,7 @@ namespace StrongForce.Core.Tests.Mocks
 		public bool GenerateActionAndFindPath(Address target, int num)
 		{
 			var setNumberAction = new SetFavoriteNumberAction(target, num);
-			var x = new List<TracingElement>();
-			var trace = new TracingBulletAction(target, setNumberAction, this.BulletTaken, null, ref x);
+			var trace = new TracingBulletAction(target, setNumberAction, this.BulletTaken, null);
 			this.SendAction(trace);
 			return true;
 		}
@@ -50,15 +50,19 @@ namespace StrongForce.Core.Tests.Mocks
 			}
 		}
 
-		protected override void BulletTaken(List<Stack<Address>> ways, Action targetAction)
+		protected override void BulletTaken(List<Stack<Address>> paths, Action targetAction)
 		{
-			foreach (var stack in ways)
+			foreach (var stack in paths)
 			{
-				this.LastWays.Add(stack.ToList());
+				this.LastPaths.Add(stack.ToList());
 			}
 
-			Address target = ways[0].Pop();
-			this.ForwardAction(targetAction, target, ways[0]);
+			Address target = paths[0].Pop();
+			var forward = new ForwardAction(
+				target,
+				targetAction,
+				paths[0]);
+			this.SendAction(forward);
 		}
 
 		private void HandleSetNumberAction(SetFavoriteNumberAction favoriteNumberAction)

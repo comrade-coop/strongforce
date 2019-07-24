@@ -11,13 +11,13 @@ namespace StrongForce.Core
 			this.Value = value;
 		}
 
+		[DataMember]
+		public byte[] Value { get; }
+
 		public static Address Null()
 		{
 			return new Address(new byte[20]);
 		}
-
-		[DataMember]
-		public byte[] Value { get; private set; }
 
 		public static Address FromBase64String(string base64String)
 		{

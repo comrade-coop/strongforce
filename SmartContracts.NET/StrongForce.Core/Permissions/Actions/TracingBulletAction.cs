@@ -1,31 +1,30 @@
 using System;
 using System.Collections.Generic;
-using System.Text;
 
-namespace StrongForce.Core.Permissions
+namespace StrongForce.Core.Permissions.Actions
 {
 	public class TracingBulletAction : Action
 	{
-		public List<TracingElement> BfsAddresses;
-
 		public TracingBulletAction(
 			Address target,
 			Action action,
-			Action<List<Stack<Address>>, Action> returnWais,
+			Action<List<Stack<Address>>, Action> returnPaths,
 			Stack<Address> predecessors,
-			ref List<TracingElement> bfsAddresses)
+			List<TracingElement> bfsAddresses = null)
 			: base(target)
 		{
 			this.TracingAction = action;
-			this.CallBack = returnWais;
+			this.CallBack = returnPaths;
 			this.Predecessors = predecessors;
-			this.BfsAddresses = bfsAddresses;
+			this.SearchAddresses = bfsAddresses ?? new List<TracingElement>();
 		}
 
-		public Action TracingAction { get; set; }
+		public List<TracingElement> SearchAddresses { get; }
 
-		public Stack<Address> Predecessors { get; set; }
+		public Action TracingAction { get; }
 
-		public Action<List<Stack<Address>>, Action> CallBack { get; set; }
+		public Stack<Address> Predecessors { get; }
+
+		public Action<List<Stack<Address>>, Action> CallBack { get; }
 	}
 }

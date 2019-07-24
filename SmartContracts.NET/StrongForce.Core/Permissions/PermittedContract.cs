@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using StrongForce.Core.Permissions.Actions;
 
 namespace StrongForce.Core.Permissions
 {
@@ -42,7 +43,7 @@ namespace StrongForce.Core.Permissions
 
 		protected abstract void ReceiveTracingBullet(TracingBulletAction action);
 
-		protected abstract void BulletTaken(List<Stack<Address>> ways, Action targetAction);
+		protected abstract void BulletTaken(List<Stack<Address>> paths, Action targetAction);
 
 		protected abstract bool CheckPermission(Action action);
 
