@@ -8,24 +8,14 @@ namespace StrongForce.Core
 	{
 		private readonly IDictionary<Address, Contract> addressesToContracts;
 
-		public ContractRegistry(object initialState)
+		public ContractRegistry()
 		{
 			this.addressesToContracts = new SortedDictionary<Address, Contract>();
-		}
-
-		public ContractRegistry()
-			: this(new object())
-		{
 		}
 
 		public virtual Contract GetContract(Address address)
 		{
 			return this.addressesToContracts.TryGetValue(address, out Contract contract) ? contract : null;
-		}
-
-		public virtual object GetState()
-		{
-			throw new NotImplementedException();
 		}
 
 		public void RegisterContract(Contract contract)
@@ -36,13 +26,29 @@ namespace StrongForce.Core
 			}
 
 			Address address = contract.Address;
+
 			this.SetContract(contract);
 
-			contract.Registry = this;
+			contract.SendActionEvent += (action) => this.HandleAction(address, action);
 		}
 
 		public bool HandleAction(Action action)
 		{
+			if (action == null)
+			{
+				throw new ArgumentNullException(nameof(action));
+			}
+
+			return this.HandleAction(action.Sender, action);
+		}
+
+		public bool HandleAction(Address from, Action action)
+		{
+			if (action == null)
+			{
+				throw new ArgumentNullException(nameof(action));
+			}
+
 			if (action.Target == null)
 			{
 				throw new ArgumentNullException(nameof(action.Target));
@@ -56,6 +62,11 @@ namespace StrongForce.Core
 			if (action.Origin == null)
 			{
 				throw new ArgumentNullException(nameof(action.Origin));
+			}
+
+			if (!action.Origin.Equals(from))
+			{
+				throw new UnknownActionOriginException(action, from);
 			}
 
 			Contract contract = this.GetContract(action.Target);

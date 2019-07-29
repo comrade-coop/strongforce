@@ -1,5 +1,5 @@
-using StrongForce.Core.Permissions;
 using System.Collections.Generic;
+using StrongForce.Core.Permissions;
 using Xunit;
 
 namespace StrongForce.Core.Tests
@@ -12,7 +12,7 @@ namespace StrongForce.Core.Tests
 		public AccessControlListTests()
 		{
 			this.addressFactory = new RandomAddressFactory();
-			this.anyAddress = Address.Null();
+			this.anyAddress = Address.Null;
 		}
 
 		[Fact]
@@ -108,7 +108,7 @@ namespace StrongForce.Core.Tests
 			Address address = this.addressFactory.Create();
 			var acl = new AccessControlList();
 			var permission = new Permission(typeof(Action));
-			
+
 			Assert.True(acl.AddPermission(address, permission, this.anyAddress));
 			Assert.True(acl.HasPermission(address, permission, address));
 		}

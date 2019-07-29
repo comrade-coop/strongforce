@@ -39,16 +39,19 @@ namespace Tendermint.Tests
 			var registry = new RemoteContractRegistry(address =>
 			{
 				count++;
-				return new DummyContract(address);
+				return new DummyContract(address, Address.Null);
 			});
 
 			for (var r = 0; r < 3; r++)
 			{
 				for (var i = 0; i < messageCount; i++)
 				{
+					var addressA = new Address(new byte[] { 0, (byte)i });
+					var addressB = new Address(new byte[] { 1, (byte)i });
 					registry.HandleAction(new DummyAction(
-						new Address(new byte[] { 0, (byte)i }),
-						new DummyAction(new Address(new byte[] { 1, (byte)i }))));
+						Address.Null,
+						addressA,
+						new DummyAction(addressA, addressB)));
 				}
 			}
 
@@ -62,18 +65,21 @@ namespace Tendermint.Tests
 			var messageCount = 10;
 			var registry = new RemoteContractRegistry(address =>
 			{
-				return new DummyContract(address);
+				return new DummyContract(address, Address.Null);
 			});
 
 			for (var r = 0; r < 3; r++)
 			{
 				for (var i = 0; i < messageCount; i++)
 				{
-					expectedAddresses.Add(new Address(new byte[] { 0, (byte)i }));
-					expectedAddresses.Add(new Address(new byte[] { 1, (byte)i }));
+					var addressA = new Address(new byte[] { 0, (byte)i });
+					var addressB = new Address(new byte[] { 1, (byte)i });
+					expectedAddresses.Add(addressA);
+					expectedAddresses.Add(addressB);
 					registry.HandleAction(new DummyAction(
-						new Address(new byte[] { 0, (byte)i }),
-						new DummyAction(new Address(new byte[] { 1, (byte)i }))));
+						Address.Null,
+						addressA,
+						new DummyAction(addressA, addressB)));
 				}
 			}
 

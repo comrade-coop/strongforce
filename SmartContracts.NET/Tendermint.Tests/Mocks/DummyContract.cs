@@ -1,5 +1,6 @@
 using System;
 using StrongForce.Core;
+using StrongForce.Core.Permissions;
 using Action = StrongForce.Core.Action;
 
 namespace Tendermint.Tests.Mocks
@@ -11,7 +12,14 @@ namespace Tendermint.Tests.Mocks
 		{
 		}
 
-		protected override object GetState() => new object { };
+		public DummyContract(Address address, Address initialAdmin)
+			: base(address, initialAdmin)
+		{
+			this.Acl.AddPermission(
+				initialAdmin,
+				new Permission(typeof(DummyAction)),
+				this.Address);
+		}
 
 		protected override bool HandleAction(Action action)
 		{

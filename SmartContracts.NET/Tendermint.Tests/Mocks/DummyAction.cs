@@ -5,11 +5,11 @@ namespace Tendermint.Tests.Mocks
 {
 	public class DummyAction : Action
 	{
-		public DummyAction(Address target, Action forwarded = null, object objectProperty = null)
-			: base(target)
+		public DummyAction(Address origin, Address target, Action forwarded = null, object objectProperty = null)
+			: base(origin, target)
 		{
 			// TODO: Uncomment this and fix tests
-			// this.Sender = Address.Null();
+			// this.Sender = Address.Null;
 			this.NextAction = forwarded;
 			this.ObjectProperty = objectProperty;
 			this.ObjectProperty = objectProperty;

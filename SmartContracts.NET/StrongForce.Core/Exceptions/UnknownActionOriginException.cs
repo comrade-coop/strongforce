@@ -4,13 +4,16 @@ namespace StrongForce.Core.Exceptions
 {
 	public class UnknownActionOriginException : Exception
 	{
-		public UnknownActionOriginException(Action action)
+		public UnknownActionOriginException(Action action, Address expectedFrom)
 			: base(
-				$"Action \"{action.GetType()}-{action.GetHashCode()}\" has origin set by unappropriate path \"origin - {action.Origin}\" ")
+			$"Action \"{action.GetType()}-{action.GetHashCode()}\" has inapproperiate origin {action.Origin}, expected {expectedFrom} ")
 		{
 			this.Action = action;
+			this.ExpectedOrigin = expectedFrom;
 		}
 
-		public Action Action { get; private set; }
+		public Action Action { get; }
+
+		public Address ExpectedOrigin { get; }
 	}
 }

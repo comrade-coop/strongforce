@@ -54,16 +54,17 @@ namespace StrongForce.Core.Tests
 			Address address2,
 			int expectedResult)
 		{
-			Assert.Equal(expectedResult, address1.CompareTo(address2));
+			Assert.Equal(expectedResult, Math.Sign(address1.CompareTo(address2)));
 		}
 
 		[Fact]
-		public void CompareTo_OnDifferentLengthAddresses_ThrowsArgumentException()
+		public void CompareTo_OnDifferentLengthAddresses_ReturnsNonZero()
 		{
 			var address1 = new Address(new byte[10]);
 			var address2 = new Address(new byte[20]);
 
-			Assert.Throws<ArgumentException>(() => address1.CompareTo(address2));
+			Assert.NotEqual(0, address1.CompareTo(address2));
+			Assert.Equal(address1.CompareTo(address2), -address2.CompareTo(address1));
 		}
 	}
 }

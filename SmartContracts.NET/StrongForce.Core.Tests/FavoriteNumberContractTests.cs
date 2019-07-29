@@ -11,8 +11,8 @@ namespace StrongForce.Core.Tests
 		public void Receive_WhenPassedSetFavoriteNumberAction_ReturnsTrue()
 		{
 			Address address = this.addressFactory.Create();
-			var contract = new FavoriteNumberContract(address);
-			var action = new SetFavoriteNumberAction(address, 0);
+			var contract = new FavoriteNumberContract(address, Address.Null);
+			var action = new SetFavoriteNumberAction(Address.Null, address, 0);
 			Assert.True(contract.Receive(action));
 		}
 
@@ -21,8 +21,8 @@ namespace StrongForce.Core.Tests
 		{
 			const int expectedNumber = 32;
 			Address address = this.addressFactory.Create();
-			var contract = new FavoriteNumberContract(address);
-			var action = new SetFavoriteNumberAction(address, expectedNumber);
+			var contract = new FavoriteNumberContract(address, Address.Null);
+			var action = new SetFavoriteNumberAction(Address.Null, address, expectedNumber);
 			contract.Receive(action);
 
 			Assert.Equal(expectedNumber, contract.Number);

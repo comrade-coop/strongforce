@@ -11,7 +11,6 @@ using Newtonsoft.Json;
 using Strongforce;
 using StrongForce.Core;
 using StrongForce.Core.Permissions;
-using StrongForce.Core.Permissions.Actions;
 using Action = StrongForce.Core.Action;
 
 namespace Tendermint
@@ -23,7 +22,7 @@ namespace Tendermint
 			SerializationBinder = new FilteredSerializationBinder()
 			{
 				WhitelistedBaseTypes = new HashSet<Type> { typeof(Action), typeof(Address) },
-				BlacklistedTypes = new HashSet<Type> { typeof(TracingBulletAction) },
+				BlacklistedTypes = new HashSet<Type> { },
 			},
 			TypeNameHandling = TypeNameHandling.Auto,
 			Converters = new List<JsonConverter> { new AddressJsonConverter() },

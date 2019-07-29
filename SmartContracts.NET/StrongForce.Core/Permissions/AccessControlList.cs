@@ -6,8 +6,6 @@ namespace StrongForce.Core.Permissions
 {
 	public class AccessControlList
 	{
-		public IDictionary<Permission, IDictionary<Address, HashSet<Address>>> PermissionsoToReceiverToSenders { get; set; }
-
 		public AccessControlList(IDictionary<Permission, IDictionary<Address, HashSet<Address>>> initialWildCards)
 			=> this.PermissionsoToReceiverToSenders = initialWildCards;
 
@@ -15,6 +13,8 @@ namespace StrongForce.Core.Permissions
 			: this(new SortedDictionary<Permission, IDictionary<Address, HashSet<Address>>>())
 		{
 		}
+
+		public IDictionary<Permission, IDictionary<Address, HashSet<Address>>> PermissionsoToReceiverToSenders { get; set; }
 
 		public IEnumerable<Address> GetPermittedAddresses(Permission permission, Address target)
 		{
@@ -32,15 +32,15 @@ namespace StrongForce.Core.Permissions
 
 			bool check1 = false, check2 = false;
 			this.PermissionsoToReceiverToSenders[permission].TryGetValue(receiver, out HashSet<Address> perm1);
-			this.PermissionsoToReceiverToSenders[permission].TryGetValue(Address.Null(), out HashSet<Address> perm2);
+			this.PermissionsoToReceiverToSenders[permission].TryGetValue(Address.Null, out HashSet<Address> perm2);
 			if (perm1 != null)
 			{
-				check1 = perm1.Contains(sender) || perm1.Contains(Address.Null());
+				check1 = perm1.Contains(sender) || perm1.Contains(Address.Null);
 			}
 
 			if (perm2 != null)
 			{
-				check2 = perm2.Contains(sender) || perm2.Contains(Address.Null());
+				check2 = perm2.Contains(sender) || perm2.Contains(Address.Null);
 			}
 
 			return check1 || check2;
@@ -63,7 +63,7 @@ namespace StrongForce.Core.Permissions
 				this.PermissionsoToReceiverToSenders[permission].Add(receiver, new HashSet<Address>());
 			}
 
-			return this.PermissionsoToReceiverToSenders[permission][receiver].Add(sender); ;
+			return this.PermissionsoToReceiverToSenders[permission][receiver].Add(sender);
 		}
 
 		public bool RemovePermittedAddress(Address sender, Permission permission, Address receiver)

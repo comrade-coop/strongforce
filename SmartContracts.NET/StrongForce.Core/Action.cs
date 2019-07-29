@@ -4,15 +4,19 @@ namespace StrongForce.Core
 {
 	public class Action
 	{
-		public Action(Address target)
+		public Action(Address origin, Address target)
 		{
+			this.Sender = origin;
+			this.Origin = origin;
 			this.Target = target;
 		}
 
-		[IgnoreDataMember] public Address Origin { get; internal set; }
+		[IgnoreDataMember]
+		public Address Origin { get; }
 
-		[IgnoreDataMember] public Address Sender { get; internal set; }
+		[IgnoreDataMember]
+		public Address Sender { get; }
 
-		public Address Target { get; internal set; }
+		public Address Target { get; }
 	}
 }

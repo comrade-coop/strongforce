@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
-using StrongForce.Core.Permissions.Actions;
+using StrongForce.Core.Exceptions;
+using StrongForce.Core.Permissions;
 
 namespace StrongForce.Core
 {
@@ -11,26 +12,90 @@ namespace StrongForce.Core
 			this.Address = address;
 		}
 
+		protected Contract(Address address, Address initialAdmin)
+			: this(address)
+		{
+			this.Acl.AddPermission(
+				initialAdmin,
+				new Permission(typeof(AddPermissionAction)),
+				this.Address);
+			this.Acl.AddPermission(
+				initialAdmin,
+				new Permission(typeof(RemovePermissionAction)),
+				this.Address);
+			this.Acl.AddPermission(
+				initialAdmin,
+				new Permission(typeof(RemovePermittedAddressAction)),
+				this.Address);
+		}
+
+		public delegate void ActionEventHandler(Action action);
+
+		internal event ActionEventHandler SendActionEvent;
 
 		public Address Address { get; }
 
-		internal ContractRegistry Registry { private get; set; }
+		public AccessControlList Acl { get; private set; } = new AccessControlList();
 
-		internal virtual bool Receive(Action action)
+		public override string ToString()
+		{
+			return $"{this.Address} ({this.GetType()})";
+		}
+
+		internal bool Receive(Action action)
 		{
 			if (action == null)
 			{
 				throw new ArgumentNullException(nameof(action));
 			}
 
+			if (!this.CheckPermission(action))
+			{
+				throw new NoPermissionException(this, action.Sender, new Permission(action.GetType()));
+			}
+
 			return this.HandleAction(action);
 		}
 
-		protected abstract object GetState();
+		protected bool CheckPermission(Action action)
+		{
+			var permission = new Permission(action.GetType());
+			return this.Acl.HasPermission(action.Sender, permission, this.Address);
+		}
 
 		protected virtual bool HandleAction(Action action)
 		{
-			return false;
+			switch (action)
+			{
+				case AddPermissionAction permissionAction:
+					this.Acl.AddPermission(
+						permissionAction.PermittedAddress,
+						permissionAction.Permission,
+						permissionAction.Receiver);
+					return true;
+
+				case RemovePermissionAction permissionAction:
+					this.Acl.RemovePermission(
+						permissionAction.Permission,
+						permissionAction.Receiver);
+					return true;
+
+				case RemovePermittedAddressAction permissionAction:
+					this.Acl.RemovePermittedAddress(
+						permissionAction.PermittedAddress,
+						permissionAction.Permission,
+						permissionAction.Receiver);
+					return true;
+
+				/*
+				case ForwardAction forwardAction:
+					this.HandleForwardAction(forwardAction);
+					return true;
+				*/
+
+				default:
+					return false;
+			}
 		}
 
 		protected void SendAction(Action action)
@@ -40,25 +105,7 @@ namespace StrongForce.Core
 				throw new ArgumentNullException();
 			}
 
-			action.Sender = this.Address;
-			action.Origin = this.Address;
-			this.Registry.HandleAction(action);
-		}
-
-		protected void SendAction(ForwardAction action)
-		{
-			if (action == null)
-			{
-				throw new ArgumentNullException();
-			}
-
-			if (action.Origin == null)
-			{
-				action.Origin = this.Address;
-			}
-
-			action.Sender = this.Address;
-			this.Registry.HandleAction(action);
+			this.SendActionEvent?.Invoke(action);
 		}
 	}
 }

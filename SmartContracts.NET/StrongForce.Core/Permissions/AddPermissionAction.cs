@@ -6,11 +6,12 @@ namespace StrongForce.Core.Permissions
 	public class AddPermissionAction : Action
 	{
 		public AddPermissionAction(
+			Address origin,
 			Address target,
 			Permission permission,
 			Address permittedAddress,
 			Address receiver = null)
-			: base(target)
+			: base(origin, target)
 		{
 			this.PermittedAddress = permittedAddress;
 			this.Receiver = receiver ?? target;
