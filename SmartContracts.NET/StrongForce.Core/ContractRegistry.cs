@@ -6,12 +6,11 @@ namespace StrongForce.Core
 {
 	public class ContractRegistry
 	{
-		private readonly IDictionary<Address, Contract> addressesToContracts;
+		private IDictionary<Address, Contract> addressesToContracts = new SortedDictionary<Address, Contract>();
 
-		public ContractRegistry()
-		{
-			this.addressesToContracts = new SortedDictionary<Address, Contract>();
-		}
+		// TODO: This Set uses reference equality and hashcode, but it should be made more sophisticated
+		// Also, it might be better to implement it as Dictionary<Action, int>, in case an action is sent twice
+		private ISet<Action> forwardedActions = new HashSet<Action>();
 
 		public virtual Contract GetContract(Address address)
 		{
@@ -54,19 +53,48 @@ namespace StrongForce.Core
 				throw new ArgumentNullException(nameof(action.Target));
 			}
 
-			if (action.Sender == null)
+			if (!action.IsConfigured)
 			{
-				throw new ArgumentNullException(nameof(action.Sender));
+				throw new ArgumentOutOfRangeException(nameof(action));
 			}
 
-			if (action.Origin == null)
+			if (!action.Sender.Equals(from))
 			{
-				throw new ArgumentNullException(nameof(action.Origin));
+				throw new UnknownActionSenderException(action, from);
 			}
 
-			if (!action.Origin.Equals(from))
+			if (!action.Sender.Equals(action.Origin))
 			{
-				throw new UnknownActionOriginException(action, from);
+				if (this.forwardedActions.Contains(action))
+				{
+					this.forwardedActions.Remove(action);
+				}
+				else
+				{
+					throw new UnknownActionOriginException(action, action.Sender);
+				}
+			}
+			else if (action is ForwardAction forwardAction)
+			{
+				if (forwardAction.Origin.Equals(forwardAction.NextAction.Origin))
+				{
+					var checkedAction = forwardAction.NextAction;
+					while (checkedAction is ForwardAction checkedForwardAction)
+					{
+						if (!checkedAction.IsConfigured)
+						{
+							throw new ArgumentOutOfRangeException(nameof(action));
+						}
+
+						checkedAction = checkedForwardAction.NextAction;
+					}
+
+					this.forwardedActions.Add(forwardAction.NextAction);
+				}
+				else
+				{
+					throw new UnknownActionOriginException(forwardAction.NextAction, forwardAction.Origin);
+				}
 			}
 
 			Contract contract = this.GetContract(action.Target);

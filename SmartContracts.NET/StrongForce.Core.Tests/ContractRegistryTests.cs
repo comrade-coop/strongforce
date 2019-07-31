@@ -71,7 +71,7 @@ namespace StrongForce.Core.Tests
 
 			registry.RegisterContract(contract);
 
-			var numberAction = new SetFavoriteNumberAction(senderAddress, contractAddress, 0);
+			var numberAction = new SetFavoriteNumberAction(contractAddress, 0).ConfigureSenderAndOrigin(senderAddress);
 			registry.HandleAction(numberAction);
 			Assert.Equal(contract.LastOrigin, senderAddress);
 			Assert.Equal(contract.LastSender, senderAddress);
@@ -100,9 +100,8 @@ namespace StrongForce.Core.Tests
 			registry.RegisterContract(contract);
 			Address address = this.addressFactory.Create();
 			var action = new SetFavoriteNumberAction(
-				Address.Null,
 				null,
-				50);
+				50).ConfigureSenderAndOrigin(Address.Null);
 
 			Assert.Throws<ArgumentNullException>(() => registry.HandleAction(action));
 		}

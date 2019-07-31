@@ -59,8 +59,17 @@ namespace StrongForce.Core
 
 		protected bool CheckPermission(Action action)
 		{
-			var permission = new Permission(action.GetType());
-			return this.Acl.HasPermission(action.Sender, permission, this.Address);
+			if (action is ForwardAction forwardAction)
+			{
+				var final = forwardAction.FinalAction;
+				var permission = new Permission(final.GetType());
+				return this.Acl.HasPermission(action.Sender, permission, final.Target);
+			}
+			else
+			{
+				var permission = new Permission(action.GetType());
+				return this.Acl.HasPermission(action.Sender, permission, this.Address);
+			}
 		}
 
 		protected virtual bool HandleAction(Action action)
@@ -87,11 +96,9 @@ namespace StrongForce.Core
 						permissionAction.Receiver);
 					return true;
 
-				/*
 				case ForwardAction forwardAction:
-					this.HandleForwardAction(forwardAction);
+					this.SendAction(forwardAction.NextAction);
 					return true;
-				*/
 
 				default:
 					return false;

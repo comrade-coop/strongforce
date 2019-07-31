@@ -2,8 +2,8 @@ namespace StrongForce.Core.Tests.Mocks
 {
 	public class SetFavoriteNumberAction : Action
 	{
-		public SetFavoriteNumberAction(Address origin, Address target, int number)
-			: base(origin, target)
+		public SetFavoriteNumberAction(Address target, int number)
+			: base(target)
 		{
 			this.Number = number;
 		}

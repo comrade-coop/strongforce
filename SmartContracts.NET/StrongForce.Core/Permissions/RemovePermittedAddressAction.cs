@@ -5,12 +5,11 @@ namespace StrongForce.Core.Permissions
 	public class RemovePermittedAddressAction : Action
 	{
 		public RemovePermittedAddressAction(
-			Address origin,
 			Address target,
 			Permission permission,
 			Address permittedAddress,
 			Address receiver)
-			: base(origin, target)
+			: base(target)
 		{
 			this.PermittedAddress = permittedAddress;
 			this.Receiver = receiver;

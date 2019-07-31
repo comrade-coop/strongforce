@@ -12,7 +12,7 @@ namespace StrongForce.Core.Tests
 		{
 			Address address = this.addressFactory.Create();
 			var contract = new FavoriteNumberContract(address, Address.Null);
-			var action = new SetFavoriteNumberAction(Address.Null, address, 0);
+			var action = new SetFavoriteNumberAction(address, 0).ConfigureSenderAndOrigin(Address.Null);
 			Assert.True(contract.Receive(action));
 		}
 
@@ -22,7 +22,7 @@ namespace StrongForce.Core.Tests
 			const int expectedNumber = 32;
 			Address address = this.addressFactory.Create();
 			var contract = new FavoriteNumberContract(address, Address.Null);
-			var action = new SetFavoriteNumberAction(Address.Null, address, expectedNumber);
+			var action = new SetFavoriteNumberAction(address, expectedNumber).ConfigureSenderAndOrigin(Address.Null);
 			contract.Receive(action);
 
 			Assert.Equal(expectedNumber, contract.Number);
