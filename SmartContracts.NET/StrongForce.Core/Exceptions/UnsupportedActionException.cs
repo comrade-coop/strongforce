@@ -12,8 +12,8 @@ namespace StrongForce.Core.Exceptions
 			this.Action = action;
 		}
 
-		public Action Action { get; private set; }
+		public Action Action { get; }
 
-		public Address Contract { get; private set; }
+		public Address Contract { get; }
 	}
 }

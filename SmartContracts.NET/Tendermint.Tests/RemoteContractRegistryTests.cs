@@ -48,10 +48,7 @@ namespace Tendermint.Tests
 				{
 					var addressA = new Address(new byte[] { 0, (byte)i });
 					var addressB = new Address(new byte[] { 1, (byte)i });
-					registry.HandleAction(new DummyAction(
-						addressA,
-						new DummyAction(addressB).ConfigureSenderAndOrigin(addressA))
-						.ConfigureSenderAndOrigin(Address.Null));
+					registry.HandleAction(Address.Null, new DummyAction(addressA, new DummyAction(addressB)));
 				}
 			}
 
@@ -76,10 +73,7 @@ namespace Tendermint.Tests
 					var addressB = new Address(new byte[] { 1, (byte)i });
 					expectedAddresses.Add(addressA);
 					expectedAddresses.Add(addressB);
-					registry.HandleAction(new DummyAction(
-						addressA,
-						new DummyAction(addressB).ConfigureSenderAndOrigin(addressA))
-						.ConfigureSenderAndOrigin(Address.Null));
+					registry.HandleAction(Address.Null, new DummyAction(addressA, new DummyAction(addressB)));
 				}
 			}
 

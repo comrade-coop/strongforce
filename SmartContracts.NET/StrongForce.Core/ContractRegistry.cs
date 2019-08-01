@@ -8,9 +8,8 @@ namespace StrongForce.Core
 	{
 		private IDictionary<Address, Contract> addressesToContracts = new SortedDictionary<Address, Contract>();
 
-		// TODO: This Set uses reference equality and hashcode, but it should be made more sophisticated
-		// Also, it might be better to implement it as Dictionary<Action, int>, in case an action is sent twice
-		private ISet<Action> forwardedActions = new HashSet<Action>();
+		// TODO: This Dictionary uses reference equality and reference-based hashcode, which would break whenever actions are serialized / deserialized
+		private IDictionary<Action, Address> forwardedActionsOrigins = new SortedDictionary<Action, Address>();
 
 		public virtual Contract GetContract(Address address)
 		{
@@ -31,17 +30,7 @@ namespace StrongForce.Core
 			contract.SendActionEvent += (action) => this.HandleAction(address, action);
 		}
 
-		public bool HandleAction(Action action)
-		{
-			if (action == null)
-			{
-				throw new ArgumentNullException(nameof(action));
-			}
-
-			return this.HandleAction(action.Sender, action);
-		}
-
-		public bool HandleAction(Address from, Action action)
+		public bool HandleAction(Address sender, Action action)
 		{
 			if (action == null)
 			{
@@ -53,52 +42,23 @@ namespace StrongForce.Core
 				throw new ArgumentNullException(nameof(action.Target));
 			}
 
-			if (!action.IsConfigured)
+			Address origin = sender;
+
+			if (this.forwardedActionsOrigins.ContainsKey(action))
 			{
-				throw new ArgumentOutOfRangeException(nameof(action));
+				origin = this.forwardedActionsOrigins[action];
+				this.forwardedActionsOrigins.Remove(action);
 			}
 
-			if (!action.Sender.Equals(from))
+			if (action is ForwardAction forwardAction)
 			{
-				throw new UnknownActionSenderException(action, from);
+				this.forwardedActionsOrigins[forwardAction.NextAction] = origin;
 			}
 
-			if (!action.Sender.Equals(action.Origin))
-			{
-				if (this.forwardedActions.Contains(action))
-				{
-					this.forwardedActions.Remove(action);
-				}
-				else
-				{
-					throw new UnknownActionOriginException(action, action.Sender);
-				}
-			}
-			else if (action is ForwardAction forwardAction)
-			{
-				if (forwardAction.Origin.Equals(forwardAction.NextAction.Origin))
-				{
-					var checkedAction = forwardAction.NextAction;
-					while (checkedAction is ForwardAction checkedForwardAction)
-					{
-						if (!checkedAction.IsConfigured)
-						{
-							throw new ArgumentOutOfRangeException(nameof(action));
-						}
+			var context = new ActionContext(origin, sender);
+			var contract = this.GetContract(action.Target);
 
-						checkedAction = checkedForwardAction.NextAction;
-					}
-
-					this.forwardedActions.Add(forwardAction.NextAction);
-				}
-				else
-				{
-					throw new UnknownActionOriginException(forwardAction.NextAction, forwardAction.Origin);
-				}
-			}
-
-			Contract contract = this.GetContract(action.Target);
-			return contract != null && contract.Receive(action);
+			return contract != null && contract.Receive(context, action);
 		}
 
 		protected virtual void SetContract(Contract contract)

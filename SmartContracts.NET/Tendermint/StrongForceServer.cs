@@ -106,7 +106,7 @@ namespace Tendermint
 						{
 							try
 							{
-								registry.HandleAction(action);
+								registry.HandleAction(address, action);
 							}
 							catch (Exception e)
 							{

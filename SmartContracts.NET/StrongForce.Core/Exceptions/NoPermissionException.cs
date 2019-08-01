@@ -13,10 +13,10 @@ namespace StrongForce.Core.Exceptions
 			this.ActionSender = actionSender;
 		}
 
-		public Permission Permission { get; private set; }
+		public Permission Permission { get; }
 
-		public Contract Contract { get; private set; }
+		public Contract Contract { get; }
 
-		public Address ActionSender { get; private set; }
+		public Address ActionSender { get; }
 	}
 }

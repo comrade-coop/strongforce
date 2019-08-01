@@ -27,9 +27,9 @@ namespace StrongForce.Core.Tests.Mocks
 
 		public Address LastSender { get; private set; }
 
-		public new bool CheckPermission(Action action)
+		public new bool CheckPermission(ActionContext context, Action action)
 		{
-			return base.CheckPermission(action);
+			return base.CheckPermission(context, action);
 		}
 
 		public bool CheckPermission(Address sender, Permission permission, Address target)
@@ -37,10 +37,10 @@ namespace StrongForce.Core.Tests.Mocks
 			return this.Acl.HasPermission(sender, permission, target);
 		}
 
-		protected override bool HandleAction(Action action)
+		protected override bool HandleAction(ActionContext context, Action action)
 		{
-			this.LastOrigin = action.Origin;
-			this.LastSender = action.Sender;
+			this.LastOrigin = context.Origin;
+			this.LastSender = context.Sender;
 			switch (action)
 			{
 				case SetFavoriteNumberAction favoriteNumberAction:
@@ -48,7 +48,7 @@ namespace StrongForce.Core.Tests.Mocks
 					return true;
 
 				default:
-					return base.HandleAction(action);
+					return base.HandleAction(context, action);
 			}
 		}
 

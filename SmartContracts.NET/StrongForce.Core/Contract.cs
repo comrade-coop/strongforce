@@ -35,44 +35,42 @@ namespace StrongForce.Core
 
 		public Address Address { get; }
 
-		public AccessControlList Acl { get; private set; } = new AccessControlList();
+		public AccessControlList Acl { get; } = new AccessControlList();
 
 		public override string ToString()
 		{
 			return $"{this.Address} ({this.GetType()})";
 		}
 
-		internal bool Receive(Action action)
+		internal bool Receive(ActionContext context, Action action)
 		{
 			if (action == null)
 			{
 				throw new ArgumentNullException(nameof(action));
 			}
 
-			if (!this.CheckPermission(action))
+			if (!this.CheckPermission(context, action))
 			{
-				throw new NoPermissionException(this, action.Sender, new Permission(action.GetType()));
+				throw new NoPermissionException(this, context.Sender, new Permission(action.GetType()));
 			}
 
-			return this.HandleAction(action);
+			return this.HandleAction(context, action);
 		}
 
-		protected bool CheckPermission(Action action)
+		protected bool CheckPermission(ActionContext context, Action action)
 		{
+			var checkedAction = action;
+
 			if (action is ForwardAction forwardAction)
 			{
-				var final = forwardAction.FinalAction;
-				var permission = new Permission(final.GetType());
-				return this.Acl.HasPermission(action.Sender, permission, final.Target);
+				checkedAction = forwardAction.FinalAction;
 			}
-			else
-			{
-				var permission = new Permission(action.GetType());
-				return this.Acl.HasPermission(action.Sender, permission, this.Address);
-			}
+
+			var permission = new Permission(checkedAction.GetType());
+			return this.Acl.HasPermission(context.Sender, permission, checkedAction.Target);
 		}
 
-		protected virtual bool HandleAction(Action action)
+		protected virtual bool HandleAction(ActionContext context, Action action)
 		{
 			switch (action)
 			{

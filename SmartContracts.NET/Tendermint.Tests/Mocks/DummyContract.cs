@@ -21,7 +21,7 @@ namespace Tendermint.Tests.Mocks
 				this.Address);
 		}
 
-		protected override bool HandleAction(Action action)
+		protected override bool HandleAction(ActionContext context, Action action)
 		{
 			switch (action)
 			{
@@ -34,7 +34,7 @@ namespace Tendermint.Tests.Mocks
 					return true;
 
 				default:
-					return false;
+					return base.HandleAction(context, action);
 			}
 		}
 	}

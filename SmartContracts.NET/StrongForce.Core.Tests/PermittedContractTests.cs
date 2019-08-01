@@ -44,9 +44,9 @@ namespace StrongForce.Core.Tests
 			var addPermissionAction = new AddPermissionAction(
 				contractAddress,
 				new Permission(typeof(AddPermissionAction)),
-				contractAddress).ConfigureSenderAndOrigin(contractAddress);
+				contractAddress);
 
-			Assert.Throws<NoPermissionException>(() => this.registry.HandleAction(addPermissionAction));
+			Assert.Throws<NoPermissionException>(() => this.registry.HandleAction(contractAddress, addPermissionAction));
 		}
 
 		[Fact]
@@ -60,9 +60,9 @@ namespace StrongForce.Core.Tests
 			var addPermissionAction = new AddPermissionAction(
 				contractAddress,
 				numberPermission,
-				permissionManager).ConfigureSenderAndOrigin(permissionManager);
+				permissionManager);
 
-			Assert.True(this.registry.HandleAction(addPermissionAction));
+			Assert.True(this.registry.HandleAction(permissionManager, addPermissionAction));
 			Assert.True(contract.CheckPermission(permissionManager, numberPermission, contractAddress));
 		}
 
@@ -77,16 +77,16 @@ namespace StrongForce.Core.Tests
 			var addPermissionAction = new AddPermissionAction(
 				contractAddress,
 				numberPermission,
-				permissionManager).ConfigureSenderAndOrigin(permissionManager);
+				permissionManager);
 
 			var removeAddPermissionAction = new RemovePermissionAction(
 				contractAddress,
 				numberPermission,
-				contractAddress).ConfigureSenderAndOrigin(permissionManager);
+				contractAddress);
 
-			Assert.True(this.registry.HandleAction(addPermissionAction));
+			Assert.True(this.registry.HandleAction(permissionManager, addPermissionAction));
 			Assert.True(contract.CheckPermission(permissionManager, numberPermission, contractAddress));
-			Assert.True(this.registry.HandleAction(removeAddPermissionAction));
+			Assert.True(this.registry.HandleAction(permissionManager, removeAddPermissionAction));
 			Assert.False(contract.CheckPermission(permissionManager, numberPermission, contractAddress));
 		}
 
@@ -98,10 +98,10 @@ namespace StrongForce.Core.Tests
 			Contract contract = new FavoriteNumberContract(contractAddress, permissionManager);
 			this.registry.RegisterContract(contract);
 
-			var addPermissionAction = new Action(contractAddress).ConfigureSenderAndOrigin(permissionManager);
+			var addPermissionAction = new Action(contractAddress);
 
 			Assert.Throws<NoPermissionException>(
-				() => this.registry.HandleAction(addPermissionAction));
+				() => this.registry.HandleAction(permissionManager, addPermissionAction));
 		}
 
 		[Fact]
@@ -115,15 +115,15 @@ namespace StrongForce.Core.Tests
 			var addPermissionAction = new AddPermissionAction(
 				contractAddress,
 				permission,
-				permissionManager).ConfigureSenderAndOrigin(permissionManager);
+				permissionManager);
 
-			this.registry.HandleAction(addPermissionAction);
+			this.registry.HandleAction(permissionManager, addPermissionAction);
 
 			addPermissionAction = new AddPermissionAction(
 				contractAddress,
 				permission,
-				Address.Null).ConfigureSenderAndOrigin(permissionManager);
-			this.registry.HandleAction(addPermissionAction);
+				Address.Null);
+			this.registry.HandleAction(permissionManager, addPermissionAction);
 			Assert.True(contract.CheckPermission(this.addressFactory.Create(), permission, contractAddress));
 		}
 
@@ -139,17 +139,17 @@ namespace StrongForce.Core.Tests
 			var addPermissionAction = new AddPermissionAction(
 				contractAddress,
 				permission,
-				permissionManager).ConfigureSenderAndOrigin(permissionManager);
+				permissionManager);
 
-			this.registry.HandleAction(addPermissionAction);
+			this.registry.HandleAction(permissionManager, addPermissionAction);
 
 			var updatePermissionAction = new AddPermissionAction(
 				contractAddress,
 				permission,
 				address,
-				contractAddress).ConfigureSenderAndOrigin(permissionManager);
+				contractAddress);
 
-			this.registry.HandleAction(updatePermissionAction);
+			this.registry.HandleAction(permissionManager, updatePermissionAction);
 
 			Assert.True(contract.CheckPermission(permissionManager, permission, contractAddress));
 			Assert.True(contract.CheckPermission(address, permission, contractAddress));
@@ -173,25 +173,22 @@ namespace StrongForce.Core.Tests
 				contract1Address,
 				new Permission(typeof(SetFavoriteNumberAction)),
 				permissionManager,
-				contract2Address)
-				.ConfigureSenderAndOrigin(permissionManager);
+				contract2Address);
 
-			this.registry.HandleAction(intermediaryPermissionAction);
+			this.registry.HandleAction(permissionManager, intermediaryPermissionAction);
 
 			var finalPermissionAction = new AddPermissionAction(
 				contract2Address,
 				new Permission(typeof(SetFavoriteNumberAction)),
-				contract1Address)
-				.ConfigureSenderAndOrigin(permissionManager);
+				contract1Address);
 
-			this.registry.HandleAction(finalPermissionAction);
+			this.registry.HandleAction(permissionManager, finalPermissionAction);
 
 			var forwardAction = new ForwardAction(
 				new Address[] { contract1Address },
-				new SetFavoriteNumberAction(contract2Address, testedNumber))
-				.ConfigureSenderAndOrigin(permissionManager);
+				new SetFavoriteNumberAction(contract2Address, testedNumber));
 
-			this.registry.HandleAction(forwardAction);
+			this.registry.HandleAction(permissionManager, forwardAction);
 
 			Assert.Equal(testedNumber, contract2.Number);
 		}
@@ -213,17 +210,15 @@ namespace StrongForce.Core.Tests
 			var finalPermissionAction = new AddPermissionAction(
 				contract2Address,
 				new Permission(typeof(SetFavoriteNumberAction)),
-				contract1Address)
-				.ConfigureSenderAndOrigin(permissionManager);
+				contract1Address);
 
-			this.registry.HandleAction(finalPermissionAction);
+			this.registry.HandleAction(permissionManager, finalPermissionAction);
 
 			var forwardAction = new ForwardAction(
 				new Address[] { contract1Address },
-				new SetFavoriteNumberAction(contract2Address, testedNumber))
-				.ConfigureSenderAndOrigin(permissionManager);
+				new SetFavoriteNumberAction(contract2Address, testedNumber));
 
-			Assert.Throws<NoPermissionException>(() => this.registry.HandleAction(forwardAction));
+			Assert.Throws<NoPermissionException>(() => this.registry.HandleAction(permissionManager, forwardAction));
 		}
 
 		[Fact]
@@ -244,75 +239,15 @@ namespace StrongForce.Core.Tests
 				contract1Address,
 				new Permission(typeof(SetFavoriteNumberAction)),
 				permissionManager,
-				contract2Address)
-				.ConfigureSenderAndOrigin(permissionManager);
+				contract2Address);
 
-			this.registry.HandleAction(intermediaryPermissionAction);
-
-			var forwardAction = new ForwardAction(
-				new Address[] { contract1Address },
-				new SetFavoriteNumberAction(contract2Address, testedNumber))
-				.ConfigureSenderAndOrigin(permissionManager);
-
-			Assert.Throws<NoPermissionException>(() => this.registry.HandleAction(forwardAction));
-		}
-
-		[Fact]
-		public void ForwardAction_WithoutForwarding_ThrowsUnknownOriginException()
-		{
-			Address permissionManager = this.addressFactory.Create();
-			Address contract1Address = this.addressFactory.Create();
-			Address contract2Address = this.addressFactory.Create();
-			int testedNumber = 424;
-
-			FavoriteNumberContract contract1 = new FavoriteNumberContract(contract1Address, permissionManager);
-			this.registry.RegisterContract(contract1);
-
-			FavoriteNumberContract contract2 = new FavoriteNumberContract(contract2Address, permissionManager);
-			this.registry.RegisterContract(contract2);
-
-			var finalPermissionAction = new AddPermissionAction(
-				contract2Address,
-				new Permission(typeof(SetFavoriteNumberAction)),
-				contract1Address)
-				.ConfigureSenderAndOrigin(permissionManager);
-
-			this.registry.HandleAction(finalPermissionAction);
+			this.registry.HandleAction(permissionManager, intermediaryPermissionAction);
 
 			var forwardAction = new ForwardAction(
 				new Address[] { contract1Address },
-				new SetFavoriteNumberAction(contract2Address, testedNumber))
-				.ConfigureSenderAndOrigin(permissionManager) as ForwardAction;
+				new SetFavoriteNumberAction(contract2Address, testedNumber));
 
-			Assert.Throws<UnknownActionOriginException>(() => this.registry.HandleAction(forwardAction.NextAction));
-		}
-
-		[Fact]
-		public void ForwardAction_WithFakeOrigin_ThrowsUnknownOriginException()
-		{
-			Address aliceAddress = this.addressFactory.Create();
-			Address bobAddress = this.addressFactory.Create();
-			Address eveAddress = this.addressFactory.Create();
-
-			// Eve should be unable to trick Alice from thinking the message originates from Bob
-			var forwardAction = new ForwardAction(
-				bobAddress,
-				new Action(aliceAddress))
-				.ConfigureSenderAndOrigin(eveAddress);
-
-			// Some reflection magic used in order to circumvent .ConfigureOrigin recursively calling .ConfigureOrigin on .NextAction in the current implementation.
-			// Note that the the same might be (unlikely) done by a deserialization library
-			var type = typeof(Action);
-			foreach (var field in type.GetFields(BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Instance))
-			{
-				if (field.Name.ToLower().Contains("origin"))
-				{
-					field.SetValue(forwardAction, bobAddress);
-					break;
-				}
-			}
-
-			Assert.Throws<UnknownActionOriginException>(() => this.registry.HandleAction(forwardAction));
+			Assert.Throws<NoPermissionException>(() => this.registry.HandleAction(permissionManager, forwardAction));
 		}
 
 		/*[Fact]
@@ -326,9 +261,9 @@ namespace StrongForce.Core.Tests
 			var addPermissionAction = new AddPermissionAction(
 				contractAddress,
 				permission,
-				permissionManager).ConfigureSenderAndOrigin(permissionManager);
+				permissionManager);
 
-			this.registry.HandleAction(addPermissionAction);
+			this.registry.HandleAction(permissionManager, addPermissionAction);
 			Address newReceiver = this.addressFactory.Create();
 
 			Assert.True(contract.CheckPermission(permissionManager, permission, contractAddress));
@@ -338,9 +273,9 @@ namespace StrongForce.Core.Tests
 				permission,
 				new HashSet<Address> { permissionManager },
 				new HashSet<Address> { contractAddress, newReceiver }
-				contractAddress).ConfigureSenderAndOrigin(permissionManager);
+				contractAddress);
 
-			this.registry.HandleAction(updatePermissionAction);
+			this.registry.HandleAction(permissionManager, updatePermissionAction);
 
 			Assert.True(contract.CheckPermission(permissionManager, permission, newReceiver));
 			Assert.True(contract.CheckPermission(permissionManager, permission, contractAddress));
@@ -358,22 +293,22 @@ namespace StrongForce.Core.Tests
 			var addPermissionAction = new AddPermissionAction(
 				contractAddress,
 				permission,
-				permissionManager).ConfigureSenderAndOrigin(permissionManager);
+				permissionManager);
 
-			this.registry.HandleAction(addPermissionAction);
+			this.registry.HandleAction(permissionManager, addPermissionAction);
 			addPermissionAction = new AddPermissionAction(
 				contractAddress,
 				permission,
-				permitedAddress).ConfigureSenderAndOrigin(permissionManager);
+				permitedAddress);
 
-			this.registry.HandleAction(addPermissionAction);
+			this.registry.HandleAction(permissionManager, addPermissionAction);
 			var updatePermissionAction = new RemovePermittedAddressAction(
 				contractAddress,
 				permission,
 				permissionManager,
-				contractAddress).ConfigureSenderAndOrigin(permissionManager);
+				contractAddress);
 
-			this.registry.HandleAction(updatePermissionAction);
+			this.registry.HandleAction(permissionManager, updatePermissionAction);
 			Assert.True(contract.CheckPermission(permitedAddress, permission, contractAddress));
 			Assert.False(contract.CheckPermission(permissionManager, permission, contractAddress));
 		}
@@ -392,18 +327,18 @@ namespace StrongForce.Core.Tests
 				contractAddress,
 				permission,
 				new HashSet<Address> { permissionManager },
-				new HashSet<Address> { nextAddress1, nextAddress2 }).ConfigureSenderAndOrigin(permissionManager);
+				new HashSet<Address> { nextAddress1, nextAddress2 });
 
-			this.registry.HandleAction(addPermissionAction);
+			this.registry.HandleAction(permissionManager, addPermissionAction);
 
 			var updatePermissionAction = new RemovePermittedAddressAction(
 				contractAddress,
 				new HashSet<Address> { permissionManager },
 				permission,
 				new HashSet<Address> { permissionManager },
-				new HashSet<Address> { nextAddress2 }).ConfigureSenderAndOrigin(permissionManager);
+				new HashSet<Address> { nextAddress2 });
 
-			this.registry.HandleAction(updatePermissionAction);
+			this.registry.HandleAction(permissionManager, updatePermissionAction);
 			Assert.False(contract.CheckPermission(permissionManager, permission, nextAddress1));
 			Assert.True(contract.CheckPermission(permissionManager, permission, nextAddress2));
 		}*/
@@ -421,18 +356,18 @@ namespace StrongForce.Core.Tests
 			var addPermissionAction = new AddPermissionAction(
 				contractAddress,
 				permission,
-				new HashSet<Address> { permissionManager }).ConfigureSenderAndOrigin(permissionManager);
+				new HashSet<Address> { permissionManager });
 
-			this.registry.HandleAction(addPermissionAction);
+			this.registry.HandleAction(permissionManager, addPermissionAction);
 			Assert.True(contract.CheckPermission(permissionManager, permission, contractAddress));
 
 			addPermissionAction = new AddPermissionAction(
 				contractAddress,
 				permission,
 				new HashSet<Address> { permissionManager },
-				this.anyWildCard).ConfigureSenderAndOrigin(permissionManager);
+				this.anyWildCard);
 
-			this.registry.HandleAction(addPermissionAction);
+			this.registry.HandleAction(permissionManager, addPermissionAction);
 			Assert.True(contract.CheckPermission(permissionManager, permission, this.addressFactory.Create()));
 
 			var removePermissionAction = new RemovePermittedAddressAction(
@@ -440,9 +375,9 @@ namespace StrongForce.Core.Tests
 				new HashSet<Address> { permissionManager },
 				permission,
 				new HashSet<Address> { permissionManager },
-				new HashSet<Address> { contractAddress }).ConfigureSenderAndOrigin(permissionManager);
+				new HashSet<Address> { contractAddress });
 
-			this.registry.HandleAction(removePermissionAction);
+			this.registry.HandleAction(permissionManager, removePermissionAction);
 			Assert.False(contract.CheckPermission(permissionManager, permission, this.addressFactory.Create()));
 			Assert.True(contract.CheckPermission(permissionManager, permission, contractAddress));
 		}*/

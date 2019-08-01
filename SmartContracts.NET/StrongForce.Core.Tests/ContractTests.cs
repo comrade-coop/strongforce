@@ -23,7 +23,7 @@ namespace StrongForce.Core.Tests
 			Address contractAddress = this.addressFactory.Create();
 			Contract contract = new FavoriteNumberContract(contractAddress, Address.Null);
 
-			Assert.Throws<ArgumentNullException>(() => contract.Receive(null));
+			Assert.Throws<ArgumentNullException>(() => contract.Receive(new ActionContext(Address.Null), null));
 		}
 
 		[Fact]
@@ -31,9 +31,9 @@ namespace StrongForce.Core.Tests
 		{
 			Address address = this.addressFactory.Create();
 			Contract contract = new FavoriteNumberContract(address, Address.Null);
-			var action = new SetFavoriteNumberAction(address, 0).ConfigureSenderAndOrigin(Address.Null);
+			var action = new SetFavoriteNumberAction(address, 0);
 
-			Assert.True(contract.Receive(action));
+			Assert.True(contract.Receive(new ActionContext(Address.Null), action));
 		}
 
 		[Fact]
@@ -41,14 +41,14 @@ namespace StrongForce.Core.Tests
 		{
 			Address address = this.addressFactory.Create();
 			Contract contract = new FavoriteNumberContract(address, Address.Null);
-			var action = new Action(address).ConfigureSenderAndOrigin(Address.Null);
+			var action = new Action(address);
 
 			contract.Acl.AddPermission(
 				Address.Null,
 				new Permission(typeof(Action)),
 				address);
 
-			Assert.False(contract.Receive(action));
+			Assert.False(contract.Receive(new ActionContext(Address.Null), action));
 		}
 	}
 }
