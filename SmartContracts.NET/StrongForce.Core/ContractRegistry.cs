@@ -96,6 +96,11 @@ namespace StrongForce.Core
 			return newAddress;
 		}
 
+		public Address CreateContract<T>(params object[] constructorParameters)
+		{
+			return this.CreateContract(typeof(T), constructorParameters);
+		}
+
 		protected virtual void SetContract(Contract contract)
 		{
 			Address address = contract.Address;
