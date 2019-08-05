@@ -1,9 +1,6 @@
-﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using ContractsCore;
-using ContractsCore.Actions;
-using Tendermint;
+using StrongForce.Core;
 using Tendermint.Tests.Mocks;
 using Xunit;
 
@@ -42,17 +39,16 @@ namespace Tendermint.Tests
 			var registry = new RemoteContractRegistry(address =>
 			{
 				count++;
-				return new DummyContract(address);
+				return new DummyContract(address, Address.Null);
 			});
 
 			for (var r = 0; r < 3; r++)
 			{
 				for (var i = 0; i < messageCount; i++)
 				{
-					registry.SendAction(new Address(new byte[] { 0, (byte)i }), new DummyAction(
-						string.Empty,
-						new Address(new byte[] { 0, (byte)i }),
-						new DummyAction(string.Empty, new Address(new byte[] { 1, (byte)i }))));
+					var addressA = new Address(new byte[] { 0, (byte)i });
+					var addressB = new Address(new byte[] { 1, (byte)i });
+					registry.HandleAction(Address.Null, new DummyAction(addressA, new DummyAction(addressB)));
 				}
 			}
 
@@ -66,19 +62,18 @@ namespace Tendermint.Tests
 			var messageCount = 10;
 			var registry = new RemoteContractRegistry(address =>
 			{
-				return new DummyContract(address);
+				return new DummyContract(address, Address.Null);
 			});
 
 			for (var r = 0; r < 3; r++)
 			{
 				for (var i = 0; i < messageCount; i++)
 				{
-					expectedAddresses.Add(new Address(new byte[] { 0, (byte)i }));
-					expectedAddresses.Add(new Address(new byte[] { 1, (byte)i }));
-					registry.SendAction(new Address(new byte[] { 0, (byte)i }), new DummyAction(
-						string.Empty,
-						new Address(new byte[] { 0, (byte)i }),
-						new DummyAction(string.Empty, new Address(new byte[] { 1, (byte)i }))));
+					var addressA = new Address(new byte[] { 0, (byte)i });
+					var addressB = new Address(new byte[] { 1, (byte)i });
+					expectedAddresses.Add(addressA);
+					expectedAddresses.Add(addressB);
+					registry.HandleAction(Address.Null, new DummyAction(addressA, new DummyAction(addressB)));
 				}
 			}
 

@@ -1,10 +1,6 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using ContractsCore;
-using ContractsCore.Actions;
 using Microsoft.Extensions.Logging.Abstractions;
 using Newtonsoft.Json;
+using StrongForce.Core;
 using Tendermint;
 using Tendermint.Tests.Mocks;
 using Xunit;
@@ -17,7 +13,7 @@ namespace Tendermint.Tests
 		public void Serializes_And_Deserializes_Actions()
 		{
 			var server = new StrongForceServer(NullLogger<StrongForceServer>.Instance);
-			var action = new DummyAction(string.Empty, new RandomAddressFactory().Create());
+			var action = new DummyAction(Address.Null);
 
 			var serializedAction = server.SerializeAction(action);
 

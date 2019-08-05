@@ -1,8 +1,7 @@
 using System;
-using System.Collections.Generic;
-using ContractsCore;
-using ContractsCore.Actions;
-using ContractsCore.Contracts;
+using StrongForce.Core;
+using StrongForce.Core.Permissions;
+using Action = StrongForce.Core.Action;
 
 namespace Tendermint.Tests.Mocks
 {
@@ -13,22 +12,29 @@ namespace Tendermint.Tests.Mocks
 		{
 		}
 
-		protected override object GetState() => new object { };
+		public DummyContract(Address address, Address initialAdmin)
+			: base(address, initialAdmin)
+		{
+			this.Acl.AddPermission(
+				initialAdmin,
+				new Permission(typeof(DummyAction)),
+				this.Address);
+		}
 
-		protected override bool HandleReceivedAction(ContractsCore.Actions.Action action)
+		protected override bool HandleAction(ActionContext context, Action action)
 		{
 			switch (action)
 			{
 				case DummyAction dummy:
 					if (dummy.NextAction != null)
 					{
-						this.OnSend(dummy.NextAction);
+						this.SendAction(dummy.NextAction);
 					}
 
 					return true;
 
 				default:
-					return false;
+					return base.HandleAction(context, action);
 			}
 		}
 	}

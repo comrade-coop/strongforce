@@ -4,26 +4,25 @@ using System.IO;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using ContractsCore;
-using ContractsCore.Actions;
-using ContractsCore.Contracts;
 using Google.Protobuf;
 using Grpc.Core;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Strongforce;
-using Action = ContractsCore.Actions.Action;
+using StrongForce.Core;
+using StrongForce.Core.Permissions;
+using Action = StrongForce.Core.Action;
 
 namespace Tendermint
 {
-	public class StrongForceServer : StrongForce.StrongForceBase
+	public class StrongForceServer : Strongforce.StrongForce.StrongForceBase
 	{
 		private JsonSerializerSettings actionSerializationSettings = new JsonSerializerSettings()
 		{
 			SerializationBinder = new FilteredSerializationBinder()
 			{
 				WhitelistedBaseTypes = new HashSet<Type> { typeof(Action), typeof(Address) },
-				BlacklistedTypes = new HashSet<Type> { typeof(TracingBulletAction) },
+				BlacklistedTypes = new HashSet<Type> { },
 			},
 			TypeNameHandling = TypeNameHandling.Auto,
 			Converters = new List<JsonConverter> { new AddressJsonConverter() },
@@ -107,7 +106,7 @@ namespace Tendermint
 						{
 							try
 							{
-								registry.SendAction(address, action);
+								registry.HandleAction(address, action);
 							}
 							catch (Exception e)
 							{
