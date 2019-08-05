@@ -35,7 +35,25 @@ namespace StrongForce.Core.Tests
 
 			registry.RegisterContract(firstContract);
 
-			Assert.Throws<ArgumentException>(() => registry.RegisterContract(secondContract));
+			Assert.Throws<InvalidOperationException>(() => registry.RegisterContract(secondContract));
+		}
+
+		[Fact]
+		public void CreateContract_WhenPassedNewContract_AddsItCorrectly()
+		{
+			var registry = new ContractRegistry();
+
+			Address contractAddress = registry.CreateContract(typeof(FavoriteNumberContract));
+
+			Assert.NotNull(registry.GetContract(contractAddress));
+		}
+
+		[Fact]
+		public void CreateContract_WhenPassedNonContractType_ThrowsArgumentException()
+		{
+			var registry = new ContractRegistry();
+
+			Assert.Throws<ArgumentOutOfRangeException>(() => registry.CreateContract(typeof(Action)));
 		}
 
 		[Fact]

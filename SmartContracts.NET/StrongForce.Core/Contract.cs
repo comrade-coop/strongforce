@@ -29,9 +29,9 @@ namespace StrongForce.Core
 				this.Address);
 		}
 
-		public delegate void ActionEventHandler(Action action);
+		internal event System.Action<Action> SendActionEvent;
 
-		internal event ActionEventHandler SendActionEvent;
+		internal event Func<Type, object[], Address> CreateContractEvent;
 
 		public Address Address { get; }
 
@@ -99,6 +99,21 @@ namespace StrongForce.Core
 			}
 
 			this.SendActionEvent?.Invoke(action);
+		}
+
+		protected Address CreateContract(Type contractType, params object[] constructorParameters)
+		{
+			if (contractType == null)
+			{
+				throw new ArgumentNullException();
+			}
+
+			return this.CreateContractEvent?.Invoke(contractType, constructorParameters);
+		}
+
+		protected Address CreateContract<T>(params object[] constructorParameters)
+		{
+			return this.CreateContract(typeof(T), constructorParameters);
 		}
 	}
 }
