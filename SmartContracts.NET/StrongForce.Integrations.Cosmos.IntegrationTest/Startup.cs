@@ -11,6 +11,8 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using StrongForce.Core.Kits;
+using StrongForce.Core.Tests.Mocks;
 
 namespace StrongForce.Integrations.Cosmos.IntegrationTest
 {
@@ -27,6 +29,7 @@ namespace StrongForce.Integrations.Cosmos.IntegrationTest
 		public void ConfigureServices(IServiceCollection services)
 		{
 			services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
+			services.AddSingleton<Kit>((_) => new FavoriteNumberKit(15));
 			services.AddSingleton<IHostedService, StrongForceService>();
 		}
 

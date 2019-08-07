@@ -33,7 +33,7 @@ func GetTxCmd(keeper Keeper, cdc *codec.Codec) *cobra.Command {
 func GetCmdExecuteAction(cdc *codec.Codec) *cobra.Command {
 	return &cobra.Command{
 		Use:   "execute-action [name] [value]",
-		Short: "set the value associated with a name that you own",
+		Short: "execute an action",
 		Args:  cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			cliCtx := context.NewCLIContext().WithCodec(cdc).WithAccountDecoder(cdc)

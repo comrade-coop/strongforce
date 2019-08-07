@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Newtonsoft.Json;
 using StrongForce.Core;
 using StrongForce.Core.Permissions;
 
@@ -8,6 +9,7 @@ namespace StrongForce.Core.Tests.Mocks
 {
 	public class FavoriteNumberContract : Contract
 	{
+		[JsonConstructor]
 		public FavoriteNumberContract(Address address)
 			: base(address)
 		{
@@ -22,11 +24,11 @@ namespace StrongForce.Core.Tests.Mocks
 				this.Address);
 		}
 
-		public int Number { get; private set; }
+		public int Number { get; set; } = 0;
 
-		public Address LastOrigin { get; private set; }
+		public Address LastOrigin { get; set; }
 
-		public Address LastSender { get; private set; }
+		public Address LastSender { get; set; }
 
 		public new bool CheckPermission(ActionContext context, Action action)
 		{

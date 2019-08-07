@@ -11,8 +11,22 @@ namespace StrongForce.Core.Tests
 		[Fact]
 		public void Serializes_And_Deserializes_Actions()
 		{
-			var address = new Address(new byte[] { 10, 20, 127 });
+			var address = new Address(new byte[] { 10, 20, 127, 54, 51 });
 			var action = new SetFavoriteNumberAction(address, 12);
+
+			var serializedAction = StrongForceSerialization.SerializeAction(action);
+
+			var deserializedAction = StrongForceSerialization.DeserializeAction(serializedAction);
+
+			Assert.Equal(action.GetType(), deserializedAction.GetType());
+			Assert.Equal(action.Target, deserializedAction.Target);
+			Assert.Equal(action.Number, ((SetFavoriteNumberAction)deserializedAction).Number);
+		}
+
+		[Fact]
+		public void Serializes_And_Deserializes_Null_Address()
+		{
+			var action = new SetFavoriteNumberAction(null, 12);
 
 			var serializedAction = StrongForceSerialization.SerializeAction(action);
 

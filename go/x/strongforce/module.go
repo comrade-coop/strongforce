@@ -68,7 +68,7 @@ func (AppModuleBasic) RegisterRESTRoutes(ctx context.CLIContext, rtr *mux.Router
 
 // GetQueryCmd implements module.AppModuleBasic
 func (ab AppModuleBasic) GetQueryCmd(cdc *codec.Codec) *cobra.Command {
-	return GetQueryCmd(ab.keeper, cdc)
+	return GetQueryCmd(ModuleName, cdc)
 }
 
 // GetTxCmd implements module.AppModuleBasic

@@ -11,9 +11,9 @@ namespace StrongForce.Core.Permissions
 
 		public const Type AnyAction = null;
 
-		public AccessControlList(ISet<Permission> initialPermissions)
+		public AccessControlList(ISet<Permission> permissions)
 		{
-			this.Permissions = initialPermissions;
+			this.Permissions = permissions;
 		}
 
 		public AccessControlList()

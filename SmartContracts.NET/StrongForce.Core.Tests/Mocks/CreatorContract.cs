@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
+using Newtonsoft.Json;
 using StrongForce.Core;
 using StrongForce.Core.Permissions;
 
@@ -7,6 +8,7 @@ namespace StrongForce.Core.Tests.Mocks
 {
 	public class CreatorContract : Contract
 	{
+		[JsonConstructor]
 		public CreatorContract(Address address)
 			: base(address)
 		{
@@ -21,7 +23,7 @@ namespace StrongForce.Core.Tests.Mocks
 				this.Address);
 		}
 
-		public Address LastCreatedAddress { get; private set; } = null;
+		public Address LastCreatedAddress { get; protected set; } = null;
 
 		protected override bool HandleAction(ActionContext context, Action action)
 		{

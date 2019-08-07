@@ -19,6 +19,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\StrongForce.Integrations.Cosmos\StrongForce.Integrations.Cosmos.csproj" />
+    <ProjectReference Include="..\StrongForce.Core.Tests\StrongForce.Core.Tests.csproj" />
   </ItemGroup>
 
 </Project>

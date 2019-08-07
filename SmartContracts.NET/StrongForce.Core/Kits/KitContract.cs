@@ -17,6 +17,8 @@ namespace StrongForce.Core.Kits
 				this.Address);
 		}
 
+		public static Address DefaultAddress { get; } = new Address(new byte[] { 0 });
+
 		public bool Instantiated { get; private set; } = false;
 
 		public Kit Kit { get; }

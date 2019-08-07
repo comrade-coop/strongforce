@@ -7,12 +7,12 @@ namespace StrongForce.Core
 {
 	public abstract class Contract
 	{
-		protected Contract(Address address)
+		public Contract(Address address)
 		{
 			this.Address = address;
 		}
 
-		protected Contract(Address address, Address initialAdmin)
+		public Contract(Address address, Address initialAdmin)
 			: this(address)
 		{
 			this.Acl.AddPermission(
@@ -35,7 +35,7 @@ namespace StrongForce.Core
 
 		public Address Address { get; }
 
-		public AccessControlList Acl { get; } = new AccessControlList();
+		public AccessControlList Acl { get; protected set; } = new AccessControlList();
 
 		public override string ToString()
 		{
