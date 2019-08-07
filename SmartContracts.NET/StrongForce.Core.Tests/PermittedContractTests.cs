@@ -25,8 +25,8 @@ namespace StrongForce.Core.Tests
 			Address contractAddress = this.addressFactory.Create();
 			FavoriteNumberContract contract = new FavoriteNumberContract(contractAddress, permissionManager);
 
-			var addPermission = new Permission(typeof(AddPermissionAction));
-			var removePermission = new Permission(typeof(RemovePermissionAction));
+			var addPermission = typeof(AddPermissionAction);
+			var removePermission = typeof(RemovePermissionAction);
 			Assert.True(contract.CheckPermission(permissionManager, addPermission, contractAddress));
 			Assert.True(contract.CheckPermission(permissionManager, removePermission, contractAddress));
 		}
@@ -43,7 +43,7 @@ namespace StrongForce.Core.Tests
 
 			var addPermissionAction = new AddPermissionAction(
 				contractAddress,
-				new Permission(typeof(AddPermissionAction)),
+				typeof(AddPermissionAction),
 				contractAddress);
 
 			Assert.Throws<NoPermissionException>(() => this.registry.HandleAction(contractAddress, addPermissionAction));
@@ -56,7 +56,7 @@ namespace StrongForce.Core.Tests
 			Address contractAddress = this.addressFactory.Create();
 			FavoriteNumberContract contract = new FavoriteNumberContract(contractAddress, permissionManager);
 			this.registry.RegisterContract(contract);
-			var numberPermission = new Permission(typeof(SetFavoriteNumberAction));
+			var numberPermission = typeof(SetFavoriteNumberAction);
 			var addPermissionAction = new AddPermissionAction(
 				contractAddress,
 				numberPermission,
@@ -73,7 +73,7 @@ namespace StrongForce.Core.Tests
 			Address contractAddress = this.addressFactory.Create();
 			FavoriteNumberContract contract = new FavoriteNumberContract(contractAddress, permissionManager);
 			this.registry.RegisterContract(contract);
-			var numberPermission = new Permission(typeof(SetFavoriteNumberAction));
+			var numberPermission = typeof(SetFavoriteNumberAction);
 			var addPermissionAction = new AddPermissionAction(
 				contractAddress,
 				numberPermission,
@@ -82,7 +82,7 @@ namespace StrongForce.Core.Tests
 			var removeAddPermissionAction = new RemovePermissionAction(
 				contractAddress,
 				numberPermission,
-				contractAddress);
+				permissionManager);
 
 			Assert.True(this.registry.HandleAction(permissionManager, addPermissionAction));
 			Assert.True(contract.CheckPermission(permissionManager, numberPermission, contractAddress));
@@ -111,7 +111,7 @@ namespace StrongForce.Core.Tests
 			Address contractAddress = this.addressFactory.Create();
 			FavoriteNumberContract contract = new FavoriteNumberContract(contractAddress, permissionManager);
 			this.registry.RegisterContract(contract);
-			var permission = new Permission(typeof(Action));
+			var permission = typeof(Action);
 			var addPermissionAction = new AddPermissionAction(
 				contractAddress,
 				permission,
@@ -122,7 +122,7 @@ namespace StrongForce.Core.Tests
 			addPermissionAction = new AddPermissionAction(
 				contractAddress,
 				permission,
-				Address.Null);
+				null);
 			this.registry.HandleAction(permissionManager, addPermissionAction);
 			Assert.True(contract.CheckPermission(this.addressFactory.Create(), permission, contractAddress));
 		}
@@ -135,7 +135,7 @@ namespace StrongForce.Core.Tests
 			Address contractAddress = this.addressFactory.Create();
 			FavoriteNumberContract contract = new FavoriteNumberContract(contractAddress, permissionManager);
 			this.registry.RegisterContract(contract);
-			var permission = new Permission(typeof(Action));
+			var permission = typeof(Action);
 			var addPermissionAction = new AddPermissionAction(
 				contractAddress,
 				permission,
@@ -171,7 +171,7 @@ namespace StrongForce.Core.Tests
 
 			var intermediaryPermissionAction = new AddPermissionAction(
 				contract1Address,
-				new Permission(typeof(SetFavoriteNumberAction)),
+				typeof(SetFavoriteNumberAction),
 				permissionManager,
 				contract2Address);
 
@@ -179,7 +179,7 @@ namespace StrongForce.Core.Tests
 
 			var finalPermissionAction = new AddPermissionAction(
 				contract2Address,
-				new Permission(typeof(SetFavoriteNumberAction)),
+				typeof(SetFavoriteNumberAction),
 				contract1Address);
 
 			this.registry.HandleAction(permissionManager, finalPermissionAction);
@@ -209,7 +209,7 @@ namespace StrongForce.Core.Tests
 
 			var finalPermissionAction = new AddPermissionAction(
 				contract2Address,
-				new Permission(typeof(SetFavoriteNumberAction)),
+				typeof(SetFavoriteNumberAction),
 				contract1Address);
 
 			this.registry.HandleAction(permissionManager, finalPermissionAction);
@@ -237,7 +237,7 @@ namespace StrongForce.Core.Tests
 
 			var intermediaryPermissionAction = new AddPermissionAction(
 				contract1Address,
-				new Permission(typeof(SetFavoriteNumberAction)),
+				typeof(SetFavoriteNumberAction),
 				permissionManager,
 				contract2Address);
 
@@ -257,7 +257,7 @@ namespace StrongForce.Core.Tests
 			Address contractAddress = this.addressFactory.Create();
 			FavoriteNumberContract contract = new FavoriteNumberContract(contractAddress, permissionManager);
 			this.registry.RegisterContract(contract);
-			var permission = new Permission(typeof(Action));
+			var permission = typeof(Action);
 			var addPermissionAction = new AddPermissionAction(
 				contractAddress,
 				permission,
@@ -268,7 +268,7 @@ namespace StrongForce.Core.Tests
 
 			Assert.True(contract.CheckPermission(permissionManager, permission, contractAddress));
 
-			var updatePermissionAction = new RemovePermittedAddressAction(
+			var updatePermissionAction = new RemovePermissionAction(
 				contractAddress,
 				permission,
 				new HashSet<Address> { permissionManager },
@@ -288,7 +288,7 @@ namespace StrongForce.Core.Tests
 			Address contractAddress = this.addressFactory.Create();
 			FavoriteNumberContract contract = new FavoriteNumberContract(contractAddress, permissionManager);
 			this.registry.RegisterContract(contract);
-			var permission = new Permission(typeof(Action));
+			var permission = typeof(Action);
 			Address permitedAddress = this.addressFactory.Create();
 			var addPermissionAction = new AddPermissionAction(
 				contractAddress,
@@ -302,7 +302,7 @@ namespace StrongForce.Core.Tests
 				permitedAddress);
 
 			this.registry.HandleAction(permissionManager, addPermissionAction);
-			var updatePermissionAction = new RemovePermittedAddressAction(
+			var updatePermissionAction = new RemovePermissionAction(
 				contractAddress,
 				permission,
 				permissionManager,
@@ -320,7 +320,7 @@ namespace StrongForce.Core.Tests
 			Address contractAddress = this.addressFactory.Create();
 			FavoriteNumberContract contract = new FavoriteNumberContract(contractAddress, permissionManager);
 			this.registry.RegisterContract(contract);
-			var permission = new Permission(typeof(Action));
+			var permission = typeof(Action);
 			Address nextAddress1 = this.addressFactory.Create();
 			Address nextAddress2 = this.addressFactory.Create();
 			var addPermissionAction = new AddPermissionAction(
@@ -331,7 +331,7 @@ namespace StrongForce.Core.Tests
 
 			this.registry.HandleAction(permissionManager, addPermissionAction);
 
-			var updatePermissionAction = new RemovePermittedAddressAction(
+			var updatePermissionAction = new RemovePermissionAction(
 				contractAddress,
 				new HashSet<Address> { permissionManager },
 				permission,
@@ -350,7 +350,7 @@ namespace StrongForce.Core.Tests
 			Address contractAddress = this.addressFactory.Create();
 			FavoriteNumberContract contract = new FavoriteNumberContract(contractAddress, permissionManager);
 			this.registry.RegisterContract(contract);
-			var permission = new Permission(typeof(Action));
+			var permission = typeof(Action);
 			Address address = this.addressFactory.Create();
 
 			var addPermissionAction = new AddPermissionAction(
@@ -370,7 +370,7 @@ namespace StrongForce.Core.Tests
 			this.registry.HandleAction(permissionManager, addPermissionAction);
 			Assert.True(contract.CheckPermission(permissionManager, permission, this.addressFactory.Create()));
 
-			var removePermissionAction = new RemovePermittedAddressAction(
+			var removePermissionAction = new RemovePermissionAction(
 				contractAddress,
 				new HashSet<Address> { permissionManager },
 				permission,

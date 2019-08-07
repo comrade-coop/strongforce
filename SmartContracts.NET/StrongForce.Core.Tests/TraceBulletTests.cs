@@ -11,13 +11,11 @@ namespace StrongForce.Core.Tests
 	{
 		private readonly IAddressFactory addressFactory;
 		private ContractRegistry registry;
-		private Address anyWildCard;
 
 		public TraceBulletTests()
 		{
 			this.addressFactory = new RandomAddressFactory();
 			this.registry = new ContractRegistry();
-			this.anyWildCard = Address.Null;
 		}
 
 		[Fact]
@@ -34,14 +32,14 @@ namespace StrongForce.Core.Tests
 
 				var addTracingPermissionAction = new AddPermissionAction(
 					addrs[i],
-					new Permission(typeof(TracingBulletAction)),
-					this.anyWildCard,
-					this.anyWildCard);
+					typeof(TracingBulletAction),
+					null,
+					null);
 				var addForwardingPermissionAction = new AddPermissionAction(
 					addrs[i],
-					new Permission(typeof(ForwardAction)),
-					this.anyWildCard,
-					this.anyWildCard);
+					typeof(ForwardAction),
+					null,
+					null);
 				Assert.True(this.registry.HandleSendAction(addTracingPermissionAction, permissionManager));
 				Assert.True(this.registry.HandleSendAction(addForwardingPermissionAction, permissionManager));
 			}
@@ -50,7 +48,7 @@ namespace StrongForce.Core.Tests
 			{
 				var addPermissionAction = new AddPermissionAction(
 					addrs[i - 1],
-					new Permission(typeof(SetFavoriteNumberAction)),
+					typeof(SetFavoriteNumberAction),
 					addrs[i]);
 				Assert.True(this.registry.HandleSendAction(addPermissionAction, permissionManager));
 			}
@@ -72,9 +70,9 @@ namespace StrongForce.Core.Tests
 				contracts[i] = new FavoriteNumberContract(addrs[i], permissionManager);
 				this.registry.RegisterContract(contracts[i]);
 				var addTracingPermissionAction = new AddPermissionAction(
-					addrs[i], new Permission(typeof(TracingBulletAction)), this.anyWildCard, this.anyWildCard);
+					addrs[i], typeof(TracingBulletAction), null, null);
 				var addForwardingPermissionAction = new AddPermissionAction(
-					addrs[i], new Permission(typeof(ForwardAction)), this.anyWildCard, this.anyWildCard);
+					addrs[i], typeof(ForwardAction), null, null);
 				Assert.True(this.registry.HandleSendAction(addTracingPermissionAction, permissionManager));
 				Assert.True(this.registry.HandleSendAction(addForwardingPermissionAction, permissionManager));
 			}
@@ -83,7 +81,7 @@ namespace StrongForce.Core.Tests
 			for (int i = 1; i <= 3; i++)
 			{
 				var addPermissionAction = new AddPermissionAction(addrs[i - 1],
-					new Permission(typeof(SetFavoriteNumberAction)), addrs[i]);
+					typeof(SetFavoriteNumberAction), addrs[i]);
 				Assert.True(this.registry.HandleSendAction(addPermissionAction, permissionManager));
 			}
 
@@ -107,9 +105,9 @@ namespace StrongForce.Core.Tests
 				contracts[i] = new FavoriteNumberContract(addrs[i], permissionManager);
 				this.registry.RegisterContract(contracts[i]);
 				var addTracingPermissionAction = new AddPermissionAction(
-					addrs[i], new Permission(typeof(TracingBulletAction)), this.anyWildCard, this.anyWildCard);
+					addrs[i], typeof(TracingBulletAction), null, null);
 				var addForwardingPermissionAction = new AddPermissionAction(
-					addrs[i], new Permission(typeof(ForwardAction)), this.anyWildCard, this.anyWildCard);
+					addrs[i], typeof(ForwardAction), null, null);
 				Assert.True(this.registry.HandleSendAction(addTracingPermissionAction, permissionManager));
 				Assert.True(this.registry.HandleSendAction(addForwardingPermissionAction, permissionManager));
 			}
@@ -121,15 +119,15 @@ namespace StrongForce.Core.Tests
 			for (int i = 1; i <= 4; i++)
 			{
 				addPermissionAction = new AddPermissionAction(addrs[i - 1],
-					new Permission(typeof(SetFavoriteNumberAction)), addrs[i]);
+					typeof(SetFavoriteNumberAction), addrs[i]);
 				Assert.True(this.registry.HandleSendAction(addPermissionAction, permissionManager));
 			}
 
 			addPermissionAction =
-				new AddPermissionAction(addrs[5], new Permission(typeof(SetFavoriteNumberAction)), addrs[3]);
+				new AddPermissionAction(addrs[5], typeof(SetFavoriteNumberAction), addrs[3]);
 			Assert.True(this.registry.HandleSendAction(addPermissionAction, permissionManager));
 			addPermissionAction =
-				new AddPermissionAction(addrs[1], new Permission(typeof(SetFavoriteNumberAction)), addrs[5]);
+				new AddPermissionAction(addrs[1], typeof(SetFavoriteNumberAction), addrs[5]);
 			Assert.True(this.registry.HandleSendAction(addPermissionAction, permissionManager));
 
 			contracts[4].GenerateActionAndFindPath(addrs[0], 14);
@@ -154,9 +152,9 @@ namespace StrongForce.Core.Tests
 				contracts[i] = new FavoriteNumberContract(addrs[i], permissionManager);
 				this.registry.RegisterContract(contracts[i]);
 				var addTracingPermissionAction = new AddPermissionAction(
-					addrs[i], new Permission(typeof(TracingBulletAction)), this.anyWildCard, this.anyWildCard);
+					addrs[i], typeof(TracingBulletAction), null, null);
 				var addForwardingPermissionAction = new AddPermissionAction(
-					addrs[i], new Permission(typeof(ForwardAction)), this.anyWildCard, this.anyWildCard);
+					addrs[i], typeof(ForwardAction), null, null);
 				Assert.True(this.registry.HandleSendAction(addTracingPermissionAction, permissionManager));
 				Assert.True(this.registry.HandleSendAction(addForwardingPermissionAction, permissionManager));
 			}
@@ -168,21 +166,21 @@ namespace StrongForce.Core.Tests
 			for (int i = 1; i <= 6; i++)
 			{
 				addPermissionAction = new AddPermissionAction(addrs[i - 1],
-					new Permission(typeof(SetFavoriteNumberAction)), addrs[i]);
+					typeof(SetFavoriteNumberAction), addrs[i]);
 				Assert.True(this.registry.HandleSendAction(addPermissionAction, permissionManager));
 			}
 
 			addPermissionAction =
-				new AddPermissionAction(addrs[8], new Permission(typeof(SetFavoriteNumberAction)), addrs[3]);
+				new AddPermissionAction(addrs[8], typeof(SetFavoriteNumberAction), addrs[3]);
 			Assert.True(this.registry.HandleSendAction(addPermissionAction, permissionManager));
 			addPermissionAction =
-				new AddPermissionAction(addrs[1], new Permission(typeof(SetFavoriteNumberAction)), addrs[8]);
+				new AddPermissionAction(addrs[1], typeof(SetFavoriteNumberAction), addrs[8]);
 			Assert.True(this.registry.HandleSendAction(addPermissionAction, permissionManager));
 			addPermissionAction =
-				new AddPermissionAction(addrs[7], new Permission(typeof(SetFavoriteNumberAction)), addrs[5]);
+				new AddPermissionAction(addrs[7], typeof(SetFavoriteNumberAction), addrs[5]);
 			Assert.True(this.registry.HandleSendAction(addPermissionAction, permissionManager));
 			addPermissionAction =
-				new AddPermissionAction(addrs[8], new Permission(typeof(SetFavoriteNumberAction)), addrs[7]);
+				new AddPermissionAction(addrs[8], typeof(SetFavoriteNumberAction), addrs[7]);
 			Assert.True(this.registry.HandleSendAction(addPermissionAction, permissionManager));
 
 			contracts[6].GenerateActionAndFindPath(addrs[0], 14);
@@ -208,9 +206,9 @@ namespace StrongForce.Core.Tests
 				contracts[i] = new FavoriteNumberContract(addrs[i], permissionManager);
 				this.registry.RegisterContract(contracts[i]);
 				var addTracingPermissionAction = new AddPermissionAction(
-					addrs[i], new Permission(typeof(TracingBulletAction)), this.anyWildCard, this.anyWildCard);
+					addrs[i], typeof(TracingBulletAction), null, null);
 				var addForwardingPermissionAction = new AddPermissionAction(
-					addrs[i], new Permission(typeof(ForwardAction)), this.anyWildCard, this.anyWildCard);
+					addrs[i], typeof(ForwardAction), null, null);
 				Assert.True(this.registry.HandleSendAction(addTracingPermissionAction, permissionManager));
 				Assert.True(this.registry.HandleSendAction(addForwardingPermissionAction, permissionManager));
 			}
@@ -222,24 +220,24 @@ namespace StrongForce.Core.Tests
 			for (int i = 1; i <= 6; i++)
 			{
 				addPermissionAction = new AddPermissionAction(addrs[i - 1],
-					new Permission(typeof(SetFavoriteNumberAction)), addrs[i]);
+					typeof(SetFavoriteNumberAction), addrs[i]);
 				Assert.True(this.registry.HandleSendAction(addPermissionAction, permissionManager));
 			}
 
 			addPermissionAction =
-				new AddPermissionAction(addrs[8], new Permission(typeof(SetFavoriteNumberAction)), addrs[3]);
+				new AddPermissionAction(addrs[8], typeof(SetFavoriteNumberAction), addrs[3]);
 			Assert.True(this.registry.HandleSendAction(addPermissionAction, permissionManager));
 			addPermissionAction =
-				new AddPermissionAction(addrs[3], new Permission(typeof(SetFavoriteNumberAction)), addrs[8]);
+				new AddPermissionAction(addrs[3], typeof(SetFavoriteNumberAction), addrs[8]);
 			Assert.True(this.registry.HandleSendAction(addPermissionAction, permissionManager));
 			addPermissionAction =
-				new AddPermissionAction(addrs[1], new Permission(typeof(SetFavoriteNumberAction)), addrs[8]);
+				new AddPermissionAction(addrs[1], typeof(SetFavoriteNumberAction), addrs[8]);
 			Assert.True(this.registry.HandleSendAction(addPermissionAction, permissionManager));
 			addPermissionAction =
-				new AddPermissionAction(addrs[7], new Permission(typeof(SetFavoriteNumberAction)), addrs[5]);
+				new AddPermissionAction(addrs[7], typeof(SetFavoriteNumberAction), addrs[5]);
 			Assert.True(this.registry.HandleSendAction(addPermissionAction, permissionManager));
 			addPermissionAction =
-				new AddPermissionAction(addrs[8], new Permission(typeof(SetFavoriteNumberAction)), addrs[7]);
+				new AddPermissionAction(addrs[8], typeof(SetFavoriteNumberAction), addrs[7]);
 			Assert.True(this.registry.HandleSendAction(addPermissionAction, permissionManager));
 
 			contracts[6].GenerateActionAndFindPath(addrs[0], 14);
@@ -266,9 +264,9 @@ namespace StrongForce.Core.Tests
 				contracts[i] = new FavoriteNumberContract(addrs[i], permissionManager);
 				this.registry.RegisterContract(contracts[i]);
 				var addTracingPermissionAction = new AddPermissionAction(
-					addrs[i], new Permission(typeof(TracingBulletAction)), this.anyWildCard, this.anyWildCard);
+					addrs[i], typeof(TracingBulletAction), null, null);
 				var addForwardingPermissionAction = new AddPermissionAction(
-					addrs[i], new Permission(typeof(ForwardAction)), this.anyWildCard, this.anyWildCard);
+					addrs[i], typeof(ForwardAction), null, null);
 				Assert.True(this.registry.HandleSendAction(addTracingPermissionAction, permissionManager));
 				Assert.True(this.registry.HandleSendAction(addForwardingPermissionAction, permissionManager));
 			}
@@ -280,21 +278,21 @@ namespace StrongForce.Core.Tests
 			for (int i = 1; i <= 8; i++)
 			{
 				addPermissionAction = new AddPermissionAction(addrs[i - 1],
-					new Permission(typeof(SetFavoriteNumberAction)), addrs[i]);
+					typeof(SetFavoriteNumberAction), addrs[i]);
 				Assert.True(this.registry.HandleSendAction(addPermissionAction, permissionManager));
 			}
 
 			addPermissionAction =
-				new AddPermissionAction(addrs[1], new Permission(typeof(SetFavoriteNumberAction)), addrs[9]);
+				new AddPermissionAction(addrs[1], typeof(SetFavoriteNumberAction), addrs[9]);
 			Assert.True(this.registry.HandleSendAction(addPermissionAction, permissionManager));
 			addPermissionAction =
-				new AddPermissionAction(addrs[9], new Permission(typeof(SetFavoriteNumberAction)), addrs[3]);
+				new AddPermissionAction(addrs[9], typeof(SetFavoriteNumberAction), addrs[3]);
 			Assert.True(this.registry.HandleSendAction(addPermissionAction, permissionManager));
 			addPermissionAction =
-				new AddPermissionAction(addrs[5], new Permission(typeof(SetFavoriteNumberAction)), addrs[10]);
+				new AddPermissionAction(addrs[5], typeof(SetFavoriteNumberAction), addrs[10]);
 			Assert.True(this.registry.HandleSendAction(addPermissionAction, permissionManager));
 			addPermissionAction =
-				new AddPermissionAction(addrs[10], new Permission(typeof(SetFavoriteNumberAction)), addrs[7]);
+				new AddPermissionAction(addrs[10], typeof(SetFavoriteNumberAction), addrs[7]);
 			Assert.True(this.registry.HandleSendAction(addPermissionAction, permissionManager));
 
 			contracts[8].GenerateActionAndFindPath(addrs[0], 14);

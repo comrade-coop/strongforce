@@ -39,7 +39,7 @@ namespace Tendermint.Tests
 			var registry = new RemoteContractRegistry(address =>
 			{
 				count++;
-				return new DummyContract(address, Address.Null);
+				return new DummyContract(address, null);
 			});
 
 			for (var r = 0; r < 3; r++)
@@ -48,7 +48,7 @@ namespace Tendermint.Tests
 				{
 					var addressA = new Address(new byte[] { 0, (byte)i });
 					var addressB = new Address(new byte[] { 1, (byte)i });
-					registry.HandleAction(Address.Null, new DummyAction(addressA, new DummyAction(addressB)));
+					registry.HandleAction(addressA, new DummyAction(addressA, new DummyAction(addressB)));
 				}
 			}
 
@@ -62,7 +62,7 @@ namespace Tendermint.Tests
 			var messageCount = 10;
 			var registry = new RemoteContractRegistry(address =>
 			{
-				return new DummyContract(address, Address.Null);
+				return new DummyContract(address, null);
 			});
 
 			for (var r = 0; r < 3; r++)
@@ -73,7 +73,7 @@ namespace Tendermint.Tests
 					var addressB = new Address(new byte[] { 1, (byte)i });
 					expectedAddresses.Add(addressA);
 					expectedAddresses.Add(addressB);
-					registry.HandleAction(Address.Null, new DummyAction(addressA, new DummyAction(addressB)));
+					registry.HandleAction(addressA, new DummyAction(addressA, new DummyAction(addressB)));
 				}
 			}
 

@@ -14,9 +14,28 @@ namespace StrongForce.Core
 			this.Value = value;
 		}
 
-		public static Address Null { get; } = new Address(new byte[0]);
-
 		public byte[] Value { get; }
+
+		public static bool operator ==(Address a, Address b)
+		{
+			if (a is null)
+			{
+				return b is null;
+			}
+			else if (b is null)
+			{
+				return false;
+			}
+			else
+			{
+				return a.CompareTo(b) == 0;
+			}
+		}
+
+		public static bool operator !=(Address a, Address b)
+		{
+			return !(a == b);
+		}
 
 		public static Address FromBase64String(string base64String)
 		{

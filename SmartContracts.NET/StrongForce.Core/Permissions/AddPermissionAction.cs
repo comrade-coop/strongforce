@@ -7,19 +7,28 @@ namespace StrongForce.Core.Permissions
 	{
 		public AddPermissionAction(
 			Address target,
-			Permission permission,
-			Address permittedAddress,
-			Address receiver = null)
+			Permission permission)
 			: base(target)
 		{
-			this.PermittedAddress = permittedAddress;
-			this.Receiver = receiver ?? target;
 			this.Permission = permission;
 		}
 
-		public Address PermittedAddress { get; }
+		public AddPermissionAction(
+			Address target,
+			Type permission,
+			Address permissionSender,
+			Address permissionTarget)
+			: this(target, new Permission(permission, permissionSender, permissionTarget))
+		{
+		}
 
-		public Address Receiver { get; }
+		public AddPermissionAction(
+			Address target,
+			Type permission,
+			Address permissionSender)
+			: this(target, permission, permissionSender, target)
+		{
+		}
 
 		public Permission Permission { get; }
 	}

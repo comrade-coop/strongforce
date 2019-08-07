@@ -7,12 +7,10 @@ namespace StrongForce.Core.Tests
 	public class AccessControlListTests
 	{
 		private readonly IAddressFactory addressFactory;
-		private Address anyAddress;
 
 		public AccessControlListTests()
 		{
 			this.addressFactory = new RandomAddressFactory();
-			this.anyAddress = Address.Null;
 		}
 
 		[Fact]
@@ -20,7 +18,7 @@ namespace StrongForce.Core.Tests
 		{
 			Address address = this.addressFactory.Create();
 			var acl = new AccessControlList();
-			var permission = new Permission(typeof(Action));
+			var permission = typeof(Action);
 
 			Assert.True(acl.AddPermission(address, permission, address));
 		}
@@ -30,17 +28,17 @@ namespace StrongForce.Core.Tests
 		{
 			Address address = this.addressFactory.Create();
 			var acl = new AccessControlList();
-			var permission = new Permission(typeof(Action));
+			var permission = typeof(Action);
 
 			acl.AddPermission(address, permission, address);
 			Assert.False(acl.AddPermission(address, permission, address));
 		}
 
 		[Fact]
-		public void AddPermission_WhenNullIsPassed_ReturnsFalse()
+		public void AddPermission_WhenNullIsPassed_ReturnsTrue()
 		{
 			var acl = new AccessControlList();
-			Assert.False(acl.AddPermission(null, null, null));
+			Assert.True(acl.AddPermission(null, null, null));
 		}
 
 		[Fact]
@@ -48,7 +46,7 @@ namespace StrongForce.Core.Tests
 		{
 			Address address = this.addressFactory.Create();
 			var acl = new AccessControlList();
-			var permission = new Permission(typeof(Action));
+			var permission = typeof(Action);
 
 			acl.AddPermission(address, permission, address);
 			Assert.True(acl.HasPermission(address, permission, address));
@@ -59,7 +57,7 @@ namespace StrongForce.Core.Tests
 		{
 			Address address = this.addressFactory.Create();
 			var acl = new AccessControlList();
-			var permission = new Permission(typeof(Action));
+			var permission = typeof(Action);
 
 			Assert.False(acl.HasPermission(address, permission, address));
 		}
@@ -69,10 +67,10 @@ namespace StrongForce.Core.Tests
 		{
 			Address address = this.addressFactory.Create();
 			var acl = new AccessControlList();
-			var permission = new Permission(typeof(Action));
+			var permission = typeof(Action);
 
 			acl.AddPermission(address, permission, address);
-			Assert.True(acl.RemovePermission(permission, address));
+			Assert.True(acl.RemovePermission(address, permission, address));
 			Assert.False(acl.HasPermission(address, permission, address));
 		}
 
@@ -81,25 +79,25 @@ namespace StrongForce.Core.Tests
 		{
 			Address address = this.addressFactory.Create();
 			var acl = new AccessControlList();
-			var permission = new Permission(typeof(Action));
+			var permission = typeof(Action);
 
-			Assert.False(acl.RemovePermission(permission, address));
+			Assert.False(acl.RemovePermission(address, permission, address));
 		}
 
 		[Fact]
 		public void RemovePermission_WhenNullIsPassed_ReturnsFalse()
 		{
 			var acl = new AccessControlList();
-			Assert.False(acl.RemovePermission(null, null));
+			Assert.False(acl.RemovePermission(null, null, null));
 		}
 
 		[Fact]
 		public void AddPermission_WithWildCard_ReturnsTrue()
 		{
 			var acl = new AccessControlList();
-			var permission = new Permission(typeof(Action));
+			var permission = typeof(Action);
 
-			Assert.True(acl.AddPermission(this.anyAddress, permission, this.anyAddress));
+			Assert.True(acl.AddPermission(null, permission, null));
 		}
 
 		[Fact]
@@ -107,9 +105,9 @@ namespace StrongForce.Core.Tests
 		{
 			Address address = this.addressFactory.Create();
 			var acl = new AccessControlList();
-			var permission = new Permission(typeof(Action));
+			var permission = typeof(Action);
 
-			Assert.True(acl.AddPermission(address, permission, this.anyAddress));
+			Assert.True(acl.AddPermission(address, permission, null));
 			Assert.True(acl.HasPermission(address, permission, address));
 		}
 
@@ -118,9 +116,9 @@ namespace StrongForce.Core.Tests
 		{
 			Address address = this.addressFactory.Create();
 			var acl = new AccessControlList();
-			var permission = new Permission(typeof(Action));
+			var permission = typeof(Action);
 
-			Assert.True(acl.AddPermission(this.anyAddress, permission, this.anyAddress));
+			Assert.True(acl.AddPermission(null, permission, null));
 			Assert.True(acl.HasPermission(address, permission, address));
 		}
 
@@ -130,11 +128,11 @@ namespace StrongForce.Core.Tests
 			var address = this.addressFactory.Create();
 			var newAddress = this.addressFactory.Create();
 			var acl = new AccessControlList();
-			var permission = new Permission(typeof(Action));
+			var permission = typeof(Action);
 
-			Assert.True(acl.AddPermission(address, permission, this.anyAddress));
+			Assert.True(acl.AddPermission(address, permission, null));
 
-			Assert.True(acl.AddPermission(newAddress, permission, this.anyAddress));
+			Assert.True(acl.AddPermission(newAddress, permission, null));
 			Assert.True(acl.HasPermission(address, permission, this.addressFactory.Create()));
 			Assert.True(acl.HasPermission(newAddress, permission, this.addressFactory.Create()));
 		}
@@ -148,7 +146,7 @@ namespace StrongForce.Core.Tests
 			var newAddressCard = this.GenerateWildCard(newAddress);
 			newAddressCard.Add(address);
 			var acl = new AccessControlList();
-			var permission = new Permission(typeof(Action));
+			var permission = typeof(Action);
 
 			Assert.True(acl.AddPermission(this.anyWildCard, permission, addressCard));
 
@@ -164,12 +162,12 @@ namespace StrongForce.Core.Tests
 			var newAddress = this.addressFactory.Create();
 
 			var acl = new AccessControlList();
-			var permission = new Permission(typeof(Action));
+			var permission = typeof(Action);
 
-			Assert.True(acl.AddPermission(address, permission, this.anyAddress));
-			Assert.True(acl.AddPermission(newAddress, permission, this.anyAddress));
+			Assert.True(acl.AddPermission(address, permission, null));
+			Assert.True(acl.AddPermission(newAddress, permission, null));
 
-			Assert.True(acl.RemovePermittedAddress(newAddress, permission, this.anyAddress));
+			Assert.True(acl.RemovePermission(newAddress, permission, null));
 			Assert.True(acl.HasPermission(address, permission, this.addressFactory.Create()));
 			Assert.False(acl.HasPermission(newAddress, permission, this.addressFactory.Create()));
 		}
