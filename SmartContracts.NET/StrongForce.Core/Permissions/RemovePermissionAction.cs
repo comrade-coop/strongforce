@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 
 namespace StrongForce.Core.Permissions
@@ -6,15 +7,28 @@ namespace StrongForce.Core.Permissions
 	{
 		public RemovePermissionAction(
 			Address target,
-			Permission permission,
-			Address receiver)
+			Permission permission)
 			: base(target)
 		{
-			this.Receiver = receiver;
 			this.Permission = permission;
 		}
 
-		public Address Receiver { get; }
+		public RemovePermissionAction(
+			Address target,
+			Type permission,
+			Address permissionSender,
+			Address permissionTarget)
+			: this(target, new Permission(permission, permissionSender, permissionTarget))
+		{
+		}
+
+		public RemovePermissionAction(
+			Address target,
+			Type permission,
+			Address permissionSender)
+			: this(target, permission, permissionSender, target)
+		{
+		}
 
 		public Permission Permission { get; }
 	}

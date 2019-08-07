@@ -17,15 +17,15 @@ namespace StrongForce.Core
 		{
 			this.Acl.AddPermission(
 				initialAdmin,
-				new Permission(typeof(AddPermissionAction)),
+				typeof(AddPermissionAction),
 				this.Address);
 			this.Acl.AddPermission(
 				initialAdmin,
-				new Permission(typeof(RemovePermissionAction)),
+				typeof(RemovePermissionAction),
 				this.Address);
 			this.Acl.AddPermission(
 				initialAdmin,
-				new Permission(typeof(RemovePermittedAddressAction)),
+				typeof(RemovePermissionAction),
 				this.Address);
 		}
 
@@ -51,7 +51,7 @@ namespace StrongForce.Core
 
 			if (!this.CheckPermission(context, action))
 			{
-				throw new NoPermissionException(this, context.Sender, new Permission(action.GetType()));
+				throw new NoPermissionException(this, context.Sender, action.GetType());
 			}
 
 			return this.HandleAction(context, action);
@@ -66,7 +66,7 @@ namespace StrongForce.Core
 				checkedAction = forwardAction.FinalAction;
 			}
 
-			var permission = new Permission(checkedAction.GetType());
+			var permission = checkedAction.GetType();
 			return this.Acl.HasPermission(context.Sender, permission, checkedAction.Target);
 		}
 
@@ -75,23 +75,11 @@ namespace StrongForce.Core
 			switch (action)
 			{
 				case AddPermissionAction permissionAction:
-					this.Acl.AddPermission(
-						permissionAction.PermittedAddress,
-						permissionAction.Permission,
-						permissionAction.Receiver);
+					this.Acl.AddPermission(permissionAction.Permission);
 					return true;
 
 				case RemovePermissionAction permissionAction:
-					this.Acl.RemovePermission(
-						permissionAction.Permission,
-						permissionAction.Receiver);
-					return true;
-
-				case RemovePermittedAddressAction permissionAction:
-					this.Acl.RemovePermittedAddress(
-						permissionAction.PermittedAddress,
-						permissionAction.Permission,
-						permissionAction.Receiver);
+					this.Acl.RemovePermission(permissionAction.Permission);
 					return true;
 
 				case ForwardAction forwardAction:

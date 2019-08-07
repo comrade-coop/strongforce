@@ -1,19 +1,26 @@
 using System;
+using StrongForce.Core;
 
 namespace StrongForce.Core.Permissions
 {
 	public class Permission : IComparable<Permission>
 	{
-		public Permission(Type type)
+		public Permission(Type type, Address sender, Address target)
 		{
+			this.Sender = sender;
+			this.Target = target;
 			this.Type = type;
 		}
 
 		public Type Type { get; }
 
+		public Address Sender { get; }
+
+		public Address Target { get; }
+
 		public override string ToString()
 		{
-			return this.Type.Name;
+			return $"{this.Sender} - {this.Type.Name} -> {this.Target}";
 		}
 
 		public override bool Equals(object obj)
@@ -28,17 +35,17 @@ namespace StrongForce.Core.Permissions
 
 		public override int GetHashCode()
 		{
-			return this.Type != null ? this.Type.GetHashCode() : 0;
+			return ValueTuple.Create(this.Type?.Name, this.Sender, this?.Target).GetHashCode();
 		}
 
 		public int CompareTo(Permission other)
 		{
-			return this.ToString().CompareTo(other.ToString());
+			return ValueTuple.Create(this.Type?.Name, this.Sender, this.Target).CompareTo(ValueTuple.Create(other.Type?.Name, other.Sender, other.Target));
 		}
 
 		protected bool Equals(Permission other)
 		{
-			return this.Type == other.Type;
+			return this.Type == other.Type && this.Sender == other.Sender && this.Target == other.Target;
 		}
 	}
 }

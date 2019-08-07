@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using StrongForce.Core;
@@ -17,7 +18,7 @@ namespace StrongForce.Core.Tests.Mocks
 		{
 			this.Acl.AddPermission(
 				initialAdmin,
-				new Permission(typeof(SetFavoriteNumberAction)),
+				typeof(SetFavoriteNumberAction),
 				this.Address);
 		}
 
@@ -32,9 +33,9 @@ namespace StrongForce.Core.Tests.Mocks
 			return base.CheckPermission(context, action);
 		}
 
-		public bool CheckPermission(Address sender, Permission permission, Address target)
+		public bool CheckPermission(Address sender, Type type, Address target)
 		{
-			return this.Acl.HasPermission(sender, permission, target);
+			return this.Acl.HasPermission(sender, type, target);
 		}
 
 		protected override bool HandleAction(ActionContext context, Action action)

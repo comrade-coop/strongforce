@@ -17,7 +17,7 @@ namespace Tendermint.Tests.Mocks
 		{
 			this.Acl.AddPermission(
 				initialAdmin,
-				new Permission(typeof(DummyAction)),
+				typeof(DummyAction),
 				this.Address);
 		}
 

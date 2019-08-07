@@ -13,7 +13,8 @@ namespace Tendermint.Tests
 		public void Serializes_And_Deserializes_Actions()
 		{
 			var server = new StrongForceServer(NullLogger<StrongForceServer>.Instance);
-			var action = new DummyAction(Address.Null);
+			var address = new Address(new byte[] { 10, 20, 127 });
+			var action = new DummyAction(address);
 
 			var serializedAction = server.SerializeAction(action);
 

@@ -8,8 +8,6 @@ namespace Tendermint.Tests.Mocks
 		public DummyAction(Address target, Action forwarded = null, object objectProperty = null)
 			: base(target)
 		{
-			// TODO: Uncomment this and fix tests
-			// this.Sender = Address.Null;
 			this.NextAction = forwarded;
 			this.ObjectProperty = objectProperty;
 			this.ObjectProperty = objectProperty;

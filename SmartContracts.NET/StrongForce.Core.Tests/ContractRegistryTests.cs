@@ -99,7 +99,7 @@ namespace StrongForce.Core.Tests
 				null,
 				50);
 
-			Assert.Throws<ArgumentNullException>(() => registry.HandleAction(Address.Null, action));
+			Assert.Throws<ArgumentNullException>(() => registry.HandleAction(address, action));
 		}
 	}
 }
