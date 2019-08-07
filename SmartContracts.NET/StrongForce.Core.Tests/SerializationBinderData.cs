@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using Xunit;
 
-namespace Tendermint.Tests
+namespace StrongForce.Core.Tests
 {
 	public partial class FilteredSerializationBinderTests
 	{

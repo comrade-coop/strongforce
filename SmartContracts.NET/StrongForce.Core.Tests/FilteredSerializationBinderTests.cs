@@ -1,8 +1,8 @@
 ﻿using System;
-using Tendermint;
+using StrongForce.Core.Serialization;
 using Xunit;
 
-namespace Tendermint.Tests
+namespace StrongForce.Core.Tests
 {
 	public partial class FilteredSerializationBinderTests
 	{

@@ -1,7 +1,10 @@
 using System;
+using Newtonsoft.Json;
+using StrongForce.Core.Serialization;
 
 namespace StrongForce.Core
 {
+	[JsonConverter(typeof(AddressJsonConverter))]
 	public class Address : IComparable<Address>
 	{
 		public Address(byte[] value)

@@ -7,61 +7,21 @@ using System.Threading.Tasks;
 using Google.Protobuf;
 using Grpc.Core;
 using Microsoft.Extensions.Logging;
-using Newtonsoft.Json;
 using Strongforce;
 using StrongForce.Core;
 using StrongForce.Core.Permissions;
+using StrongForce.Core.Serialization;
 using Action = StrongForce.Core.Action;
 
 namespace Tendermint
 {
 	public class StrongForceServer : Strongforce.StrongForce.StrongForceBase
 	{
-		private JsonSerializerSettings actionSerializationSettings = new JsonSerializerSettings()
-		{
-			SerializationBinder = new FilteredSerializationBinder()
-			{
-				WhitelistedBaseTypes = new HashSet<Type> { typeof(Action), typeof(Address) },
-				BlacklistedTypes = new HashSet<Type> { },
-			},
-			TypeNameHandling = TypeNameHandling.Auto,
-			Converters = new List<JsonConverter> { new AddressJsonConverter() },
-		};
-
-		private JsonSerializerSettings contractSerializationSettings = new JsonSerializerSettings()
-		{
-			TypeNameHandling = TypeNameHandling.All,
-		};
-
 		private ILogger<StrongForceServer> logger;
 
 		public StrongForceServer(ILogger<StrongForceServer> logger)
 		{
 			this.logger = logger;
-		}
-
-		public byte[] SerializeAction(Action action)
-		{
-			var serialized = JsonConvert.SerializeObject(action, typeof(Action), this.actionSerializationSettings);
-			return Encoding.UTF8.GetBytes(serialized);
-		}
-
-		public Action DeserializeAction(byte[] serializedAction)
-		{
-			var serialized = Encoding.UTF8.GetString(serializedAction);
-			return JsonConvert.DeserializeObject<Action>(serialized, this.actionSerializationSettings);
-		}
-
-		public byte[] SerializeContract(Contract contract)
-		{
-			var serialized = JsonConvert.SerializeObject(contract, typeof(Contract), this.contractSerializationSettings);
-			return Encoding.UTF8.GetBytes(serialized);
-		}
-
-		public Contract DeserializeContract(byte[] serializedContract)
-		{
-			var serialized = Encoding.UTF8.GetString(serializedContract);
-			return JsonConvert.DeserializeObject<Contract>(serialized, this.contractSerializationSettings);
 		}
 
 		public override async Task ExecuteAction(IAsyncStreamReader<ActionOrContract> requestStream, IServerStreamWriter<ContractRequest> responseStream, ServerCallContext context)
@@ -97,7 +57,8 @@ namespace Tendermint
 					{
 						var address = new Address(actionOrContract.Action.Address.ToByteArray());
 
-						var action = this.DeserializeAction(actionOrContract.Action.Data.ToByteArray());
+						var data = Encoding.Unicode.GetString(actionOrContract.Action.Data.ToByteArray());
+						var action = StrongForceSerialization.DeserializeAction(data);
 
 						this.logger.LogInformation("Received an action with type: ", action != null ? action.GetType().ToString() : "null");
 
@@ -120,7 +81,8 @@ namespace Tendermint
 					{
 						var address = new Address(actionOrContract.Contract.Address.ToByteArray());
 
-						var contract = this.DeserializeContract(actionOrContract.Contract.Data.ToByteArray());
+						var data = Encoding.Unicode.GetString(actionOrContract.Contract.Data.ToByteArray());
+						var contract = StrongForceSerialization.DeserializeContract(data);
 
 						this.logger.LogTrace("Received a contract with type: ", contract != null ? contract.GetType().ToString() : "null");
 
@@ -130,12 +92,12 @@ namespace Tendermint
 
 				foreach (var contract in registry.GetUsedContracts())
 				{
-					var data = this.SerializeContract(contract);
+					var data = StrongForceSerialization.SerializeContract(contract);
 
 					await responseStream.WriteAsync(new ContractRequest
 					{
 						Address = ByteString.CopyFrom(contract.Address.Value),
-						Data = ByteString.CopyFrom(data),
+						Data = ByteString.CopyFrom(Encoding.Unicode.GetBytes(data)),
 					});
 
 					this.logger.LogTrace("Saved contract #", contract.Address.ToBase64String());

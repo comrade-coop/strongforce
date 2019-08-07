@@ -2,9 +2,8 @@ using System;
 using System.Collections.Generic;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
-using StrongForce.Core;
 
-namespace Tendermint
+namespace StrongForce.Core.Serialization
 {
 	public class AddressJsonConverter : JsonConverter<Address>
 	{
