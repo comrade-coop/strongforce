@@ -13,7 +13,7 @@
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\Tendermint\Tendermint.csproj" />
+        <ProjectReference Include="..\StrongForce.Integrations.Cosmos\StrongForce.Integrations.Cosmos.csproj" />
     </ItemGroup>
 
     <PropertyGroup>

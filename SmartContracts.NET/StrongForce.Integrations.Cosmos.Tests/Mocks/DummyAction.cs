@@ -1,7 +1,7 @@
 using StrongForce.Core;
 using Action = StrongForce.Core.Action;
 
-namespace Tendermint.Tests.Mocks
+namespace StrongForce.Integrations.Cosmos.Tests.Mocks
 {
 	public class DummyAction : Action
 	{

@@ -13,7 +13,7 @@ using StrongForce.Core.Permissions;
 using StrongForce.Core.Serialization;
 using Action = StrongForce.Core.Action;
 
-namespace Tendermint
+namespace StrongForce.Integrations.Cosmos
 {
 	public class StrongForceServer : Strongforce.StrongForce.StrongForceBase
 	{

@@ -7,10 +7,7 @@ dotnet: 2.2
 
 install:
   - dotnet restore SmartContracts.NET/Strongforce.sln
-  - dotnet add SmartContracts.NET/StrongForce.Core.Tests/StrongForce.Core.Tests.csproj package  xunit --version 2.4.1
-  - dotnet add SmartContracts.NET/Tendermint.Tests/Tendermint.Tests.csproj package  xunit --version 2.4.1
 
 script:
   - dotnet build SmartContracts.NET/Strongforce.sln
-  - dotnet test SmartContracts.NET/StrongForce.Core.Tests/StrongForce.Core.Tests.csproj
-  - dotnet test SmartContracts.NET/Tendermint.Tests/Tendermint.Tests.csproj
+  - dotnet test SmartContracts.NET/Strongforce.sln --no-build

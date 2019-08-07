@@ -4,7 +4,7 @@ using System.Linq;
 using StrongForce.Core;
 using Action = StrongForce.Core.Action;
 
-namespace Tendermint
+namespace StrongForce.Integrations.Cosmos
 {
 	public class RemoteContractRegistry : ContractRegistry
 	{

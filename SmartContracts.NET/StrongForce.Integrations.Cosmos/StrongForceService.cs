@@ -8,7 +8,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Strongforce;
 
-namespace Tendermint
+namespace StrongForce.Integrations.Cosmos
 {
 	public class StrongForceService : IHostedService
 	{

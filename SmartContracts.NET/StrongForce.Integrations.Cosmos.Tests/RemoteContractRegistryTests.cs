@@ -1,10 +1,10 @@
 using System.Collections.Generic;
 using System.Linq;
 using StrongForce.Core;
-using Tendermint.Tests.Mocks;
+using StrongForce.Integrations.Cosmos.Tests.Mocks;
 using Xunit;
 
-namespace Tendermint.Tests
+namespace StrongForce.Integrations.Cosmos.Tests
 {
 	public class RemoteContractRegistryTests
 	{
