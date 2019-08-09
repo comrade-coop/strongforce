@@ -1,6 +1,5 @@
 using System.Collections.Generic;
 using System.Linq;
-using Newtonsoft.Json;
 using StrongForce.Core;
 using StrongForce.Core.Permissions;
 
@@ -8,14 +7,12 @@ namespace StrongForce.Core.Tests.Mocks
 {
 	public class CreatorContract : Contract
 	{
-		[JsonConstructor]
-		public CreatorContract(Address address)
-			: base(address)
+		public CreatorContract()
 		{
 		}
 
-		public CreatorContract(Address address, Address initialAdmin)
-			: base(address, initialAdmin)
+		public CreatorContract(Address initialAdmin)
+			: base(initialAdmin)
 		{
 			this.Acl.AddPermission(
 				initialAdmin,
@@ -23,7 +20,7 @@ namespace StrongForce.Core.Tests.Mocks
 				this.Address);
 		}
 
-		public Address LastCreatedAddress { get; protected set; } = null;
+		public Address LastCreatedAddress { get; set; } = null;
 
 		protected override bool HandleAction(ActionContext context, Action action)
 		{

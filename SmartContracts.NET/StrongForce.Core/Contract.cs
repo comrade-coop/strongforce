@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Runtime.Serialization;
 using StrongForce.Core.Exceptions;
 using StrongForce.Core.Permissions;
 
@@ -7,13 +8,18 @@ namespace StrongForce.Core
 {
 	public abstract class Contract
 	{
-		public Contract(Address address)
+		public Contract()
 		{
-			this.Address = address;
+			// HACK: Needed so that the other constructors knows about the "self" address
+			if (CurrentlyCreatingAddress != null)
+			{
+				this.Address = CurrentlyCreatingAddress;
+				CurrentlyCreatingAddress = null;
+			}
 		}
 
-		public Contract(Address address, Address initialAdmin)
-			: this(address)
+		public Contract(Address initialAdmin)
+			: this()
 		{
 			this.Acl.AddPermission(
 				initialAdmin,
@@ -33,9 +39,11 @@ namespace StrongForce.Core
 
 		internal event Func<Type, object[], Address> CreateContractEvent;
 
-		public Address Address { get; }
+		public Address Address { get; internal set; } = null;
 
-		public AccessControlList Acl { get; protected set; } = new AccessControlList();
+		public AccessControlList Acl { get; set; } = new AccessControlList();
+
+		internal static Address CurrentlyCreatingAddress { get; set; } = null;
 
 		public override string ToString()
 		{

@@ -6,7 +6,7 @@ namespace StrongForce.Core.Tests.Mocks
 {
 	public class SequentialAddressFactory : IAddressFactory
 	{
-		public byte AddressCount { get; private set; } = 0;
+		public byte AddressCount { get; set; } = 0;
 
 		public Address Create()
 		{

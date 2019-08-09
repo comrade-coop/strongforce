@@ -7,8 +7,7 @@ namespace StrongForce.Core.Kits
 {
 	public class KitContract : Contract
 	{
-		public KitContract(Address address, Kit kit)
-			: base(address)
+		public KitContract(Kit kit)
 		{
 			this.Kit = kit;
 			this.Acl.AddPermission(
@@ -19,9 +18,9 @@ namespace StrongForce.Core.Kits
 
 		public static Address DefaultAddress { get; } = new Address(new byte[] { 0 });
 
-		public bool Instantiated { get; private set; } = false;
+		public bool Instantiated { get; set; } = false;
 
-		public Kit Kit { get; }
+		public Kit Kit { get; set; }
 
 		protected override bool HandleAction(ActionContext context, Action action)
 		{

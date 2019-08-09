@@ -116,7 +116,7 @@ namespace StrongForce.Integrations.Cosmos
 						if (data == string.Empty && address == KitContract.DefaultAddress)
 						{
 							this.logger.LogTrace("Fulfilling request with default kit contract!");
-							contract = new KitContract(KitContract.DefaultAddress, this.initialKit);
+							contract = new KitContract(this.initialKit);
 						}
 						else
 						{

@@ -18,10 +18,11 @@ namespace StrongForce.Core.Tests
 		{
 			var registry = new ContractRegistry();
 			Address contractAddress = this.addressFactory.Create();
-			Contract contract = new FavoriteNumberContract(contractAddress);
+			Contract contract = new FavoriteNumberContract();
 
-			registry.RegisterContract(contract);
+			registry.RegisterContract(contractAddress, contract);
 
+			Assert.Equal(contractAddress, contract.Address);
 			Assert.Equal(contract, registry.GetContract(contractAddress));
 		}
 
@@ -30,12 +31,12 @@ namespace StrongForce.Core.Tests
 		{
 			var registry = new ContractRegistry();
 			Address contractsAddress = this.addressFactory.Create();
-			Contract firstContract = new FavoriteNumberContract(contractsAddress);
-			Contract secondContract = new FavoriteNumberContract(contractsAddress);
+			Contract firstContract = new FavoriteNumberContract();
+			Contract secondContract = new FavoriteNumberContract();
 
-			registry.RegisterContract(firstContract);
+			registry.RegisterContract(contractsAddress, firstContract);
 
-			Assert.Throws<InvalidOperationException>(() => registry.RegisterContract(secondContract));
+			Assert.Throws<InvalidOperationException>(() => registry.RegisterContract(contractsAddress, secondContract));
 		}
 
 		[Fact]
@@ -46,6 +47,7 @@ namespace StrongForce.Core.Tests
 			Address contractAddress = registry.CreateContract(typeof(FavoriteNumberContract));
 
 			Assert.NotNull(registry.GetContract(contractAddress));
+			Assert.Equal(typeof(FavoriteNumberContract), registry.GetContract(contractAddress).GetType());
 		}
 
 		[Fact]
@@ -59,8 +61,9 @@ namespace StrongForce.Core.Tests
 		[Fact]
 		public void RegisterContract_WhenPassedNull_ThrowsArgumentNullException()
 		{
+			Address address = this.addressFactory.Create();
 			var registry = new ContractRegistry();
-			Assert.Throws<ArgumentNullException>(() => registry.RegisterContract(null));
+			Assert.Throws<ArgumentNullException>(() => registry.RegisterContract(address, null));
 		}
 
 		[Fact]
@@ -85,9 +88,9 @@ namespace StrongForce.Core.Tests
 			var registry = new ContractRegistry();
 			Address senderAddress = this.addressFactory.Create();
 			Address contractAddress = this.addressFactory.Create();
-			var contract = new FavoriteNumberContract(contractAddress, senderAddress);
+			var contract = new FavoriteNumberContract(senderAddress);
 
-			registry.RegisterContract(contract);
+			registry.RegisterContract(contractAddress, contract);
 
 			var numberAction = new SetFavoriteNumberAction(contractAddress, 0);
 			registry.HandleAction(senderAddress, numberAction);
@@ -108,10 +111,7 @@ namespace StrongForce.Core.Tests
 		public void HandleAction_WhenPassedActionWithNonExistentAddress_ReturnsFalse()
 		{
 			var registry = new ContractRegistry();
-			Address contractAddress = this.addressFactory.Create();
-			var contract = new FavoriteNumberContract(contractAddress);
 
-			registry.RegisterContract(contract);
 			Address address = this.addressFactory.Create();
 			var action = new SetFavoriteNumberAction(
 				null,

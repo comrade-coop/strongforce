@@ -7,8 +7,6 @@ namespace StrongForce.Core
 {
 	public class ContractRegistry
 	{
-		private IAddressFactory addressFactory;
-
 		private IDictionary<Address, Contract> addressesToContracts = new SortedDictionary<Address, Contract>();
 
 		// TODO: This Dictionary uses reference equality and reference-based hashcode, which would break whenever actions are serialized / deserialized
@@ -16,7 +14,7 @@ namespace StrongForce.Core
 
 		public ContractRegistry(IAddressFactory addressFactory)
 		{
-			this.addressFactory = addressFactory;
+			this.AddressFactory = addressFactory;
 		}
 
 		public ContractRegistry()
@@ -24,22 +22,23 @@ namespace StrongForce.Core
 		{
 		}
 
+		public IAddressFactory AddressFactory { get; set; }
+
 		public virtual Contract GetContract(Address address)
 		{
 			return this.addressesToContracts.TryGetValue(address, out Contract contract) ? contract : null;
 		}
 
-		public void RegisterContract(Contract contract)
+		public void RegisterContract(Address address, Contract contract)
 		{
 			if (contract == null)
 			{
 				throw new ArgumentNullException(nameof(contract));
 			}
 
-			Address address = contract.Address;
+			this.SetContract(address, contract);
 
-			this.SetContract(contract);
-
+			contract.Address = address;
 			contract.SendActionEvent += (action) => this.HandleAction(address, action);
 			contract.CreateContractEvent += this.CreateContract;
 		}
@@ -75,36 +74,32 @@ namespace StrongForce.Core
 			return contract != null && contract.Receive(context, action);
 		}
 
-		public Address CreateContract(Type contractType, params object[] additionalParameters)
+		public Address CreateContract(Type contractType, params object[] parameters)
 		{
 			if (!typeof(Contract).IsAssignableFrom(contractType))
 			{
 				throw new ArgumentOutOfRangeException(nameof(contractType));
 			}
 
-			var newAddress = this.addressFactory.Create();
+			var newAddress = this.AddressFactory.Create();
 
-			var parameters = (new object[]
-			{
-				newAddress,
-			}).Concat(additionalParameters).ToArray();
-
+			// HACK: Needed so that the constructor knows about the "self" address
+			Contract.CurrentlyCreatingAddress = newAddress;
 			var newContract = (Contract)Activator.CreateInstance(contractType, parameters);
+			Contract.CurrentlyCreatingAddress = null;
 
-			this.RegisterContract(newContract);
+			this.RegisterContract(newAddress, newContract);
 
 			return newAddress;
 		}
 
-		public Address CreateContract<T>(params object[] constructorParameters)
+		public Address CreateContract<T>(params object[] parameters)
 		{
-			return this.CreateContract(typeof(T), constructorParameters);
+			return this.CreateContract(typeof(T), parameters);
 		}
 
-		protected virtual void SetContract(Contract contract)
+		protected virtual void SetContract(Address address, Contract contract)
 		{
-			Address address = contract.Address;
-
 			if (this.addressesToContracts.ContainsKey(address))
 			{
 				throw new InvalidOperationException(

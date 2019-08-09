@@ -28,7 +28,7 @@ namespace StrongForce.Integrations.Cosmos
 			var cachedContract = base.GetContract(address);
 			if (cachedContract == null)
 			{
-				this.RegisterContract(this.contractGetter.Invoke(address));
+				this.RegisterContract(address, this.contractGetter.Invoke(address));
 				return base.GetContract(address);
 			}
 			else
@@ -37,10 +37,10 @@ namespace StrongForce.Integrations.Cosmos
 			}
 		}
 
-		protected override void SetContract(Contract contract)
+		protected override void SetContract(Address address, Contract contract)
 		{
-			this.contractsUsed.Add(contract.Address);
-			base.SetContract(contract);
+			this.contractsUsed.Add(address);
+			base.SetContract(address, contract);
 		}
 	}
 }

@@ -10,45 +10,37 @@ namespace StrongForce.Core.Tests
 		private readonly IAddressFactory addressFactory = new RandomAddressFactory();
 
 		[Fact]
-		public void Contract_WhenCreated_IsInitialisedWithSpecifiedAddress()
-		{
-			Address address = this.addressFactory.Create();
-			Contract contract = new FavoriteNumberContract(address, null);
-			Assert.Equal(address, contract.Address);
-		}
-
-		[Fact]
 		public void Receive_WhenPassedNull_ThrowsArgumentNullException()
 		{
-			Address address = this.addressFactory.Create();
-			Contract contract = new FavoriteNumberContract(address, null);
+			Contract contract = new FavoriteNumberContract(null);
+			contract.Address = this.addressFactory.Create();
 
-			Assert.Throws<ArgumentNullException>(() => contract.Receive(new ActionContext(address), null));
+			Assert.Throws<ArgumentNullException>(() => contract.Receive(new ActionContext(contract.Address), null));
 		}
 
 		[Fact]
 		public void Receive_WhenReceivedSupportedAction_ReturnsTrue()
 		{
-			Address address = this.addressFactory.Create();
-			Contract contract = new FavoriteNumberContract(address, null);
-			var action = new SetFavoriteNumberAction(address, 0);
+			Contract contract = new FavoriteNumberContract(null);
+			contract.Address = this.addressFactory.Create();
+			var action = new SetFavoriteNumberAction(contract.Address, 0);
 
-			Assert.True(contract.Receive(new ActionContext(address), action));
+			Assert.True(contract.Receive(new ActionContext(contract.Address), action));
 		}
 
 		[Fact]
 		public void Receive_WhenReceivedUnsupportedAction_ReturnsFalse()
 		{
-			Address address = this.addressFactory.Create();
-			Contract contract = new FavoriteNumberContract(address, null);
-			var action = new Action(address);
+			Contract contract = new FavoriteNumberContract(null);
+			contract.Address = this.addressFactory.Create();
+			var action = new Action(contract.Address);
 
 			contract.Acl.AddPermission(
-				address,
+				contract.Address,
 				typeof(Action),
-				address);
+				contract.Address);
 
-			Assert.False(contract.Receive(new ActionContext(address), action));
+			Assert.False(contract.Receive(new ActionContext(contract.Address), action));
 		}
 	}
 }

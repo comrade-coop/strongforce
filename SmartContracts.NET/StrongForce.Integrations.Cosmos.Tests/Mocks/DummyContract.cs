@@ -8,14 +8,12 @@ namespace StrongForce.Integrations.Cosmos.Tests.Mocks
 {
 	public class DummyContract : Contract
 	{
-		[JsonConstructor]
-		public DummyContract(Address address)
-			: base(address)
+		public DummyContract()
 		{
 		}
 
-		public DummyContract(Address address, Address initialAdmin)
-			: base(address, initialAdmin)
+		public DummyContract(Address initialAdmin)
+			: base(initialAdmin)
 		{
 			this.Acl.AddPermission(
 				initialAdmin,

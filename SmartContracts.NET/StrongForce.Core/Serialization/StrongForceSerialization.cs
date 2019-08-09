@@ -18,8 +18,7 @@ namespace StrongForce.Core.Serialization
 
 		public static JsonSerializerSettings ContractSerializationSettings { get; } = new JsonSerializerSettings()
 		{
-			TypeNameHandling = TypeNameHandling.All,
-			ContractResolver = new PrivateContractResolver(),
+			TypeNameHandling = TypeNameHandling.Auto,
 		};
 
 		public static string SerializeAction(Action action)

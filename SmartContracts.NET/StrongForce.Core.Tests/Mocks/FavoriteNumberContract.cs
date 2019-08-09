@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Newtonsoft.Json;
 using StrongForce.Core;
 using StrongForce.Core.Permissions;
 
@@ -9,14 +8,12 @@ namespace StrongForce.Core.Tests.Mocks
 {
 	public class FavoriteNumberContract : Contract
 	{
-		[JsonConstructor]
-		public FavoriteNumberContract(Address address)
-			: base(address)
+		public FavoriteNumberContract()
 		{
 		}
 
-		public FavoriteNumberContract(Address address, Address initialAdmin)
-			: base(address, initialAdmin)
+		public FavoriteNumberContract(Address initialAdmin)
+			: base(initialAdmin)
 		{
 			this.Acl.AddPermission(
 				initialAdmin,
@@ -26,19 +23,9 @@ namespace StrongForce.Core.Tests.Mocks
 
 		public int Number { get; set; } = 0;
 
-		public Address LastOrigin { get; set; }
+		public Address LastOrigin { get; set; } = null;
 
-		public Address LastSender { get; set; }
-
-		public new bool CheckPermission(ActionContext context, Action action)
-		{
-			return base.CheckPermission(context, action);
-		}
-
-		public bool CheckPermission(Address sender, Type type, Address target)
-		{
-			return this.Acl.HasPermission(sender, type, target);
-		}
+		public Address LastSender { get; set; } = null;
 
 		protected override bool HandleAction(ActionContext context, Action action)
 		{
