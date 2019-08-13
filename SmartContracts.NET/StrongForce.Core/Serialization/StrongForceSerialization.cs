@@ -1,34 +1,38 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Newtonsoft.Json;
 
 namespace StrongForce.Core.Serialization
 {
 	public static class StrongForceSerialization
 	{
-		public static JsonSerializerSettings ActionSerializationSettings { get; } = new JsonSerializerSettings()
-		{
-			SerializationBinder = new FilteredSerializationBinder()
-			{
-				WhitelistedBaseTypes = new HashSet<Type> { typeof(Action), typeof(Address) },
-				BlacklistedTypes = new HashSet<Type> { },
-			},
-			TypeNameHandling = TypeNameHandling.Auto,
-		};
-
 		public static JsonSerializerSettings ContractSerializationSettings { get; } = new JsonSerializerSettings()
 		{
 			TypeNameHandling = TypeNameHandling.Auto,
 		};
 
-		public static string SerializeAction(PayloadAction action)
+		public static byte[] SerializeAction(Address[] targets, string type, IDictionary<string, object> payload)
 		{
-			return JsonConvert.SerializeObject(action, typeof(PayloadAction), ActionSerializationSettings);
+			var action = new Dictionary<string, object>()
+			{
+				{ "Targets", targets.Select(x => x.AsString()) },
+				{ "Type", type },
+				{ "Payload", payload },
+			};
+			return StateSerialization.SerializeState(action);
 		}
 
-		public static PayloadAction DeserializeAction(string serialized)
+		public static Tuple<Address[], string, IDictionary<string, object>> DeserializeAction(byte[] serialized)
 		{
-			return JsonConvert.DeserializeObject<PayloadAction>(serialized, ActionSerializationSettings);
+			var action = StateSerialization.DeserializeState(serialized);
+			var targets = action
+				.GetOrNull<IList<object>>("Targets")
+				.Select(x => (x as string).AsAddress())
+				.ToArray();
+			var type = action.GetOrNull<string>("Type");
+			var payload = action.GetOrNull<IDictionary<string, object>>("Payload");
+			return Tuple.Create(targets, type, payload);
 		}
 
 		public static string SerializeContract(Contract contract)

@@ -11,16 +11,14 @@ namespace StrongForce.Core
 			return dictionary.TryGetValue(key, out TV value) ? value : defaultValue;
 		}
 
-		public static Address GetAddress(this IDictionary<string, object> dictionary, string key)
+		public static Address AsAddress(this string value)
 		{
-			var value = dictionary.GetOrElse(key, null);
+			return value != null ? Address.FromBase64String(value) : null;
+		}
 
-			if (value is string valueString)
-			{
-				return Address.FromBase64String(valueString);
-			}
-
-			return null;
+		public static string AsString(this Address value)
+		{
+			return value?.ToBase64String();
 		}
 
 		public static T GetOrNull<T>(this IDictionary<string, object> dictionary, string key)

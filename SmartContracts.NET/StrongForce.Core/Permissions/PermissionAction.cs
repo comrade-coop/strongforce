@@ -19,8 +19,8 @@ namespace StrongForce.Core.Permissions
 		{
 			return new Permission(
 				action.Payload.GetOrNull<string>(PermissionType),
-				action.Payload.GetAddress(PermissionSender),
-				action.Payload.GetAddress(PermissionTarget));
+				action.Payload.GetOrNull<string>(PermissionSender).AsAddress(),
+				action.Payload.GetOrNull<string>(PermissionTarget).AsAddress());
 		}
 	}
 }

@@ -61,20 +61,20 @@ namespace StrongForce.Integrations.Cosmos
 				{
 					var address = new Address(requestStream.Current.Action.Address.ToByteArray());
 
-					var data = Encoding.UTF8.GetString(requestStream.Current.Action.Data.ToByteArray());
+					var data = requestStream.Current.Action.Data.ToByteArray();
 
 					this.logger.LogTrace("Received action data: " + data);
 
 					var action = StrongForceSerialization.DeserializeAction(data);
 
-					this.logger.LogInformation("Received an action with type: " + (action != null ? action.Type : "null"));
+					this.logger.LogInformation("Received an action with type: " + action.Item2);
 
 #pragma warning disable CS4014 // Awaiting will deadlock
 					Task.Run(() =>
 					{
 						try
 						{
-							registry.SendAction(address, action.Target, action.Type, action.Payload);
+							registry.SendAction(address, action.Item1, action.Item2, action.Item3);
 							actionFinished = true;
 							pendingResponsesSemaphore.Release();
 						}
