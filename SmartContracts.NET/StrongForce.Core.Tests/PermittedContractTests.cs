@@ -1,5 +1,5 @@
 using System.Collections.Generic;
-using System.Reflection;
+using System.Linq;
 using StrongForce.Core.Exceptions;
 using StrongForce.Core.Permissions;
 using StrongForce.Core.Tests.Mocks;
@@ -24,22 +24,26 @@ namespace StrongForce.Core.Tests
 
 			Contract contract = this.registry.GetContract(contractAddress);
 
-			Assert.True(contract.CheckPermission(permissionManager, typeof(AddPermissionAction), contractAddress));
-			Assert.True(contract.CheckPermission(permissionManager, typeof(RemovePermissionAction), contractAddress));
+			Assert.True(contract.CheckPermission(permissionManager, AddPermissionAction.Type, contractAddress));
+			Assert.True(contract.CheckPermission(permissionManager, RemovePermissionAction.Type, contractAddress));
 		}
 
 		[Fact]
 		public void Receive_WhenPassedActionWithNoPermissions_ThrowsNoPermissionException()
 		{
 			Address permissionManager = this.registry.AddressFactory.Create();
+			Address otherAddress = this.registry.AddressFactory.Create();
 			Address contractAddress = this.registry.CreateContract<FavoriteNumberContract>(permissionManager);
 
-			var addPermissionAction = new AddPermissionAction(
-				contractAddress,
-				typeof(AddPermissionAction),
-				contractAddress);
-
-			Assert.Throws<NoPermissionException>(() => this.registry.HandleAction(contractAddress, addPermissionAction));
+			Assert.Throws<NoPermissionException>(() =>
+			{
+				this.registry.SendAction(otherAddress, contractAddress, AddPermissionAction.Type, new Dictionary<string, object>()
+				{
+					{ AddPermissionAction.PermissionType, SetFavoriteNumberAction.Type },
+					{ AddPermissionAction.PermissionSender, contractAddress.ToBase64String() },
+					{ AddPermissionAction.PermissionTarget, contractAddress.ToBase64String() },
+				});
+			});
 		}
 
 		[Fact]
@@ -48,14 +52,16 @@ namespace StrongForce.Core.Tests
 			Address permissionManager = this.registry.AddressFactory.Create();
 			Address contractAddress = this.registry.CreateContract<FavoriteNumberContract>(permissionManager);
 
-			var addPermissionAction = new AddPermissionAction(
-				contractAddress,
-				typeof(SetFavoriteNumberAction),
-				permissionManager);
+			Assert.True(this.registry.SendAction(permissionManager, contractAddress, AddPermissionAction.Type, new Dictionary<string, object>()
+			{
+				{ AddPermissionAction.PermissionType, SetFavoriteNumberAction.Type },
+				{ AddPermissionAction.PermissionSender, contractAddress.ToBase64String() },
+				{ AddPermissionAction.PermissionTarget, contractAddress.ToBase64String() },
+			}));
 
 			Contract contract = this.registry.GetContract(contractAddress);
-			Assert.True(this.registry.HandleAction(permissionManager, addPermissionAction));
-			Assert.True(contract.CheckPermission(permissionManager, typeof(SetFavoriteNumberAction), contractAddress));
+
+			Assert.True(contract.CheckPermission(permissionManager, SetFavoriteNumberAction.Type, contractAddress));
 		}
 
 		[Fact]
@@ -64,22 +70,25 @@ namespace StrongForce.Core.Tests
 			Address permissionManager = this.registry.AddressFactory.Create();
 			Address contractAddress = this.registry.CreateContract<FavoriteNumberContract>(permissionManager);
 
-			var addPermissionAction = new AddPermissionAction(
-				contractAddress,
-				typeof(SetFavoriteNumberAction),
-				permissionManager);
-
-			var removePermissionAction = new RemovePermissionAction(
-				contractAddress,
-				typeof(SetFavoriteNumberAction),
-				permissionManager);
-
 			Contract contract = this.registry.GetContract(contractAddress);
 
-			Assert.True(this.registry.HandleAction(permissionManager, addPermissionAction));
-			Assert.True(contract.CheckPermission(permissionManager, typeof(SetFavoriteNumberAction), contractAddress));
-			Assert.True(this.registry.HandleAction(permissionManager, removePermissionAction));
-			Assert.False(contract.CheckPermission(permissionManager, typeof(SetFavoriteNumberAction), contractAddress));
+			Assert.True(this.registry.SendAction(permissionManager, contractAddress, AddPermissionAction.Type, new Dictionary<string, object>()
+			{
+				{ AddPermissionAction.PermissionType, SetFavoriteNumberAction.Type },
+				{ AddPermissionAction.PermissionSender, permissionManager.ToBase64String() },
+				{ AddPermissionAction.PermissionTarget, contractAddress.ToBase64String() },
+			}));
+
+			Assert.True(contract.CheckPermission(permissionManager, SetFavoriteNumberAction.Type, contractAddress));
+
+			Assert.True(this.registry.SendAction(permissionManager, contractAddress, RemovePermissionAction.Type, new Dictionary<string, object>()
+			{
+				{ RemovePermissionAction.PermissionType, SetFavoriteNumberAction.Type },
+				{ RemovePermissionAction.PermissionSender, permissionManager.ToBase64String() },
+				{ RemovePermissionAction.PermissionTarget, contractAddress.ToBase64String() },
+			}));
+
+			Assert.False(contract.CheckPermission(permissionManager, SetFavoriteNumberAction.Type, contractAddress));
 		}
 
 		[Fact]
@@ -88,61 +97,28 @@ namespace StrongForce.Core.Tests
 			Address permissionManager = this.registry.AddressFactory.Create();
 			Address contractAddress = this.registry.CreateContract<FavoriteNumberContract>(permissionManager);
 
-			var addPermissionAction = new Action(contractAddress);
-
-			Assert.Throws<NoPermissionException>(
-				() => this.registry.HandleAction(permissionManager, addPermissionAction));
+			Assert.Throws<NoPermissionException>(() =>
+			{
+				this.registry.SendAction(permissionManager, contractAddress, "NotARealActionType", new Dictionary<string, object>());
+			});
 		}
 
 		[Fact]
-		public void AddPermission_WhenPermissionExists_ReturnsTrue()
+		public void AddPermission_WithWildcard_ReturnsTrue()
 		{
 			Address permissionManager = this.registry.AddressFactory.Create();
 			Address contractAddress = this.registry.CreateContract<FavoriteNumberContract>(permissionManager);
 
-			var addPermissionAction = new AddPermissionAction(
-				contractAddress,
-				typeof(Action),
-				permissionManager);
-
-			this.registry.HandleAction(permissionManager, addPermissionAction);
-
-			addPermissionAction = new AddPermissionAction(
-				contractAddress,
-				typeof(Action),
-				null);
-
-			this.registry.HandleAction(permissionManager, addPermissionAction);
+			this.registry.SendAction(permissionManager, contractAddress, AddPermissionAction.Type, new Dictionary<string, object>()
+			{
+				{ AddPermissionAction.PermissionType, SetFavoriteNumberAction.Type },
+				{ AddPermissionAction.PermissionSender, null },
+				{ AddPermissionAction.PermissionTarget, contractAddress.ToBase64String() },
+			});
 
 			Contract contract = this.registry.GetContract(contractAddress);
-			Assert.True(contract.CheckPermission(this.registry.AddressFactory.Create(), typeof(Action), contractAddress));
-		}
 
-		[Fact]
-		public void UpdatePermission_AddAddressWhenPermissionExists_ReturnsTrue()
-		{
-			Address address = this.registry.AddressFactory.Create();
-			Address permissionManager = this.registry.AddressFactory.Create();
-			Address contractAddress = this.registry.CreateContract<FavoriteNumberContract>(permissionManager);
-
-			var addPermissionAction = new AddPermissionAction(
-				contractAddress,
-				typeof(Action),
-				permissionManager);
-
-			this.registry.HandleAction(permissionManager, addPermissionAction);
-
-			var updatePermissionAction = new AddPermissionAction(
-				contractAddress,
-				typeof(Action),
-				address,
-				contractAddress);
-
-			this.registry.HandleAction(permissionManager, updatePermissionAction);
-
-			Contract contract = this.registry.GetContract(contractAddress);
-			Assert.True(contract.CheckPermission(permissionManager, typeof(Action), contractAddress));
-			Assert.True(contract.CheckPermission(address, typeof(Action), contractAddress));
+			Assert.True(contract.CheckPermission(this.registry.AddressFactory.Create(), SetFavoriteNumberAction.Type, contractAddress));
 		}
 
 		[Fact]
@@ -153,19 +129,17 @@ namespace StrongForce.Core.Tests
 			Address contract2Address = this.registry.CreateContract<FavoriteNumberContract>(contract1Address);
 			int testedNumber = 424;
 
-			var intermediaryPermissionAction = new AddPermissionAction(
-				contract1Address,
-				typeof(SetFavoriteNumberAction),
-				permissionManager,
-				contract2Address);
+			this.registry.SendAction(permissionManager, contract1Address, AddPermissionAction.Type, new Dictionary<string, object>()
+			{
+				{ AddPermissionAction.PermissionType, SetFavoriteNumberAction.Type },
+				{ AddPermissionAction.PermissionSender, permissionManager.ToBase64String() },
+				{ AddPermissionAction.PermissionTarget, contract2Address.ToBase64String() },
+			});
 
-			this.registry.HandleAction(permissionManager, intermediaryPermissionAction);
-
-			var forwardAction = new ForwardAction(
-				new Address[] { contract1Address },
-				new SetFavoriteNumberAction(contract2Address, testedNumber));
-
-			this.registry.HandleAction(permissionManager, forwardAction);
+			this.registry.SendAction(permissionManager, new Address[] { contract1Address, contract2Address }, SetFavoriteNumberAction.Type, new Dictionary<string, object>()
+			{
+				{ SetFavoriteNumberAction.Number, testedNumber },
+			});
 
 			FavoriteNumberContract contract2 = (FavoriteNumberContract)this.registry.GetContract(contract2Address);
 			Assert.Equal(testedNumber, contract2.Number);
@@ -179,11 +153,13 @@ namespace StrongForce.Core.Tests
 			Address contract2Address = this.registry.CreateContract<FavoriteNumberContract>(contract1Address);
 			int testedNumber = 424;
 
-			var forwardAction = new ForwardAction(
-				new Address[] { contract1Address },
-				new SetFavoriteNumberAction(contract2Address, testedNumber));
-
-			Assert.Throws<NoPermissionException>(() => this.registry.HandleAction(permissionManager, forwardAction));
+			Assert.Throws<NoPermissionException>(() =>
+			{
+				this.registry.SendAction(permissionManager, new Address[] { contract1Address, contract2Address }, SetFavoriteNumberAction.Type, new Dictionary<string, object>()
+				{
+					{ SetFavoriteNumberAction.Number, testedNumber },
+				});
+			});
 		}
 
 		[Fact]
@@ -194,26 +170,27 @@ namespace StrongForce.Core.Tests
 			Address contract2Address = this.registry.CreateContract<FavoriteNumberContract>(contract1Address);
 			int testedNumber = 424;
 
-			var intermediaryPermissionAction = new AddPermissionAction(
-				contract1Address,
-				typeof(SetFavoriteNumberAction),
-				permissionManager,
-				contract2Address);
+			this.registry.SendAction(permissionManager, contract1Address, AddPermissionAction.Type, new Dictionary<string, object>()
+			{
+				{ AddPermissionAction.PermissionType, SetFavoriteNumberAction.Type },
+				{ AddPermissionAction.PermissionSender, permissionManager.ToBase64String() },
+				{ AddPermissionAction.PermissionTarget, contract2Address.ToBase64String() },
+			});
 
-			this.registry.HandleAction(permissionManager, intermediaryPermissionAction);
+			this.registry.SendAction(contract1Address, contract2Address, RemovePermissionAction.Type, new Dictionary<string, object>()
+			{
+				{ RemovePermissionAction.PermissionType, SetFavoriteNumberAction.Type },
+				{ RemovePermissionAction.PermissionSender, contract1Address.ToBase64String() },
+				{ RemovePermissionAction.PermissionTarget, contract2Address.ToBase64String() },
+			});
 
-			var finalRemovePermissionAction = new RemovePermissionAction(
-				contract2Address,
-				typeof(SetFavoriteNumberAction),
-				contract1Address);
-
-			this.registry.HandleAction(contract1Address, finalRemovePermissionAction);
-
-			var forwardAction = new ForwardAction(
-				new Address[] { contract1Address },
-				new SetFavoriteNumberAction(contract2Address, testedNumber));
-
-			Assert.Throws<NoPermissionException>(() => this.registry.HandleAction(permissionManager, forwardAction));
+			Assert.Throws<NoPermissionException>(() =>
+			{
+				this.registry.SendAction(permissionManager, new Address[] { contract1Address, contract2Address }, SetFavoriteNumberAction.Type, new Dictionary<string, object>()
+				{
+					{ SetFavoriteNumberAction.Number, testedNumber },
+				});
+			});
 		}
 
 		[Fact]
@@ -223,29 +200,32 @@ namespace StrongForce.Core.Tests
 			Address contractAddress = this.registry.CreateContract<FavoriteNumberContract>(permissionManager);
 
 			Address permitedAddress = this.registry.AddressFactory.Create();
-			var addPermissionAction = new AddPermissionAction(
-				contractAddress,
-				typeof(Action),
-				permissionManager);
+			string permission = "NotARealActionType";
 
-			this.registry.HandleAction(permissionManager, addPermissionAction);
-			addPermissionAction = new AddPermissionAction(
-				contractAddress,
-				typeof(Action),
-				permitedAddress);
+			this.registry.SendAction(permissionManager, contractAddress, AddPermissionAction.Type, new Dictionary<string, object>()
+			{
+				{ AddPermissionAction.PermissionType, permission },
+				{ AddPermissionAction.PermissionSender, permissionManager.ToBase64String() },
+				{ AddPermissionAction.PermissionTarget, contractAddress.ToBase64String() },
+			});
 
-			this.registry.HandleAction(permissionManager, addPermissionAction);
-			var updatePermissionAction = new RemovePermissionAction(
-				contractAddress,
-				typeof(Action),
-				permissionManager,
-				contractAddress);
+			this.registry.SendAction(permissionManager, contractAddress, AddPermissionAction.Type, new Dictionary<string, object>()
+			{
+				{ AddPermissionAction.PermissionType, permission },
+				{ AddPermissionAction.PermissionSender, permitedAddress.ToBase64String() },
+				{ AddPermissionAction.PermissionTarget, contractAddress.ToBase64String() },
+			});
 
-			this.registry.HandleAction(permissionManager, updatePermissionAction);
+			this.registry.SendAction(permissionManager, contractAddress, RemovePermissionAction.Type, new Dictionary<string, object>()
+			{
+				{ RemovePermissionAction.PermissionType, permission },
+				{ RemovePermissionAction.PermissionSender, permissionManager.ToBase64String() },
+				{ RemovePermissionAction.PermissionTarget, contractAddress.ToBase64String() },
+			});
 
 			Contract contract = this.registry.GetContract(contractAddress);
-			Assert.True(contract.CheckPermission(permitedAddress, typeof(Action), contractAddress));
-			Assert.False(contract.CheckPermission(permissionManager, typeof(Action), contractAddress));
+			Assert.True(contract.CheckPermission(permitedAddress, permission, contractAddress));
+			Assert.False(contract.CheckPermission(permissionManager, permission, contractAddress));
 		}
 	}
 }

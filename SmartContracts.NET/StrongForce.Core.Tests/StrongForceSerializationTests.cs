@@ -8,6 +8,7 @@ namespace StrongForce.Core.Tests
 {
 	public partial class StrongForceSerializationTests
 	{
+		/*
 		[Fact]
 		public void Serializes_And_Deserializes_Actions()
 		{
@@ -47,5 +48,6 @@ namespace StrongForce.Core.Tests
 			Assert.Throws<JsonSerializationException>(() => StrongForceSerialization.DeserializeAction(
 				"{\"$type\":\"StrongForce.Core.Tests.Mocks.SetFavoriteNumberAction, StrongForce.Core.Tests\",\"Target\":\"Ey1dFIKIWE7PVUXemnOxk2pqKmM=\",\"ObjectProperty\":{\"$type\":\"StrongForce.Core.Tests.Mocks.FavoriteNumberContract, StrongForce.Core.Tests\",\"Address\":\"Ey1dFIKIWE7PVUXemnOxk2pqKmM=\"}}"));
 		}
+		*/
 	}
 }

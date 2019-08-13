@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using StrongForce.Core.Kits;
 using StrongForce.Core.Permissions;
 using StrongForce.Core.Tests.Mocks;
@@ -18,7 +20,7 @@ namespace StrongForce.Core.Tests
 			var kit = new FavoriteNumberKit(favoriteContractsCount);
 			Address address = registry.CreateContract<KitContract>(kit);
 
-			registry.HandleAction(address, new InstantiateKitAction(address));
+			registry.SendAction(address, address, InstantiateKitAction.Type, new Dictionary<string, object>());
 
 			Assert.Equal(favoriteContractsCount + 1, factory.AddressCount);
 		}
@@ -30,8 +32,8 @@ namespace StrongForce.Core.Tests
 			var kit = new FavoriteNumberKit(2);
 			Address address = registry.CreateContract<KitContract>(kit);
 
-			registry.HandleAction(address, new InstantiateKitAction(address));
-			Assert.Throws<InvalidOperationException>(() => registry.HandleAction(address, new InstantiateKitAction(address)));
+			registry.SendAction(address, address, InstantiateKitAction.Type, new Dictionary<string, object>());
+			Assert.Throws<InvalidOperationException>(() => registry.SendAction(address, address, InstantiateKitAction.Type, new Dictionary<string, object>()));
 		}
 	}
 }

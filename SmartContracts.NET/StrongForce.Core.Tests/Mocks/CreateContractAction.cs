@@ -2,14 +2,10 @@ using System;
 
 namespace StrongForce.Core.Tests.Mocks
 {
-	public class CreateContractAction : Action
+	public static class CreateContractAction
 	{
-		public CreateContractAction(Address target, Type contractType)
-			: base(target)
-		{
-			this.ContractType = contractType;
-		}
+		public const string Type = "CreateContract";
 
-		public Type ContractType { get; }
+		public const string ContractType = "ContractType";
 	}
 }

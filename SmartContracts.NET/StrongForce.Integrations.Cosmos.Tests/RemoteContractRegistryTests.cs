@@ -48,7 +48,7 @@ namespace StrongForce.Integrations.Cosmos.Tests
 				{
 					var addressA = new Address(new byte[] { 0, (byte)i });
 					var addressB = new Address(new byte[] { 1, (byte)i });
-					registry.HandleAction(addressA, new DummyAction(addressA, new DummyAction(addressB)));
+					registry.SendAction(addressA, new Address[] { addressA, addressB }, DummyAction.Type, new Dictionary<string, object>());
 				}
 			}
 
@@ -73,7 +73,7 @@ namespace StrongForce.Integrations.Cosmos.Tests
 					var addressB = new Address(new byte[] { 1, (byte)i });
 					expectedAddresses.Add(addressA);
 					expectedAddresses.Add(addressB);
-					registry.HandleAction(addressA, new DummyAction(addressA, new DummyAction(addressB)));
+					registry.SendAction(addressA, new Address[] { addressA, addressB }, DummyAction.Type, new Dictionary<string, object>());
 				}
 			}
 

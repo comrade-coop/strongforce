@@ -9,8 +9,9 @@ namespace StrongForce.Core
 	{
 		private IDictionary<Address, Contract> addressesToContracts = new SortedDictionary<Address, Contract>();
 
-		// TODO: This Dictionary uses reference equality and reference-based hashcode, which would break whenever actions are serialized / deserialized
-		private IDictionary<Action, Address> forwardedActionsOrigins = new SortedDictionary<Action, Address>();
+		private IDictionary<ulong, Action> forwardedActions = new SortedDictionary<ulong, Action>();
+
+		private ulong actionNonce = 0;
 
 		public ContractRegistry(IAddressFactory addressFactory)
 		{
@@ -39,39 +40,33 @@ namespace StrongForce.Core
 			this.SetContract(address, contract);
 
 			contract.Address = address;
-			contract.SendActionEvent += (action) => this.HandleAction(address, action);
+			contract.SendActionEvent += (targets, type, payload) => this.SendAction(address, targets, type, payload);
+			contract.ForwardActionEvent += (id) => this.SendAction(address, id);
 			contract.CreateContractEvent += this.CreateContract;
 		}
 
-		public bool HandleAction(Address sender, Action action)
+		public bool SendAction(Address sender, Address target, string type, IDictionary<string, object> payload)
 		{
-			if (action == null)
+			return this.SendAction(sender, new Address[] { target }, type, payload);
+		}
+
+		public bool SendAction(Address sender, Address[] targets, string type, IDictionary<string, object> payload)
+		{
+			var action = this.CreateAction(sender, sender, targets, type, payload);
+
+			return this.ExecuteAction(action);
+		}
+
+		public bool SendAction(Address sender, ulong id)
+		{
+			var action = this.forwardedActions[id];
+
+			if (action.Sender != sender)
 			{
-				throw new ArgumentNullException(nameof(action));
+				throw new ArgumentOutOfRangeException(nameof(sender));
 			}
 
-			if (action.Target == null)
-			{
-				throw new ArgumentNullException(nameof(action.Target));
-			}
-
-			Address origin = sender;
-
-			if (this.forwardedActionsOrigins.ContainsKey(action))
-			{
-				origin = this.forwardedActionsOrigins[action];
-				this.forwardedActionsOrigins.Remove(action);
-			}
-
-			if (action is ForwardAction forwardAction)
-			{
-				this.forwardedActionsOrigins[forwardAction.NextAction] = origin;
-			}
-
-			var context = new ActionContext(origin, sender);
-			var contract = this.GetContract(action.Target);
-
-			return contract != null && contract.Receive(context, action);
+			return this.ExecuteAction(action);
 		}
 
 		public Address CreateContract(Type contractType, params object[] parameters)
@@ -107,6 +102,59 @@ namespace StrongForce.Core
 			}
 
 			this.addressesToContracts[address] = contract;
+		}
+
+		private bool ExecuteAction(Action action)
+		{
+			var contract = this.GetContract(action.Target);
+
+			return contract != null && contract.Receive(action);
+		}
+
+		private Action CreateAction(Address origin, Address sender, Address[] targets, string type, IDictionary<string, object> payload)
+		{
+			if (targets == null || targets.Length == 0)
+			{
+				throw new ArgumentNullException(nameof(targets));
+			}
+
+			if (type == null)
+			{
+				throw new ArgumentNullException(nameof(type));
+			}
+
+			if (payload == null)
+			{
+				throw new ArgumentNullException(nameof(payload));
+			}
+
+			if (targets.Length == 1)
+			{
+				return new PayloadAction(
+					targets[0],
+					origin,
+					sender,
+					type,
+					payload);
+			}
+			else
+			{
+				var nextId = this.actionNonce;
+				this.actionNonce++;
+
+				var nextTargets = targets.Skip(1).ToArray();
+
+				this.forwardedActions.Add(nextId, this.CreateAction(origin, targets[0], nextTargets, type, payload));
+
+				return new ForwardAction(
+					targets[0],
+					nextTargets,
+					origin,
+					sender,
+					nextId,
+					type,
+					payload);
+			}
 		}
 	}
 }

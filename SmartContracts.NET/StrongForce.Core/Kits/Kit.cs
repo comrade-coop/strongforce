@@ -12,13 +12,13 @@ namespace StrongForce.Core.Kits
 		public Func<Type, object[], Address> CreateContractHandler { get; set; }
 
 		[IgnoreDataMember]
-		public System.Action<Action> SendActionHandler { get; set; }
+		public System.Action<Address[], string, IDictionary<string, object>> SendActionHandler { get; set; }
 
 		public abstract Address Instantiate(Address initialManager);
 
-		protected void SendAction(Action action)
+		protected void SendAction(Address[] targets, string type, IDictionary<string, object> payload)
 		{
-			this.SendActionHandler.Invoke(action);
+			this.SendActionHandler.Invoke(targets, type, payload);
 		}
 
 		protected Address CreateContract(Type contractType, params object[] constructorParameters)

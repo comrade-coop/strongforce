@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using StrongForce.Core.Permissions;
 using StrongForce.Core.Tests.Mocks;
 using Xunit;
@@ -15,7 +16,7 @@ namespace StrongForce.Core.Tests
 			Contract contract = new FavoriteNumberContract(null);
 			contract.Address = this.addressFactory.Create();
 
-			Assert.Throws<ArgumentNullException>(() => contract.Receive(new ActionContext(contract.Address), null));
+			Assert.Throws<ArgumentNullException>(() => contract.Receive(null));
 		}
 
 		[Fact]
@@ -23,9 +24,16 @@ namespace StrongForce.Core.Tests
 		{
 			Contract contract = new FavoriteNumberContract(null);
 			contract.Address = this.addressFactory.Create();
-			var action = new SetFavoriteNumberAction(contract.Address, 0);
 
-			Assert.True(contract.Receive(new ActionContext(contract.Address), action));
+			Assert.True(contract.Receive(new PayloadAction(
+				contract.Address,
+				contract.Address,
+				contract.Address,
+				SetFavoriteNumberAction.Type,
+				new Dictionary<string, object>()
+				{
+					{ SetFavoriteNumberAction.Number, 0 },
+				})));
 		}
 
 		[Fact]
@@ -33,14 +41,19 @@ namespace StrongForce.Core.Tests
 		{
 			Contract contract = new FavoriteNumberContract(null);
 			contract.Address = this.addressFactory.Create();
-			var action = new Action(contract.Address);
+			var actionType = "NotARealActionType";
 
 			contract.Acl.AddPermission(
 				contract.Address,
-				typeof(Action),
+				actionType,
 				contract.Address);
 
-			Assert.False(contract.Receive(new ActionContext(contract.Address), action));
+			Assert.False(contract.Receive(new PayloadAction(
+				contract.Address,
+				contract.Address,
+				contract.Address,
+				actionType,
+				new Dictionary<string, object>())));
 		}
 	}
 }

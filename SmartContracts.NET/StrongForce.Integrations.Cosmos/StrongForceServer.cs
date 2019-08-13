@@ -67,14 +67,14 @@ namespace StrongForce.Integrations.Cosmos
 
 					var action = StrongForceSerialization.DeserializeAction(data);
 
-					this.logger.LogInformation("Received an action with type: " + (action != null ? action.GetType().ToString() : "null"));
+					this.logger.LogInformation("Received an action with type: " + (action != null ? action.Type : "null"));
 
 #pragma warning disable CS4014 // Awaiting will deadlock
 					Task.Run(() =>
 					{
 						try
 						{
-							registry.HandleAction(address, action);
+							registry.SendAction(address, action.Target, action.Type, action.Payload);
 							actionFinished = true;
 							pendingResponsesSemaphore.Release();
 						}

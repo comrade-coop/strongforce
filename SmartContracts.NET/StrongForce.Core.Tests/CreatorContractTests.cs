@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using StrongForce.Core.Exceptions;
 using StrongForce.Core.Permissions;
 using StrongForce.Core.Tests.Mocks;
@@ -11,10 +12,13 @@ namespace StrongForce.Core.Tests
 		public void CreateContractAction_WhenPassedFavoriteNumberContract_CreatesContract()
 		{
 			var registry = new ContractRegistry();
-			var creatorAddress = registry.CreateContract(typeof(CreatorContract), new object[] { null });
+			var permissionManager = registry.AddressFactory.Create();
+			var creatorAddress = registry.CreateContract<CreatorContract>(permissionManager);
 
-			var action = new CreateContractAction(creatorAddress, typeof(FavoriteNumberContract));
-			registry.HandleAction(creatorAddress, action);
+			registry.SendAction(permissionManager, creatorAddress, CreateContractAction.Type, new Dictionary<string, object>()
+			{
+				{ CreateContractAction.ContractType, typeof(FavoriteNumberContract).ToString() },
+			});
 
 			var lastAddress = ((CreatorContract)registry.GetContract(creatorAddress)).LastCreatedAddress;
 			Assert.NotNull(lastAddress);
@@ -28,28 +32,33 @@ namespace StrongForce.Core.Tests
 			var adminAddress = new Address(new byte[] { 1 });
 			var creatorAddress = registry.CreateContract(typeof(CreatorContract), adminAddress);
 
-			var permissionAction = new AddPermissionAction(
-				creatorAddress,
-				typeof(SetFavoriteNumberAction),
-				adminAddress,
-				null);
+			registry.SendAction(adminAddress, creatorAddress, AddPermissionAction.Type, new Dictionary<string, object>()
+			{
+				{ AddPermissionAction.PermissionType, SetFavoriteNumberAction.Type },
+				{ AddPermissionAction.PermissionSender, adminAddress.ToBase64String() },
+				{ AddPermissionAction.PermissionTarget, null },
+			});
 
-			registry.HandleAction(adminAddress, permissionAction);
-
-			var createAction = new CreateContractAction(creatorAddress, typeof(FavoriteNumberContract));
-			registry.HandleAction(adminAddress, createAction);
+			registry.SendAction(adminAddress, creatorAddress, CreateContractAction.Type, new Dictionary<string, object>()
+			{
+				{ CreateContractAction.ContractType, typeof(FavoriteNumberContract).ToString() },
+			});
 
 			var newAddress = ((CreatorContract)registry.GetContract(creatorAddress)).LastCreatedAddress;
 
 			// First, prove that we cannot directly interact with the contract
-			var setNumberAction = new SetFavoriteNumberAction(newAddress, 21);
+			Assert.Throws<NoPermissionException>(() =>
+			{
+				registry.SendAction(adminAddress, newAddress, SetFavoriteNumberAction.Type, new Dictionary<string, object>()
+				{
+					{ SetFavoriteNumberAction.Number, 45 },
+				});
+			});
 
-			Assert.Throws<NoPermissionException>(() => registry.HandleAction(adminAddress, setNumberAction));
-
-			// Second, prove that we can interact with the contract through the forwarding permission set up earlier
-			var forwardedNumberAction = new ForwardAction(creatorAddress, new SetFavoriteNumberAction(newAddress, 42));
-
-			registry.HandleAction(adminAddress, forwardedNumberAction);
+			registry.SendAction(adminAddress, new Address[] { creatorAddress, newAddress }, SetFavoriteNumberAction.Type, new Dictionary<string, object>()
+			{
+				{ SetFavoriteNumberAction.Number, 42 },
+			});
 
 			Assert.Equal(42, ((FavoriteNumberContract)registry.GetContract(newAddress)).Number);
 		}

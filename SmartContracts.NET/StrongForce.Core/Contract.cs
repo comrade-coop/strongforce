@@ -8,6 +8,9 @@ namespace StrongForce.Core
 {
 	public abstract class Contract
 	{
+		[ThreadStatic]
+		internal static Address CurrentlyCreatingAddress;
+
 		public Contract()
 		{
 			// HACK: Needed so that the other constructors knows about the "self" address
@@ -23,19 +26,17 @@ namespace StrongForce.Core
 		{
 			this.Acl.AddPermission(
 				initialAdmin,
-				typeof(AddPermissionAction),
+				AddPermissionAction.Type,
 				this.Address);
 			this.Acl.AddPermission(
 				initialAdmin,
-				typeof(RemovePermissionAction),
-				this.Address);
-			this.Acl.AddPermission(
-				initialAdmin,
-				typeof(RemovePermissionAction),
+				RemovePermissionAction.Type,
 				this.Address);
 		}
 
-		internal event System.Action<Action> SendActionEvent;
+		internal event System.Action<Address[], string, IDictionary<string, object>> SendActionEvent;
+
+		internal event System.Action<ulong> ForwardActionEvent;
 
 		internal event Func<Type, object[], Address> CreateContractEvent;
 
@@ -43,55 +44,54 @@ namespace StrongForce.Core
 
 		public AccessControlList Acl { get; set; } = new AccessControlList();
 
-		internal static Address CurrentlyCreatingAddress { get; set; } = null;
-
 		public override string ToString()
 		{
 			return $"{this.Address} ({this.GetType()})";
 		}
 
-		internal bool Receive(ActionContext context, Action action)
+		internal bool Receive(Action action)
 		{
 			if (action == null)
 			{
 				throw new ArgumentNullException(nameof(action));
 			}
 
-			if (!this.CheckPermission(context, action))
-			{
-				throw new NoPermissionException(this, context.Sender, action.GetType());
-			}
+			this.CheckPermission(action); // throws
 
-			return this.HandleAction(context, action);
+			if (action is PayloadAction payloadAction)
+			{
+				return this.HandlePayloadAction(payloadAction);
+			}
+			else if (action is ForwardAction forwardAction)
+			{
+				return this.HandleForwardAction(forwardAction);
+			}
+			else
+			{
+				return false;
+			}
 		}
 
-		protected bool CheckPermission(ActionContext context, Action action)
+		protected virtual void CheckPermission(Action action)
 		{
-			var checkedAction = action;
+			var neededPermission = new Permission(action.Type, action.Sender, action.FinalTarget);
 
-			if (action is ForwardAction forwardAction)
+			if (!this.Acl.HasPermission(neededPermission))
 			{
-				checkedAction = forwardAction.FinalAction;
+				throw new NoPermissionException(this.Address, action.Origin, neededPermission);
 			}
-
-			var permission = checkedAction.GetType();
-			return this.Acl.HasPermission(context.Sender, permission, checkedAction.Target);
 		}
 
-		protected virtual bool HandleAction(ActionContext context, Action action)
+		protected virtual bool HandlePayloadAction(PayloadAction action)
 		{
-			switch (action)
+			switch (action.Type)
 			{
-				case AddPermissionAction permissionAction:
-					this.Acl.AddPermission(permissionAction.Permission);
+				case AddPermissionAction.Type:
+					this.Acl.AddPermission(AddPermissionAction.GetPermission(action));
 					return true;
 
-				case RemovePermissionAction permissionAction:
-					this.Acl.RemovePermission(permissionAction.Permission);
-					return true;
-
-				case ForwardAction forwardAction:
-					this.SendAction(forwardAction.NextAction);
+				case RemovePermissionAction.Type:
+					this.Acl.RemovePermission(RemovePermissionAction.GetPermission(action));
 					return true;
 
 				default:
@@ -99,29 +99,40 @@ namespace StrongForce.Core
 			}
 		}
 
-		protected void SendAction(Action action)
+		protected virtual bool HandleForwardAction(ForwardAction action)
 		{
-			if (action == null)
-			{
-				throw new ArgumentNullException();
-			}
-
-			this.SendActionEvent?.Invoke(action);
+			this.ForwardAction(action.NextId);
+			return true;
 		}
 
-		protected Address CreateContract(Type contractType, params object[] constructorParameters)
+		protected void SendAction(Address[] targets, string type, IDictionary<string, object> payload)
+		{
+			this.SendActionEvent?.Invoke(targets, type, payload);
+		}
+
+		protected void SendAction(Address target, string type, IDictionary<string, object> payload)
+		{
+			this.SendAction(new[] { target }, type, payload);
+		}
+
+		protected void ForwardAction(ulong id)
+		{
+			this.ForwardActionEvent?.Invoke(id);
+		}
+
+		protected Address CreateContract(Type contractType, object[] initialState)
 		{
 			if (contractType == null)
 			{
 				throw new ArgumentNullException();
 			}
 
-			return this.CreateContractEvent?.Invoke(contractType, constructorParameters);
+			return this.CreateContractEvent?.Invoke(contractType, initialState);
 		}
 
-		protected Address CreateContract<T>(params object[] constructorParameters)
+		protected Address CreateContract<T>(object[] initialState)
 		{
-			return this.CreateContract(typeof(T), constructorParameters);
+			return this.CreateContract(typeof(T), initialState);
 		}
 	}
 }

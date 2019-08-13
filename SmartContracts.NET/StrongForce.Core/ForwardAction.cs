@@ -1,31 +1,29 @@
-using System.Runtime.Serialization;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace StrongForce.Core
 {
 	public class ForwardAction : Action
 	{
-		public ForwardAction(Address[] targets, Action finalAction)
-			: base(targets[0])
+		public ForwardAction(Address target, Address[] nextTargets, Address origin, Address sender, ulong nextId, string type, IDictionary<string, object> payload)
+			: base(target, origin, sender)
 		{
-			var wrapped = finalAction;
-
-			// i > 0 is not a typo.
-			for (int i = targets.Length - 1; i > 0; i--)
-			{
-				wrapped = new ForwardAction(targets[i], wrapped);
-			}
-
-			this.NextAction = wrapped;
-			this.FinalAction = (this.NextAction as ForwardAction)?.FinalAction ?? this.NextAction;
+			this.NextTargets = nextTargets;
+			this.FinalTarget = nextTargets.Last();
+			this.NextId = nextId;
+			this.Type = type;
+			this.Payload = payload;
 		}
 
-		public ForwardAction(Address target, Action finalAction)
-			: this(new Address[] { target }, finalAction)
-		{
-		}
+		public IList<Address> NextTargets { get; }
 
-		public Action NextAction { get; }
+		public override Address FinalTarget { get; }
 
-		public Action FinalAction { get; }
+		public ulong NextId { get; }
+
+		public override string Type { get; }
+
+		public IDictionary<string, object> Payload { get; }
 	}
 }

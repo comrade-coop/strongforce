@@ -2,11 +2,8 @@ using System;
 
 namespace StrongForce.Core.Kits
 {
-	public class InstantiateKitAction : Action
+	public static class InstantiateKitAction
 	{
-		public InstantiateKitAction(Address target)
-			: base(target)
-		{
-		}
+		public const string Type = "InstantiateKit";
 	}
 }

@@ -5,14 +5,18 @@ namespace StrongForce.Core.Permissions
 {
 	public class Permission : IComparable<Permission>
 	{
-		public Permission(Type type, Address sender, Address target)
+		public const Address AnyAddress = null;
+
+		public const string AnyAction = null;
+
+		public Permission(string type, Address sender, Address target)
 		{
+			this.Type = type;
 			this.Sender = sender;
 			this.Target = target;
-			this.Type = type;
 		}
 
-		public Type Type { get; }
+		public string Type { get; }
 
 		public Address Sender { get; }
 
@@ -20,7 +24,7 @@ namespace StrongForce.Core.Permissions
 
 		public override string ToString()
 		{
-			return $"{this.Sender} - {this.Type.Name} -> {this.Target}";
+			return $"{this.Sender?.ToString() ?? "*"} -{this.Type}-> {this.Target?.ToString() ?? "*"}";
 		}
 
 		public override bool Equals(object obj)
@@ -35,17 +39,20 @@ namespace StrongForce.Core.Permissions
 
 		public override int GetHashCode()
 		{
-			return ValueTuple.Create(this.Type?.Name, this.Sender, this?.Target).GetHashCode();
+			// return ValueTuple.Create(this.Type, this.Sender, this.Target).GetHashCode();
+			return this.ToString().GetHashCode();
 		}
 
 		public int CompareTo(Permission other)
 		{
-			return ValueTuple.Create(this.Type?.Name, this.Sender, this.Target).CompareTo(ValueTuple.Create(other.Type?.Name, other.Sender, other.Target));
+			// return ValueTuple.Create(this.Type, this.Sender, this.Target).CompareTo(ValueTuple.Create(other.Type, other.Sender, other.Target));
+			return this.ToString().CompareTo(other.ToString());
 		}
 
 		protected bool Equals(Permission other)
 		{
-			return this.Type == other.Type && this.Sender == other.Sender && this.Target == other.Target;
+			// return this.Type == other.Type && this.Sender == other.Sender && this.Target == other.Target;
+			return this.ToString() == other.ToString();
 		}
 	}
 }

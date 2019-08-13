@@ -17,7 +17,7 @@ namespace StrongForce.Core.Tests.Mocks
 		{
 			this.Acl.AddPermission(
 				initialAdmin,
-				typeof(SetFavoriteNumberAction),
+				SetFavoriteNumberAction.Type,
 				this.Address);
 		}
 
@@ -27,24 +27,24 @@ namespace StrongForce.Core.Tests.Mocks
 
 		public Address LastSender { get; set; } = null;
 
-		protected override bool HandleAction(ActionContext context, Action action)
+		protected override bool HandlePayloadAction(PayloadAction action)
 		{
-			this.LastOrigin = context.Origin;
-			this.LastSender = context.Sender;
-			switch (action)
+			this.LastOrigin = action.Origin;
+			this.LastSender = action.Sender;
+			switch (action.Type)
 			{
-				case SetFavoriteNumberAction favoriteNumberAction:
-					this.HandleSetNumberAction(favoriteNumberAction);
+				case SetFavoriteNumberAction.Type:
+					this.HandleSetNumberAction(action.Payload);
 					return true;
 
 				default:
-					return base.HandleAction(context, action);
+					return base.HandlePayloadAction(action);
 			}
 		}
 
-		private void HandleSetNumberAction(SetFavoriteNumberAction favoriteNumberAction)
+		private void HandleSetNumberAction(IDictionary<string, object> payload)
 		{
-			this.Number = favoriteNumberAction.Number;
+			this.Number = payload.GetOrNull<int>(SetFavoriteNumberAction.Number);
 		}
 	}
 }

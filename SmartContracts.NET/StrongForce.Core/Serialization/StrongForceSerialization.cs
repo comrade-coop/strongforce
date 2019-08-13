@@ -21,14 +21,14 @@ namespace StrongForce.Core.Serialization
 			TypeNameHandling = TypeNameHandling.Auto,
 		};
 
-		public static string SerializeAction(Action action)
+		public static string SerializeAction(PayloadAction action)
 		{
-			return JsonConvert.SerializeObject(action, typeof(Action), ActionSerializationSettings);
+			return JsonConvert.SerializeObject(action, typeof(PayloadAction), ActionSerializationSettings);
 		}
 
-		public static Action DeserializeAction(string serialized)
+		public static PayloadAction DeserializeAction(string serialized)
 		{
-			return JsonConvert.DeserializeObject<Action>(serialized, ActionSerializationSettings);
+			return JsonConvert.DeserializeObject<PayloadAction>(serialized, ActionSerializationSettings);
 		}
 
 		public static string SerializeContract(Contract contract)

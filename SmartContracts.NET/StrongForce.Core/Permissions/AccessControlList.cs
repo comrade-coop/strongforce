@@ -7,9 +7,9 @@ namespace StrongForce.Core.Permissions
 {
 	public class AccessControlList
 	{
-		public const Address AnyAddress = null;
+		public const Address AnyAddress = Permission.AnyAddress;
 
-		public const Type AnyAction = null;
+		public const string AnyAction = Permission.AnyAction;
 
 		public AccessControlList(ISet<Permission> permissions)
 		{
@@ -28,7 +28,7 @@ namespace StrongForce.Core.Permissions
 			return this.HasPermission(pattern.Sender, pattern.Type, pattern.Target);
 		}
 
-		public bool HasPermission(Address sender, Type type, Address target)
+		public bool HasPermission(Address sender, string type, Address target)
 		{
 			return this.Permissions.Contains(new Permission(type, sender, target)) ||
 				this.Permissions.Contains(new Permission(type, AnyAddress, target)) ||
@@ -45,7 +45,7 @@ namespace StrongForce.Core.Permissions
 			return this.Permissions.Add(permission);
 		}
 
-		public bool AddPermission(Address sender, Type type, Address target)
+		public bool AddPermission(Address sender, string type, Address target)
 		{
 			return this.AddPermission(new Permission(type, sender, target));
 		}
@@ -55,7 +55,7 @@ namespace StrongForce.Core.Permissions
 			return this.Permissions.Remove(newPermission);
 		}
 
-		public bool RemovePermission(Address sender, Type type, Address target)
+		public bool RemovePermission(Address sender, string type, Address target)
 		{
 			return this.RemovePermission(new Permission(type, sender, target));
 		}

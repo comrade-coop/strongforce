@@ -17,24 +17,19 @@ namespace StrongForce.Integrations.Cosmos.Tests.Mocks
 		{
 			this.Acl.AddPermission(
 				initialAdmin,
-				typeof(DummyAction),
-				this.Address);
+				DummyAction.Type,
+				null);
 		}
 
-		protected override bool HandleAction(ActionContext context, Action action)
+		protected override bool HandlePayloadAction(PayloadAction action)
 		{
-			switch (action)
+			switch (action.Type)
 			{
-				case DummyAction dummy:
-					if (dummy.NextAction != null)
-					{
-						this.SendAction(dummy.NextAction);
-					}
-
+				case DummyAction.Type:
 					return true;
 
 				default:
-					return base.HandleAction(context, action);
+					return base.HandlePayloadAction(action);
 			}
 		}
 	}

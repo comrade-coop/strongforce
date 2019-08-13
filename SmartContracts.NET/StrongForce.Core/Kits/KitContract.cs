@@ -12,7 +12,7 @@ namespace StrongForce.Core.Kits
 			this.Kit = kit;
 			this.Acl.AddPermission(
 				null,
-				typeof(InstantiateKitAction),
+				InstantiateKitAction.Type,
 				this.Address);
 		}
 
@@ -22,20 +22,20 @@ namespace StrongForce.Core.Kits
 
 		public Kit Kit { get; set; }
 
-		protected override bool HandleAction(ActionContext context, Action action)
+		protected override bool HandlePayloadAction(PayloadAction action)
 		{
-			switch (action)
+			switch (action.Type)
 			{
-				case InstantiateKitAction instantiateKitAction:
-					this.HandleInstantiateKitAction(context, instantiateKitAction);
+				case InstantiateKitAction.Type:
+					this.HandleInstantiateKitAction(action);
 					return true;
 
 				default:
-					return base.HandleAction(context, action);
+					return base.HandlePayloadAction(action);
 			}
 		}
 
-		private void HandleInstantiateKitAction(ActionContext context, InstantiateKitAction instantiateKitAction)
+		private void HandleInstantiateKitAction(PayloadAction action)
 		{
 			if (this.Instantiated)
 			{
@@ -47,7 +47,7 @@ namespace StrongForce.Core.Kits
 			this.Kit.CreateContractHandler = this.CreateContract;
 			this.Kit.SendActionHandler = this.SendAction;
 
-			this.Kit.Instantiate(context.Sender);
+			this.Kit.Instantiate(action.Sender);
 		}
 	}
 }

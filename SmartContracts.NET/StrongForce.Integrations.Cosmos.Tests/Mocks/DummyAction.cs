@@ -1,16 +1,13 @@
+using System;
+using Newtonsoft.Json;
 using StrongForce.Core;
+using StrongForce.Core.Permissions;
 using Action = StrongForce.Core.Action;
 
 namespace StrongForce.Integrations.Cosmos.Tests.Mocks
 {
-	public class DummyAction : Action
+	public static class DummyAction
 	{
-		public DummyAction(Address target, Action forwarded = null)
-			: base(target)
-		{
-			this.NextAction = forwarded;
-		}
-
-		public Action NextAction { get; }
+		public const string Type = "Dummy";
 	}
 }

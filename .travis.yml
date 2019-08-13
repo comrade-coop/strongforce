@@ -10,4 +10,4 @@ install:
 
 script:
   - dotnet build SmartContracts.NET/Strongforce.sln
-  - dotnet test SmartContracts.NET/Strongforce.sln --no-build
+  - dotnet test SmartContracts.NET/Strongforce.sln --no-build --verbosity=normal
