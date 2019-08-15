@@ -1,52 +1,49 @@
 using System;
 using System.Collections.Generic;
-using System.Runtime.Serialization;
 using StrongForce.Core.Exceptions;
+using StrongForce.Core.Extensions;
 using StrongForce.Core.Permissions;
 
 namespace StrongForce.Core
 {
-	public abstract class Contract
+	public abstract class Contract : IStateObject
 	{
-		[ThreadStatic]
-		internal static Address CurrentlyCreatingAddress;
-
 		public Contract()
 		{
-			// HACK: Needed so that the other constructors knows about the "self" address
-			if (CurrentlyCreatingAddress != null)
-			{
-				this.Address = CurrentlyCreatingAddress;
-				CurrentlyCreatingAddress = null;
-			}
 		}
 
-		public Contract(Address initialAdmin)
-			: this()
-		{
-			this.Acl.AddPermission(
-				initialAdmin,
-				AddPermissionAction.Type,
-				this.Address);
-			this.Acl.AddPermission(
-				initialAdmin,
-				RemovePermissionAction.Type,
-				this.Address);
-		}
-
+		// Events used to communicate with the registry
 		internal event System.Action<Address[], string, IDictionary<string, object>> SendActionEvent;
 
 		internal event System.Action<ulong> ForwardActionEvent;
 
-		internal event Func<Type, object[], Address> CreateContractEvent;
+		internal event Func<Type, IDictionary<string, object>, Address> CreateContractEvent;
 
-		public Address Address { get; internal set; } = null;
+		public Address Address { get; private set; } = null;
 
-		public AccessControlList Acl { get; set; } = new AccessControlList();
+		public AccessControlList Acl { get; } = new AccessControlList();
 
-		public override string ToString()
+		public virtual IDictionary<string, object> GetState()
 		{
-			return $"{this.Address} ({this.GetType()})";
+			var state = new Dictionary<string, object>();
+
+			state.Add("Acl", this.Acl.GetState());
+
+			return state;
+		}
+
+		public virtual void SetState(IDictionary<string, object> state)
+		{
+			this.Acl.SetState(state.GetOrNull<Dictionary<string, object>>("Acl"));
+		}
+
+		internal void Configure(Address address, IDictionary<string, object> payload)
+		{
+			this.Address = address;
+			if (payload != null)
+			{
+				this.Initialize(payload);
+			}
 		}
 
 		internal bool Receive(Action action)
@@ -70,6 +67,20 @@ namespace StrongForce.Core
 			{
 				return false;
 			}
+		}
+
+		protected virtual void Initialize(IDictionary<string, object> payload)
+		{
+			var admin = payload.GetOrNull<string>("Admin").AsAddress();
+
+			this.Acl.AddPermission(
+				admin,
+				AddPermissionAction.Type,
+				this.Address);
+			this.Acl.AddPermission(
+				admin,
+				RemovePermissionAction.Type,
+				this.Address);
 		}
 
 		protected virtual void CheckPermission(Action action)
@@ -120,19 +131,14 @@ namespace StrongForce.Core
 			this.ForwardActionEvent?.Invoke(id);
 		}
 
-		protected Address CreateContract(Type contractType, object[] initialState)
+		protected Address CreateContract(Type contractType, IDictionary<string, object> payload)
 		{
-			if (contractType == null)
-			{
-				throw new ArgumentNullException();
-			}
-
-			return this.CreateContractEvent?.Invoke(contractType, initialState);
+			return this.CreateContractEvent?.Invoke(contractType, payload);
 		}
 
-		protected Address CreateContract<T>(object[] initialState)
+		protected Address CreateContract<T>(IDictionary<string, object> payload)
 		{
-			return this.CreateContract(typeof(T), initialState);
+			return this.CreateContract(typeof(T), payload);
 		}
 	}
 }

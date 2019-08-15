@@ -13,9 +13,8 @@ namespace StrongForce.Core.Tests
 		{
 			const int expectedNumber = 32;
 
-			Contract.CurrentlyCreatingAddress = this.addressFactory.Create();
-			var contract = new FavoriteNumberContract(null);
-			Contract.CurrentlyCreatingAddress = null;
+			var contract = new FavoriteNumberContract();
+			contract.Configure(this.addressFactory.Create(), new Dictionary<string, object>());
 
 			var action = new PayloadAction(
 				contract.Address,

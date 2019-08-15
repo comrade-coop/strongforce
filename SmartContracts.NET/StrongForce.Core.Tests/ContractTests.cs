@@ -13,8 +13,8 @@ namespace StrongForce.Core.Tests
 		[Fact]
 		public void Receive_WhenPassedNull_ThrowsArgumentNullException()
 		{
-			Contract contract = new FavoriteNumberContract(null);
-			contract.Address = this.addressFactory.Create();
+			Contract contract = new FavoriteNumberContract();
+			contract.Configure(this.addressFactory.Create(), new Dictionary<string, object>());
 
 			Assert.Throws<ArgumentNullException>(() => contract.Receive(null));
 		}
@@ -22,8 +22,8 @@ namespace StrongForce.Core.Tests
 		[Fact]
 		public void Receive_WhenReceivedSupportedAction_ReturnsTrue()
 		{
-			Contract contract = new FavoriteNumberContract(null);
-			contract.Address = this.addressFactory.Create();
+			Contract contract = new FavoriteNumberContract();
+			contract.Configure(this.addressFactory.Create(), new Dictionary<string, object>());
 
 			Assert.True(contract.Receive(new PayloadAction(
 				contract.Address,
@@ -39,8 +39,9 @@ namespace StrongForce.Core.Tests
 		[Fact]
 		public void Receive_WhenReceivedUnsupportedAction_ReturnsFalse()
 		{
-			Contract contract = new FavoriteNumberContract(null);
-			contract.Address = this.addressFactory.Create();
+			Contract contract = new FavoriteNumberContract();
+			contract.Configure(this.addressFactory.Create(), new Dictionary<string, object>());
+
 			var actionType = "NotARealActionType";
 
 			contract.Acl.AddPermission(

@@ -24,7 +24,6 @@ namespace StrongForce.Integrations.Cosmos
 
 		public override Contract GetContract(Address address)
 		{
-			this.contractsUsed.Add(address);
 			var cachedContract = base.GetContract(address);
 			if (cachedContract == null)
 			{

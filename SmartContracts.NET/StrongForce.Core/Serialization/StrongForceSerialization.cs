@@ -1,17 +1,12 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Newtonsoft.Json;
+using StrongForce.Core.Extensions;
 
 namespace StrongForce.Core.Serialization
 {
 	public static class StrongForceSerialization
 	{
-		public static JsonSerializerSettings ContractSerializationSettings { get; } = new JsonSerializerSettings()
-		{
-			TypeNameHandling = TypeNameHandling.Auto,
-		};
-
 		public static byte[] SerializeAction(Address[] targets, string type, IDictionary<string, object> payload)
 		{
 			var action = new Dictionary<string, object>()
@@ -35,14 +30,28 @@ namespace StrongForce.Core.Serialization
 			return Tuple.Create(targets, type, payload);
 		}
 
-		public static string SerializeContract(Contract contract)
+		public static byte[] SerializeContract(Contract contract)
 		{
-			return JsonConvert.SerializeObject(contract, typeof(Contract), ContractSerializationSettings);
+			var dictionary = new Dictionary<string, object>()
+			{
+				{ "Type", contract.GetType().AssemblyQualifiedName },
+				{ "State", contract.GetState() },
+			};
+			return StateSerialization.SerializeState(dictionary);
 		}
 
-		public static Contract DeserializeContract(string serialized)
+		public static Contract DeserializeContract(byte[] serialized)
 		{
-			return JsonConvert.DeserializeObject<Contract>(serialized, ContractSerializationSettings);
+			var dictionary = StateSerialization.DeserializeState(serialized);
+
+			var type = Type.GetType(dictionary.GetOrNull<string>("Type"));
+			var state = dictionary.GetOrNull<IDictionary<string, object>>("State");
+
+			var contract = Activator.CreateInstance(type) as Contract;
+
+			contract.SetState(state);
+
+			return contract;
 		}
 	}
 }

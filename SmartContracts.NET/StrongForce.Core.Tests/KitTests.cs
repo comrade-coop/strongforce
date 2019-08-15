@@ -18,7 +18,8 @@ namespace StrongForce.Core.Tests
 			var factory = new SequentialAddressFactory();
 			var registry = new ContractRegistry(factory);
 			var kit = new FavoriteNumberKit(favoriteContractsCount);
-			Address address = registry.CreateContract<KitContract>(kit);
+			Address address = registry.CreateContract<KitContract>(
+				new Dictionary<string, object>() { { "Kit", kit } });
 
 			registry.SendAction(address, address, InstantiateKitAction.Type, new Dictionary<string, object>());
 
@@ -30,7 +31,8 @@ namespace StrongForce.Core.Tests
 		{
 			var registry = new ContractRegistry();
 			var kit = new FavoriteNumberKit(2);
-			Address address = registry.CreateContract<KitContract>(kit);
+			Address address = registry.CreateContract<KitContract>(
+				new Dictionary<string, object>() { { "Kit", kit } });
 
 			registry.SendAction(address, address, InstantiateKitAction.Type, new Dictionary<string, object>());
 			Assert.Throws<InvalidOperationException>(() => registry.SendAction(address, address, InstantiateKitAction.Type, new Dictionary<string, object>()));

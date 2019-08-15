@@ -2,26 +2,41 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using StrongForce.Core;
+using StrongForce.Core.Extensions;
 using StrongForce.Core.Permissions;
 
 namespace StrongForce.Core.Tests.Mocks
 {
 	public class CreatorContract : Contract
 	{
-		public CreatorContract()
+		public Address LastCreatedAddress { get; set; } = null;
+
+		public override IDictionary<string, object> GetState()
 		{
+			var state = base.GetState();
+
+			state.Add("LastCreatedAddress", this.LastCreatedAddress.AsString());
+
+			return state;
 		}
 
-		public CreatorContract(Address initialAdmin)
-			: base(initialAdmin)
+		public override void SetState(IDictionary<string, object> state)
 		{
+			this.LastCreatedAddress = state.GetOrNull<string>("LastCreatedAddress").AsAddress();
+			base.SetState(state);
+		}
+
+		protected override void Initialize(IDictionary<string, object> payload)
+		{
+			base.Initialize(payload);
+
+			var admin = payload.GetOrNull<string>("Admin").AsAddress();
+
 			this.Acl.AddPermission(
-				initialAdmin,
+				admin,
 				CreateContractAction.Type,
 				this.Address);
 		}
-
-		public Address LastCreatedAddress { get; set; } = null;
 
 		protected override bool HandlePayloadAction(PayloadAction action)
 		{
@@ -39,7 +54,7 @@ namespace StrongForce.Core.Tests.Mocks
 		private void HandleCreateContractAction(IDictionary<string, object> payload)
 		{
 			var type = Type.GetType(payload.GetOrNull<string>(CreateContractAction.ContractType));
-			this.LastCreatedAddress = this.CreateContract(type, new object[] { this.Address });
+			this.LastCreatedAddress = this.CreateContract(type, new Dictionary<string, object>() { { "Admin", this.Address.AsString() } });
 		}
 	}
 }

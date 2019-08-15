@@ -2,23 +2,13 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace StrongForce.Core
+namespace StrongForce.Core.Extensions
 {
 	public static class DictionaryExtensions
 	{
 		public static TV GetOrElse<TK, TV>(this IDictionary<TK, TV> dictionary, TK key, TV defaultValue = default(TV))
 		{
 			return dictionary.TryGetValue(key, out TV value) ? value : defaultValue;
-		}
-
-		public static Address AsAddress(this string value)
-		{
-			return value != null ? Address.FromBase64String(value) : null;
-		}
-
-		public static string AsString(this Address value)
-		{
-			return value?.ToBase64String();
 		}
 
 		public static T GetOrNull<T>(this IDictionary<string, object> dictionary, string key)

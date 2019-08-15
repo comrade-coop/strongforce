@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using StrongForce.Core.Exceptions;
+using StrongForce.Core.Extensions;
 using StrongForce.Core.Permissions;
 using StrongForce.Core.Tests.Mocks;
 using Xunit;
@@ -13,7 +14,7 @@ namespace StrongForce.Core.Tests
 		{
 			var registry = new ContractRegistry();
 			var permissionManager = registry.AddressFactory.Create();
-			var creatorAddress = registry.CreateContract<CreatorContract>(permissionManager);
+			var creatorAddress = registry.CreateContract<CreatorContract>();
 
 			registry.SendAction(permissionManager, creatorAddress, CreateContractAction.Type, new Dictionary<string, object>()
 			{
@@ -30,7 +31,8 @@ namespace StrongForce.Core.Tests
 		{
 			var registry = new ContractRegistry();
 			var adminAddress = new Address(new byte[] { 1 });
-			var creatorAddress = registry.CreateContract(typeof(CreatorContract), adminAddress);
+			var creatorAddress = registry.CreateContract<CreatorContract>(
+				new Dictionary<string, object>() { { "Admin", adminAddress.AsString() } });
 
 			registry.SendAction(adminAddress, creatorAddress, AddPermissionAction.Type, new Dictionary<string, object>()
 			{

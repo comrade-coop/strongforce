@@ -39,7 +39,7 @@ namespace StrongForce.Integrations.Cosmos.Tests
 			var registry = new RemoteContractRegistry(address =>
 			{
 				count++;
-				return new DummyContract(null);
+				return new DummyContract();
 			});
 
 			for (var r = 0; r < 3; r++)
@@ -62,7 +62,7 @@ namespace StrongForce.Integrations.Cosmos.Tests
 			var messageCount = 10;
 			var registry = new RemoteContractRegistry(address =>
 			{
-				return new DummyContract(null);
+				return new DummyContract();
 			});
 
 			for (var r = 0; r < 3; r++)

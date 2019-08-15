@@ -1,24 +1,24 @@
 using System;
-using Newtonsoft.Json;
+using System.Collections.Generic;
 using StrongForce.Core;
+using StrongForce.Core.Extensions;
 using StrongForce.Core.Permissions;
-using Action = StrongForce.Core.Action;
 
 namespace StrongForce.Integrations.Cosmos.Tests.Mocks
 {
 	public class DummyContract : Contract
 	{
-		public DummyContract()
-		{
-		}
 
-		public DummyContract(Address initialAdmin)
-			: base(initialAdmin)
+		protected override void Initialize(IDictionary<string, object> payload)
 		{
+			base.Initialize(payload);
+
+			var admin = payload.GetOrNull<string>("Admin").AsAddress();
+
 			this.Acl.AddPermission(
-				initialAdmin,
+				admin,
 				DummyAction.Type,
-				null);
+				this.Address);
 		}
 
 		protected override bool HandlePayloadAction(PayloadAction action)

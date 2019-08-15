@@ -1,26 +1,26 @@
 using System;
 using System.Collections.Generic;
-using StrongForce.Core.Exceptions;
-using StrongForce.Core.Permissions;
+using StrongForce.Core.Extensions;
 
 namespace StrongForce.Core.Kits
 {
 	public class KitContract : Contract
 	{
-		public KitContract(Kit kit)
-		{
-			this.Kit = kit;
-			this.Acl.AddPermission(
-				null,
-				InstantiateKitAction.Type,
-				this.Address);
-		}
-
 		public static Address DefaultAddress { get; } = new Address(new byte[] { 0 });
 
 		public bool Instantiated { get; set; } = false;
 
-		public Kit Kit { get; set; }
+		public Kit Kit { get; set; } = null;
+
+		protected override void Initialize(IDictionary<string, object> payload)
+		{
+			this.Acl.AddPermission(
+				null,
+				InstantiateKitAction.Type,
+				this.Address);
+
+			this.Kit = payload.GetOrNull<Kit>("Kit");
+		}
 
 		protected override bool HandlePayloadAction(PayloadAction action)
 		{

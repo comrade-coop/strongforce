@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using StrongForce.Core.Extensions;
 
 namespace StrongForce.Core.Permissions
 {

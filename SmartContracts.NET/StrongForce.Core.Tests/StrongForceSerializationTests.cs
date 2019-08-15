@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using StrongForce.Core;
+using StrongForce.Core.Extensions;
 using StrongForce.Core.Serialization;
 using StrongForce.Core.Tests.Mocks;
 using Xunit;
@@ -64,6 +65,25 @@ namespace StrongForce.Core.Tests
 			Assert.Equal(targets, deserializedAction.Item1);
 			Assert.Equal(type, deserializedAction.Item2);
 			Assert.Equal(payload, deserializedAction.Item3);
+		}
+
+		[Fact]
+		public void Serializes_And_Deserializes_Contracts()
+		{
+			var contract = new FavoriteNumberContract();
+			var address = new Address(new byte[] { 10, 20, 127, 54, 51 });
+			var adminAddress = new Address(new byte[] { 10, 20, 4 });
+			contract.Configure(address, new Dictionary<string, object> { { "Admin", adminAddress.AsString() } });
+			contract.Number = 15;
+
+			var serializedContract = StrongForceSerialization.SerializeContract(contract);
+
+			var deserializedContract = StrongForceSerialization.DeserializeContract(serializedContract);
+			deserializedContract.Configure(address, null);
+
+			Assert.Equal(contract.GetState(), deserializedContract.GetState());
+			Assert.Equal(contract.Address, deserializedContract.Address);
+			Assert.Equal(contract.Number, ((FavoriteNumberContract)deserializedContract).Number);
 		}
 	}
 }

@@ -30,21 +30,6 @@ namespace StrongForce.Core
 			return this.addressesToContracts.TryGetValue(address, out Contract contract) ? contract : null;
 		}
 
-		public void RegisterContract(Address address, Contract contract)
-		{
-			if (contract == null)
-			{
-				throw new ArgumentNullException(nameof(contract));
-			}
-
-			this.SetContract(address, contract);
-
-			contract.Address = address;
-			contract.SendActionEvent += (targets, type, payload) => this.SendAction(address, targets, type, payload);
-			contract.ForwardActionEvent += (id) => this.SendAction(address, id);
-			contract.CreateContractEvent += this.CreateContract;
-		}
-
 		public bool SendAction(Address sender, Address target, string type, IDictionary<string, object> payload)
 		{
 			return this.SendAction(sender, new Address[] { target }, type, payload);
@@ -69,28 +54,36 @@ namespace StrongForce.Core
 			return this.ExecuteAction(action);
 		}
 
-		public Address CreateContract(Type contractType, params object[] parameters)
+		public Address CreateContract(Type contractType, IDictionary<string, object> payload = null)
 		{
 			if (!typeof(Contract).IsAssignableFrom(contractType))
 			{
 				throw new ArgumentOutOfRangeException(nameof(contractType));
 			}
 
-			var newAddress = this.AddressFactory.Create();
+			var contract = (Contract)Activator.CreateInstance(contractType);
 
-			// HACK: Needed so that the constructor knows about the "self" address
-			Contract.CurrentlyCreatingAddress = newAddress;
-			var newContract = (Contract)Activator.CreateInstance(contractType, parameters);
-			Contract.CurrentlyCreatingAddress = null;
+			var address = this.AddressFactory.Create();
 
-			this.RegisterContract(newAddress, newContract);
+			this.RegisterContract(address, contract, payload ?? new Dictionary<string, object>());
 
-			return newAddress;
+			return address;
 		}
 
-		public Address CreateContract<T>(params object[] parameters)
+		public Address CreateContract<T>(IDictionary<string, object> payload = null)
 		{
-			return this.CreateContract(typeof(T), parameters);
+			return this.CreateContract(typeof(T), payload);
+		}
+
+		protected void RegisterContract(Address address, Contract contract, IDictionary<string, object> configurePayload = null)
+		{
+			contract.Configure(address, configurePayload);
+
+			contract.SendActionEvent += (targets, type, payload) => this.SendAction(address, targets, type, payload);
+			contract.ForwardActionEvent += (id) => this.SendAction(address, id);
+			contract.CreateContractEvent += this.CreateContract;
+
+			this.SetContract(address, contract);
 		}
 
 		protected virtual void SetContract(Address address, Contract contract)
@@ -98,7 +91,7 @@ namespace StrongForce.Core
 			if (this.addressesToContracts.ContainsKey(address))
 			{
 				throw new InvalidOperationException(
-					$"Contract with same address: {address.ToBase64String()} has already been registered");
+					$"Contract with address {address} has already been registered");
 			}
 
 			this.addressesToContracts[address] = contract;

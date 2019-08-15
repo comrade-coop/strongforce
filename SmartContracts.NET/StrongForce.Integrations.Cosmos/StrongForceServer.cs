@@ -116,11 +116,16 @@ namespace StrongForce.Integrations.Cosmos
 						if (data == string.Empty && address == KitContract.DefaultAddress)
 						{
 							this.logger.LogTrace("Fulfilling request with default kit contract!");
-							contract = new KitContract(this.initialKit);
+							contract = new KitContract();
 						}
 						else
 						{
 							contract = StrongForceSerialization.DeserializeContract(data);
+						}
+
+						if (address == KitContract.DefaultAddress && contract is KitContract kitContract)
+						{
+							kitContract.Kit = this.initialKit;
 						}
 
 						this.logger.LogTrace("Received contract: " + StrongForceSerialization.SerializeContract(contract));

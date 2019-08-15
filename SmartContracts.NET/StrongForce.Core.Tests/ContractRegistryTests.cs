@@ -8,37 +8,11 @@ namespace StrongForce.Core.Tests
 	public class ContractRegistryTests
 	{
 		[Fact]
-		public void RegisterContract_WhenPassedNewContract_AddsItCorrectly()
-		{
-			var registry = new ContractRegistry();
-			Address contractAddress = registry.AddressFactory.Create();
-			Contract contract = new FavoriteNumberContract();
-
-			registry.RegisterContract(contractAddress, contract);
-
-			Assert.Equal(contractAddress, contract.Address);
-			Assert.Equal(contract, registry.GetContract(contractAddress));
-		}
-
-		[Fact]
-		public void RegisterContract_WhenPassedTwoContractsWithSameAddress_ThrowsArgumentException()
-		{
-			var registry = new ContractRegistry();
-			Address contractsAddress = registry.AddressFactory.Create();
-			Contract firstContract = new FavoriteNumberContract();
-			Contract secondContract = new FavoriteNumberContract();
-
-			registry.RegisterContract(contractsAddress, firstContract);
-
-			Assert.Throws<InvalidOperationException>(() => registry.RegisterContract(contractsAddress, secondContract));
-		}
-
-		[Fact]
 		public void CreateContract_WhenPassedNewContract_AddsItCorrectly()
 		{
 			var registry = new ContractRegistry();
 
-			Address contractAddress = registry.CreateContract(typeof(FavoriteNumberContract));
+			Address contractAddress = registry.CreateContract<FavoriteNumberContract>();
 
 			Assert.NotNull(registry.GetContract(contractAddress));
 			Assert.Equal(typeof(FavoriteNumberContract), registry.GetContract(contractAddress).GetType());
@@ -49,20 +23,19 @@ namespace StrongForce.Core.Tests
 		{
 			var registry = new ContractRegistry();
 
-			Assert.Throws<ArgumentOutOfRangeException>(() => registry.CreateContract(typeof(Action)));
+			Assert.Throws<ArgumentOutOfRangeException>(() => registry.CreateContract<Action>());
 		}
 
 		[Fact]
-		public void RegisterContract_WhenPassedNull_ThrowsArgumentNullException()
+		public void CreateContract_WhenPassedNull_ThrowsArgumentNullException()
 		{
 			var registry = new ContractRegistry();
-			Address address = registry.AddressFactory.Create();
 
-			Assert.Throws<ArgumentNullException>(() => registry.RegisterContract(address, null));
+			Assert.Throws<ArgumentOutOfRangeException>(() => registry.CreateContract(null));
 		}
 
 		[Fact]
-		public void GetContract_WhenPassedNotRegisteredContract_ReturnsNull()
+		public void GetContract_WhenPassedNonExistentContract_ReturnsNull()
 		{
 			var registry = new ContractRegistry();
 			Address contractAddress = registry.AddressFactory.Create();
@@ -82,22 +55,21 @@ namespace StrongForce.Core.Tests
 		{
 			var registry = new ContractRegistry();
 			Address senderAddress = registry.AddressFactory.Create();
-			Address contractAddress = registry.AddressFactory.Create();
-			var contract = new FavoriteNumberContract(senderAddress);
-
-			registry.RegisterContract(contractAddress, contract);
+			Address contractAddress = registry.CreateContract<FavoriteNumberContract>();
 
 			registry.SendAction(senderAddress, contractAddress, SetFavoriteNumberAction.Type, new Dictionary<string, object>
 			{
 				{ SetFavoriteNumberAction.Number, 0 },
 			});
 
+			var contract = registry.GetContract(contractAddress) as FavoriteNumberContract;
+
 			Assert.Equal(contract.LastOrigin, senderAddress);
 			Assert.Equal(contract.LastSender, senderAddress);
 		}
 
 		[Fact]
-		public void HandleAction_WhenPassedNull_ThrowsArgumentNullException()
+		public void SendAction_WhenPassedNull_ThrowsArgumentNullException()
 		{
 			var registry = new ContractRegistry();
 			Address address = registry.AddressFactory.Create();

@@ -2,26 +2,51 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using StrongForce.Core;
+using StrongForce.Core.Extensions;
 
 namespace StrongForce.Core.Permissions
 {
-	public class AccessControlList
+	public class AccessControlList : IStateObject
 	{
 		public const Address AnyAddress = Permission.AnyAddress;
 
 		public const string AnyAction = Permission.AnyAction;
 
-		public AccessControlList(ISet<Permission> permissions)
-		{
-			this.Permissions = permissions;
-		}
-
 		public AccessControlList()
-			: this(new SortedSet<Permission>())
 		{
 		}
 
-		public ISet<Permission> Permissions { get; set; }
+		public ISet<Permission> Permissions { get; set; } = new SortedSet<Permission>();
+
+		public IDictionary<string, object> GetState()
+		{
+			var state = new Dictionary<string, object>();
+
+			state.Add("Permissions", this.Permissions.Select(p => new Dictionary<string, object>()
+			{
+				{ "Type", p.Type },
+				{ "Sender", p.Sender.AsString() },
+				{ "Target", p.Target.AsString() },
+			}).ToList());
+
+			return state;
+		}
+
+		public void SetState(IDictionary<string, object> state)
+		{
+			var permissionsList = state.GetOrNull<List<object>>("Permissions");
+
+			this.Permissions = new SortedSet<Permission>(
+				state.GetOrNull<List<object>>("Permissions")
+				.Cast<Dictionary<string, object>>()
+				.Select(s =>
+				{
+					return new Permission(
+						s.GetOrNull<string>("Type"),
+						s.GetOrNull<string>("Sender").AsAddress(),
+						s.GetOrNull<string>("Target").AsAddress());
+				}));
+		}
 
 		public bool HasPermission(Permission pattern)
 		{
