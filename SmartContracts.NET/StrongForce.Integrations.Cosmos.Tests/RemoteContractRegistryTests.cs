@@ -16,7 +16,9 @@ namespace StrongForce.Integrations.Cosmos.Tests
 			var registry = new RemoteContractRegistry(address =>
 			{
 				count++;
-				return new DummyContract();
+				var contract = new DummyContract();
+				contract.Acl.AddPermission(null, null, null);
+				return contract;
 			});
 
 			// Repeat a few times to make sure it actually caches Contracts
@@ -39,7 +41,9 @@ namespace StrongForce.Integrations.Cosmos.Tests
 			var registry = new RemoteContractRegistry(address =>
 			{
 				count++;
-				return new DummyContract();
+				var contract = new DummyContract();
+				contract.Acl.AddPermission(null, null, null);
+				return contract;
 			});
 
 			for (var r = 0; r < 3; r++)
@@ -62,7 +66,9 @@ namespace StrongForce.Integrations.Cosmos.Tests
 			var messageCount = 10;
 			var registry = new RemoteContractRegistry(address =>
 			{
-				return new DummyContract();
+				var contract = new DummyContract();
+				contract.Acl.AddPermission(null, null, null);
+				return contract;
 			});
 
 			for (var r = 0; r < 3; r++)

@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Google.Protobuf;
@@ -108,12 +107,12 @@ namespace StrongForce.Integrations.Cosmos
 					{
 						var address = new Address(requestStream.Current.Contract.Address.ToByteArray());
 
-						var data = Encoding.UTF8.GetString(requestStream.Current.Contract.Data.ToByteArray());
-						this.logger.LogTrace("Received contract data: " + data);
+						var data = requestStream.Current.Contract.Data.ToByteArray();
+						this.logger.LogTrace("Received contract data: " + data.Length);
 
 						Contract contract;
 
-						if (data == string.Empty && address == KitContract.DefaultAddress)
+						if (data.Length == 0 && address == KitContract.DefaultAddress)
 						{
 							this.logger.LogTrace("Fulfilling request with default kit contract!");
 							contract = new KitContract();
@@ -151,7 +150,7 @@ namespace StrongForce.Integrations.Cosmos
 					await responseStream.WriteAsync(new ContractRequest
 					{
 						Address = ByteString.CopyFrom(contract.Address.Value),
-						Data = ByteString.CopyFrom(Encoding.UTF8.GetBytes(data)),
+						Data = ByteString.CopyFrom(data),
 					});
 
 					this.logger.LogTrace("Saved contract #" + contract.Address.ToBase64String());
