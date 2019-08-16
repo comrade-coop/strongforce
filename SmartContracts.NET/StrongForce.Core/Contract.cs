@@ -34,7 +34,7 @@ namespace StrongForce.Core
 
 		public virtual void SetState(IDictionary<string, object> state)
 		{
-			this.Acl.SetState(state.GetOrNull<Dictionary<string, object>>("Acl"));
+			this.Acl.SetState(state.GetDictionary("Acl"));
 		}
 
 		internal void Configure(Address address, IDictionary<string, object> payload)
@@ -71,7 +71,7 @@ namespace StrongForce.Core
 
 		protected virtual void Initialize(IDictionary<string, object> payload)
 		{
-			var admin = payload.GetOrNull<string>("Admin").AsAddress();
+			var admin = payload.GetAddress("Admin");
 
 			this.Acl.AddPermission(
 				admin,

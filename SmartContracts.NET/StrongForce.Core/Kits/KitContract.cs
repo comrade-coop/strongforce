@@ -19,7 +19,7 @@ namespace StrongForce.Core.Kits
 				InstantiateKitAction.Type,
 				this.Address);
 
-			this.Kit = payload.GetOrNull<Kit>("Kit");
+			this.Kit = (Kit)payload["Kit"];
 		}
 
 		protected override bool HandlePayloadAction(PayloadAction action)

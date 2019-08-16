@@ -6,8 +6,9 @@ mono: none
 dotnet: 2.2
 
 install:
-  - dotnet restore SmartContracts.NET/Strongforce.sln
+  - dotnet restore SmartContracts.NET/
 
 script:
-  - dotnet build SmartContracts.NET/Strongforce.sln
-  - dotnet test SmartContracts.NET/Strongforce.sln --no-build --verbosity=normal
+  - dotnet build SmartContracts.NET/
+  - dotnet test SmartContracts.NET/StrongForce.Core.Tests/ --no-build --verbosity=normal
+  - dotnet test SmartContracts.NET/StrongForce.Integrations.Cosmos.Tests/ --no-build --verbosity=normal

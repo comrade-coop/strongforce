@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using StrongForce.Core.Exceptions;
+using StrongForce.Core.Serialization;
 
 namespace StrongForce.Core
 {
@@ -119,6 +120,11 @@ namespace StrongForce.Core
 			if (payload == null)
 			{
 				throw new ArgumentNullException(nameof(payload));
+			}
+
+			if (!StateSerialization.ValidateState(payload))
+			{
+				throw new ArgumentOutOfRangeException(nameof(payload));
 			}
 
 			if (targets.Length == 1)

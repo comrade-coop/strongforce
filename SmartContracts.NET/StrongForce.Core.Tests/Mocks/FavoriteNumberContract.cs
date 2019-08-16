@@ -23,8 +23,8 @@ namespace StrongForce.Core.Tests.Mocks
 		{
 			var state = base.GetState();
 
-			state.Add("LastOrigin", this.LastOrigin.AsString());
-			state.Add("LastSender", this.LastSender.AsString());
+			state.Add("LastOrigin", this.LastOrigin?.ToBase64String());
+			state.Add("LastSender", this.LastSender?.ToBase64String());
 			state.Add("Number", this.Number);
 
 			return state;
@@ -32,9 +32,9 @@ namespace StrongForce.Core.Tests.Mocks
 
 		public override void SetState(IDictionary<string, object> state)
 		{
-			this.LastOrigin = state.GetOrNull<string>("LastOrigin").AsAddress();
-			this.LastSender = state.GetOrNull<string>("LastSender").AsAddress();
-			this.Number = state.GetOrNull<int>("Number");
+			this.LastOrigin = state.GetAddress("LastOrigin");
+			this.LastSender = state.GetAddress("LastSender");
+			this.Number = state.Get<int>("Number");
 
 			base.SetState(state);
 		}
@@ -43,7 +43,7 @@ namespace StrongForce.Core.Tests.Mocks
 		{
 			base.Initialize(payload);
 
-			var admin = payload.GetOrNull<string>("Admin").AsAddress();
+			var admin = payload.GetAddress("Admin");
 
 			this.Acl.AddPermission(
 				admin,
@@ -68,7 +68,7 @@ namespace StrongForce.Core.Tests.Mocks
 
 		private void HandleSetNumberAction(IDictionary<string, object> payload)
 		{
-			this.Number = payload.GetOrNull<int>(SetFavoriteNumberAction.Number);
+			this.Number = payload.Get<int>(SetFavoriteNumberAction.Number);
 		}
 	}
 }

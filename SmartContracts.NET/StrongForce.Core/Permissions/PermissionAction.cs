@@ -19,9 +19,9 @@ namespace StrongForce.Core.Permissions
 		public static Permission GetPermission(PayloadAction action)
 		{
 			return new Permission(
-				action.Payload.GetOrNull<string>(PermissionType),
-				action.Payload.GetOrNull<string>(PermissionSender).AsAddress(),
-				action.Payload.GetOrNull<string>(PermissionTarget).AsAddress());
+				action.Payload.GetString(PermissionType),
+				action.Payload.GetAddress(PermissionSender),
+				action.Payload.GetAddress(PermissionTarget));
 		}
 	}
 }

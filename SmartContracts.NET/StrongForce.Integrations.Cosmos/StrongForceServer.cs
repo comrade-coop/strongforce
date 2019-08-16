@@ -153,7 +153,7 @@ namespace StrongForce.Integrations.Cosmos
 						Data = ByteString.CopyFrom(data),
 					});
 
-					this.logger.LogTrace("Saved contract #" + contract.Address.ToBase64String());
+					this.logger.LogTrace("Saved contract " + contract.Address);
 				}
 			}
 			catch (OperationCanceledException)

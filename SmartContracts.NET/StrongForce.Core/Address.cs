@@ -40,12 +40,34 @@ namespace StrongForce.Core
 
 		public static Address FromBase64String(string base64String)
 		{
-			return new Address(Convert.FromBase64String(base64String));
+			if (base64String != null)
+			{
+				base64String = base64String.Replace('_', '/').Replace('-', '+');
+				switch (base64String.Length % 4)
+				{
+					case 2:
+						base64String += "==";
+						break;
+					case 3:
+						base64String += "=";
+						break;
+				}
+
+				return new Address(Convert.FromBase64String(base64String));
+			}
+			else
+			{
+				return null;
+			}
 		}
 
 		public string ToBase64String()
 		{
-			return Convert.ToBase64String(this.Value, 0, this.Value.Length);
+			var result = Convert.ToBase64String(this.Value, 0, this.Value.Length);
+			result = result.TrimEnd('=');
+			result = result.Replace('+', '-').Replace('/', '_');
+
+			return result;
 		}
 
 		public override string ToString()

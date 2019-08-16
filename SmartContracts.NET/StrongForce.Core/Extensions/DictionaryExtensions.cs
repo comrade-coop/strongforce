@@ -6,38 +6,54 @@ namespace StrongForce.Core.Extensions
 {
 	public static class DictionaryExtensions
 	{
-		public static TV GetOrElse<TK, TV>(this IDictionary<TK, TV> dictionary, TK key, TV defaultValue = default(TV))
+		public static object GetOrElse(this IDictionary<string, object> dictionary, string key, object defaultValue)
 		{
-			return dictionary.TryGetValue(key, out TV value) ? value : defaultValue;
+			return dictionary.TryGetValue(key, out object value) ? value : defaultValue;
 		}
 
-		public static T GetOrNull<T>(this IDictionary<string, object> dictionary, string key)
+		public static T Get<T>(this IDictionary<string, object> dictionary, string key)
+			where T : struct
 		{
-			var value = dictionary.GetOrElse(key, null);
-
-			if (value is T valueT)
-			{
-				return valueT;
-			}
-
-			return default(T);
+			return (T)dictionary[key];
 		}
 
-		public static IDictionary<TK, object> AddState<TK>(this IDictionary<TK, object> dictionary, TK key, ValueType value)
+		public static T? GetNullable<T>(this IDictionary<string, object> dictionary, string key)
+			where T : struct
 		{
-			dictionary.Add(key, value);
-			return dictionary;
+			return (T?)dictionary.GetOrElse(key, null);
 		}
 
-		public static IDictionary<TK, object> AddState<TK>(this IDictionary<TK, object> dictionary, TK key, string value)
+		public static string GetString(this IDictionary<string, object> dictionary, string key)
 		{
-			dictionary.Add(key, value);
-			return dictionary;
+			return (string)dictionary.GetOrElse(key, null);
 		}
 
-		public static IDictionary<TK, object> AddState<TK>(this IDictionary<TK, object> dictionary, TK key, Address value)
+		public static IDictionary<string, object> GetDictionary(this IDictionary<string, object> dictionary, string key)
 		{
-			return dictionary.AddState(key, value.ToBase64String());
+			return (IDictionary<string, object>)dictionary.GetOrElse(key, null);
+		}
+
+		public static IList<object> GetList(this IDictionary<string, object> dictionary, string key)
+		{
+			return (IList<object>)dictionary.GetOrElse(key, null);
+		}
+
+		public static IEnumerable<T> GetList<T>(this IDictionary<string, object> dictionary, string key)
+		{
+			return dictionary.GetList(key).Cast<T>();
+		}
+
+		public static Address GetAddress(this IDictionary<string, object> dictionary, string key)
+		{
+			var value = dictionary.GetString(key);
+
+			return Address.FromBase64String(value);
+		}
+
+		public static void AddAddress(this IDictionary<string, object> dictionary, string key, Address value)
+		{
+			var serialized = value?.ToBase64String();
+			dictionary.Add(key, serialized);
 		}
 	}
 }

@@ -73,7 +73,7 @@ namespace StrongForce.Core.Tests
 			var contract = new FavoriteNumberContract();
 			var address = new Address(new byte[] { 10, 20, 127, 54, 51 });
 			var adminAddress = new Address(new byte[] { 10, 20, 4 });
-			contract.Configure(address, new Dictionary<string, object> { { "Admin", adminAddress.AsString() } });
+			contract.Configure(address, new Dictionary<string, object> { { "Admin", adminAddress?.ToBase64String() } });
 			contract.Number = 15;
 
 			var serializedContract = StrongForceSerialization.SerializeContract(contract);

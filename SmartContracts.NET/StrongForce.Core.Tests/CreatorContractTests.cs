@@ -32,12 +32,12 @@ namespace StrongForce.Core.Tests
 			var registry = new ContractRegistry();
 			var adminAddress = new Address(new byte[] { 1 });
 			var creatorAddress = registry.CreateContract<CreatorContract>(
-				new Dictionary<string, object>() { { "Admin", adminAddress.AsString() } });
+				new Dictionary<string, object>() { { "Admin", adminAddress?.ToBase64String() } });
 
 			registry.SendAction(adminAddress, creatorAddress, AddPermissionAction.Type, new Dictionary<string, object>()
 			{
 				{ AddPermissionAction.PermissionType, SetFavoriteNumberAction.Type },
-				{ AddPermissionAction.PermissionSender, adminAddress.ToBase64String() },
+				{ AddPermissionAction.PermissionSender, adminAddress?.ToBase64String() },
 				{ AddPermissionAction.PermissionTarget, null },
 			});
 

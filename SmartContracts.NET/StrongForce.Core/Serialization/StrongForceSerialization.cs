@@ -11,7 +11,7 @@ namespace StrongForce.Core.Serialization
 		{
 			var action = new Dictionary<string, object>()
 			{
-				{ "Targets", targets.Select(x => x.AsString()) },
+				{ "Targets", targets.Select(x => x?.ToBase64String()) },
 				{ "Type", type },
 				{ "Payload", payload },
 			};
@@ -22,11 +22,10 @@ namespace StrongForce.Core.Serialization
 		{
 			var action = StateSerialization.DeserializeState(serialized);
 			var targets = action
-				.GetOrNull<IList<object>>("Targets")
-				.Select(x => (x as string).AsAddress())
+				.GetList<string>("Targets").Select(Address.FromBase64String)
 				.ToArray();
-			var type = action.GetOrNull<string>("Type");
-			var payload = action.GetOrNull<IDictionary<string, object>>("Payload");
+			var type = action.GetString("Type");
+			var payload = action.GetDictionary("Payload");
 			return Tuple.Create(targets, type, payload);
 		}
 
@@ -44,8 +43,8 @@ namespace StrongForce.Core.Serialization
 		{
 			var dictionary = StateSerialization.DeserializeState(serialized);
 
-			var type = Type.GetType(dictionary.GetOrNull<string>("Type"));
-			var state = dictionary.GetOrNull<IDictionary<string, object>>("State");
+			var type = Type.GetType(dictionary.GetString("Type"));
+			var state = dictionary.GetDictionary("State");
 
 			var contract = Activator.CreateInstance(type) as Contract;
 

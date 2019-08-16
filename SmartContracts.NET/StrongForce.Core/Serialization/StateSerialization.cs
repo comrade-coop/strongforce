@@ -31,6 +31,12 @@ namespace StrongForce.Core.Serialization
 			return ReadDictionary(ref reader);
 		}
 
+		public static bool ValidateState(IDictionary<string, object> state)
+		{
+			return ValidateObject(state);
+		}
+
+		// Writing
 		private static void WriteObject(Utf8JsonWriter writer, object value)
 		{
 			switch (value)
@@ -108,6 +114,7 @@ namespace StrongForce.Core.Serialization
 			writer.WriteEndArray();
 		}
 
+		// Reading
 		private static object ReadObject(ref Utf8JsonReader reader)
 		{
 			object value;
@@ -207,6 +214,50 @@ namespace StrongForce.Core.Serialization
 			}
 
 			return result;
+		}
+
+		// Validating
+		private static bool ValidateObject(object value)
+		{
+			switch (value)
+			{
+				case null:
+				case bool boolValue:
+				case string stringValue:
+				case int intValue:
+				case uint uintValue:
+				case long longValue:
+				case ulong ulongValue:
+				case float floatValue:
+				case double doubleValue:
+				case decimal decimalValue:
+					return true;
+
+				case IEnumerable<KeyValuePair<string, object>> pairEnumerableValue:
+					foreach (var kv in pairEnumerableValue)
+					{
+						if (!ValidateObject(kv.Value))
+						{
+							return false;
+						}
+					}
+
+					return true;
+
+				case IEnumerable<object> enumerableValue:
+					foreach (var v in enumerableValue)
+					{
+						if (!ValidateObject(v))
+						{
+							return false;
+						}
+					}
+
+					return true;
+
+				default:
+					return false;
+			}
 		}
 	}
 }

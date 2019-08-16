@@ -22,7 +22,7 @@ namespace StrongForce.Core.Tests
 		{
 			Address permissionManager = this.registry.AddressFactory.Create();
 			var contractAddress = this.registry.CreateContract<FavoriteNumberContract>(
-				new Dictionary<string, object>() { { "Admin", permissionManager.AsString() } });
+				new Dictionary<string, object>() { { "Admin", permissionManager?.ToBase64String() } });
 
 			Contract contract = this.registry.GetContract(contractAddress);
 
@@ -37,15 +37,15 @@ namespace StrongForce.Core.Tests
 			Address otherAddress = this.registry.AddressFactory.Create();
 
 			var contractAddress = this.registry.CreateContract<FavoriteNumberContract>(
-				new Dictionary<string, object>() { { "Admin", permissionManager.AsString() } });
+				new Dictionary<string, object>() { { "Admin", permissionManager?.ToBase64String() } });
 
 			Assert.Throws<NoPermissionException>(() =>
 			{
 				this.registry.SendAction(otherAddress, contractAddress, AddPermissionAction.Type, new Dictionary<string, object>()
 				{
 					{ AddPermissionAction.PermissionType, SetFavoriteNumberAction.Type },
-					{ AddPermissionAction.PermissionSender, contractAddress.AsString() },
-					{ AddPermissionAction.PermissionTarget, contractAddress.AsString() },
+					{ AddPermissionAction.PermissionSender, contractAddress?.ToBase64String() },
+					{ AddPermissionAction.PermissionTarget, contractAddress?.ToBase64String() },
 				});
 			});
 		}
@@ -56,13 +56,13 @@ namespace StrongForce.Core.Tests
 			Address permissionManager = this.registry.AddressFactory.Create();
 
 			var contractAddress = this.registry.CreateContract<FavoriteNumberContract>(
-				new Dictionary<string, object>() { { "Admin", permissionManager.AsString() } });
+				new Dictionary<string, object>() { { "Admin", permissionManager?.ToBase64String() } });
 
 			Assert.True(this.registry.SendAction(permissionManager, contractAddress, AddPermissionAction.Type, new Dictionary<string, object>()
 			{
 				{ AddPermissionAction.PermissionType, SetFavoriteNumberAction.Type },
-				{ AddPermissionAction.PermissionSender, contractAddress.AsString() },
-				{ AddPermissionAction.PermissionTarget, contractAddress.AsString() },
+				{ AddPermissionAction.PermissionSender, contractAddress?.ToBase64String() },
+				{ AddPermissionAction.PermissionTarget, contractAddress?.ToBase64String() },
 			}));
 
 			Contract contract = this.registry.GetContract(contractAddress);
@@ -76,15 +76,15 @@ namespace StrongForce.Core.Tests
 			Address permissionManager = this.registry.AddressFactory.Create();
 
 			var contractAddress = this.registry.CreateContract<FavoriteNumberContract>(
-				new Dictionary<string, object>() { { "Admin", permissionManager.AsString() } });
+				new Dictionary<string, object>() { { "Admin", permissionManager?.ToBase64String() } });
 
 			Contract contract = this.registry.GetContract(contractAddress);
 
 			Assert.True(this.registry.SendAction(permissionManager, contractAddress, AddPermissionAction.Type, new Dictionary<string, object>()
 			{
 				{ AddPermissionAction.PermissionType, SetFavoriteNumberAction.Type },
-				{ AddPermissionAction.PermissionSender, permissionManager.AsString() },
-				{ AddPermissionAction.PermissionTarget, contractAddress.AsString() },
+				{ AddPermissionAction.PermissionSender, permissionManager?.ToBase64String() },
+				{ AddPermissionAction.PermissionTarget, contractAddress?.ToBase64String() },
 			}));
 
 			Assert.True(contract.CheckPermission(permissionManager, SetFavoriteNumberAction.Type, contractAddress));
@@ -92,8 +92,8 @@ namespace StrongForce.Core.Tests
 			Assert.True(this.registry.SendAction(permissionManager, contractAddress, RemovePermissionAction.Type, new Dictionary<string, object>()
 			{
 				{ RemovePermissionAction.PermissionType, SetFavoriteNumberAction.Type },
-				{ RemovePermissionAction.PermissionSender, permissionManager.AsString() },
-				{ RemovePermissionAction.PermissionTarget, contractAddress.AsString() },
+				{ RemovePermissionAction.PermissionSender, permissionManager?.ToBase64String() },
+				{ RemovePermissionAction.PermissionTarget, contractAddress?.ToBase64String() },
 			}));
 
 			Assert.False(contract.CheckPermission(permissionManager, SetFavoriteNumberAction.Type, contractAddress));
@@ -105,7 +105,7 @@ namespace StrongForce.Core.Tests
 			Address permissionManager = this.registry.AddressFactory.Create();
 
 			var contractAddress = this.registry.CreateContract<FavoriteNumberContract>(
-				new Dictionary<string, object>() { { "Admin", permissionManager.AsString() } });
+				new Dictionary<string, object>() { { "Admin", permissionManager?.ToBase64String() } });
 
 			Assert.Throws<NoPermissionException>(() =>
 			{
@@ -119,13 +119,13 @@ namespace StrongForce.Core.Tests
 			Address permissionManager = this.registry.AddressFactory.Create();
 
 			var contractAddress = this.registry.CreateContract<FavoriteNumberContract>(
-				new Dictionary<string, object>() { { "Admin", permissionManager.AsString() } });
+				new Dictionary<string, object>() { { "Admin", permissionManager?.ToBase64String() } });
 
 			this.registry.SendAction(permissionManager, contractAddress, AddPermissionAction.Type, new Dictionary<string, object>()
 			{
 				{ AddPermissionAction.PermissionType, SetFavoriteNumberAction.Type },
 				{ AddPermissionAction.PermissionSender, null },
-				{ AddPermissionAction.PermissionTarget, contractAddress.AsString() },
+				{ AddPermissionAction.PermissionTarget, contractAddress?.ToBase64String() },
 			});
 
 			Contract contract = this.registry.GetContract(contractAddress);
@@ -138,16 +138,16 @@ namespace StrongForce.Core.Tests
 		{
 			Address permissionManager = this.registry.AddressFactory.Create();
 			var contract1Address = this.registry.CreateContract<FavoriteNumberContract>(
-				new Dictionary<string, object>() { { "Admin", permissionManager.AsString() } });
+				new Dictionary<string, object>() { { "Admin", permissionManager?.ToBase64String() } });
 			var contract2Address = this.registry.CreateContract<FavoriteNumberContract>(
-				new Dictionary<string, object>() { { "Admin", contract1Address.AsString() } });
+				new Dictionary<string, object>() { { "Admin", contract1Address?.ToBase64String() } });
 			int testedNumber = 424;
 
 			this.registry.SendAction(permissionManager, contract1Address, AddPermissionAction.Type, new Dictionary<string, object>()
 			{
 				{ AddPermissionAction.PermissionType, SetFavoriteNumberAction.Type },
-				{ AddPermissionAction.PermissionSender, permissionManager.AsString() },
-				{ AddPermissionAction.PermissionTarget, contract2Address.AsString() },
+				{ AddPermissionAction.PermissionSender, permissionManager?.ToBase64String() },
+				{ AddPermissionAction.PermissionTarget, contract2Address?.ToBase64String() },
 			});
 
 			this.registry.SendAction(permissionManager, new Address[] { contract1Address, contract2Address }, SetFavoriteNumberAction.Type, new Dictionary<string, object>()
@@ -164,9 +164,9 @@ namespace StrongForce.Core.Tests
 		{
 			Address permissionManager = this.registry.AddressFactory.Create();
 			var contract1Address = this.registry.CreateContract<FavoriteNumberContract>(
-				new Dictionary<string, object>() { { "Admin", permissionManager.AsString() } });
+				new Dictionary<string, object>() { { "Admin", permissionManager?.ToBase64String() } });
 			var contract2Address = this.registry.CreateContract<FavoriteNumberContract>(
-				new Dictionary<string, object>() { { "Admin", contract1Address.AsString() } });
+				new Dictionary<string, object>() { { "Admin", contract1Address?.ToBase64String() } });
 			int testedNumber = 424;
 
 			Assert.Throws<NoPermissionException>(() =>
@@ -183,23 +183,23 @@ namespace StrongForce.Core.Tests
 		{
 			Address permissionManager = this.registry.AddressFactory.Create();
 			var contract1Address = this.registry.CreateContract<FavoriteNumberContract>(
-				new Dictionary<string, object>() { { "Admin", permissionManager.AsString() } });
+				new Dictionary<string, object>() { { "Admin", permissionManager?.ToBase64String() } });
 			var contract2Address = this.registry.CreateContract<FavoriteNumberContract>(
-				new Dictionary<string, object>() { { "Admin", contract1Address.AsString() } });
+				new Dictionary<string, object>() { { "Admin", contract1Address?.ToBase64String() } });
 			int testedNumber = 424;
 
 			this.registry.SendAction(permissionManager, contract1Address, AddPermissionAction.Type, new Dictionary<string, object>()
 			{
 				{ AddPermissionAction.PermissionType, SetFavoriteNumberAction.Type },
-				{ AddPermissionAction.PermissionSender, permissionManager.AsString() },
-				{ AddPermissionAction.PermissionTarget, contract2Address.AsString() },
+				{ AddPermissionAction.PermissionSender, permissionManager?.ToBase64String() },
+				{ AddPermissionAction.PermissionTarget, contract2Address?.ToBase64String() },
 			});
 
 			this.registry.SendAction(contract1Address, contract2Address, RemovePermissionAction.Type, new Dictionary<string, object>()
 			{
 				{ RemovePermissionAction.PermissionType, SetFavoriteNumberAction.Type },
-				{ RemovePermissionAction.PermissionSender, contract1Address.AsString() },
-				{ RemovePermissionAction.PermissionTarget, contract2Address.AsString() },
+				{ RemovePermissionAction.PermissionSender, contract1Address?.ToBase64String() },
+				{ RemovePermissionAction.PermissionTarget, contract2Address?.ToBase64String() },
 			});
 
 			Assert.Throws<NoPermissionException>(() =>
@@ -217,7 +217,7 @@ namespace StrongForce.Core.Tests
 			Address permissionManager = this.registry.AddressFactory.Create();
 
 			var contractAddress = this.registry.CreateContract<FavoriteNumberContract>(
-				new Dictionary<string, object>() { { "Admin", permissionManager.AsString() } });
+				new Dictionary<string, object>() { { "Admin", permissionManager?.ToBase64String() } });
 
 			Address permitedAddress = this.registry.AddressFactory.Create();
 			string permission = "NotARealActionType";
@@ -225,22 +225,22 @@ namespace StrongForce.Core.Tests
 			this.registry.SendAction(permissionManager, contractAddress, AddPermissionAction.Type, new Dictionary<string, object>()
 			{
 				{ AddPermissionAction.PermissionType, permission },
-				{ AddPermissionAction.PermissionSender, permissionManager.AsString() },
-				{ AddPermissionAction.PermissionTarget, contractAddress.AsString() },
+				{ AddPermissionAction.PermissionSender, permissionManager?.ToBase64String() },
+				{ AddPermissionAction.PermissionTarget, contractAddress?.ToBase64String() },
 			});
 
 			this.registry.SendAction(permissionManager, contractAddress, AddPermissionAction.Type, new Dictionary<string, object>()
 			{
 				{ AddPermissionAction.PermissionType, permission },
-				{ AddPermissionAction.PermissionSender, permitedAddress.AsString() },
-				{ AddPermissionAction.PermissionTarget, contractAddress.AsString() },
+				{ AddPermissionAction.PermissionSender, permitedAddress?.ToBase64String() },
+				{ AddPermissionAction.PermissionTarget, contractAddress?.ToBase64String() },
 			});
 
 			this.registry.SendAction(permissionManager, contractAddress, RemovePermissionAction.Type, new Dictionary<string, object>()
 			{
 				{ RemovePermissionAction.PermissionType, permission },
-				{ RemovePermissionAction.PermissionSender, permissionManager.AsString() },
-				{ RemovePermissionAction.PermissionTarget, contractAddress.AsString() },
+				{ RemovePermissionAction.PermissionSender, permissionManager?.ToBase64String() },
+				{ RemovePermissionAction.PermissionTarget, contractAddress?.ToBase64String() },
 			});
 
 			Contract contract = this.registry.GetContract(contractAddress);

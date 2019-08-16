@@ -15,14 +15,14 @@ namespace StrongForce.Core.Tests.Mocks
 		{
 			var state = base.GetState();
 
-			state.Add("LastCreatedAddress", this.LastCreatedAddress.AsString());
+			state.Add("LastCreatedAddress", this.LastCreatedAddress?.ToBase64String());
 
 			return state;
 		}
 
 		public override void SetState(IDictionary<string, object> state)
 		{
-			this.LastCreatedAddress = state.GetOrNull<string>("LastCreatedAddress").AsAddress();
+			this.LastCreatedAddress = state.GetAddress("LastCreatedAddress");
 			base.SetState(state);
 		}
 
@@ -30,7 +30,7 @@ namespace StrongForce.Core.Tests.Mocks
 		{
 			base.Initialize(payload);
 
-			var admin = payload.GetOrNull<string>("Admin").AsAddress();
+			var admin = payload.GetAddress("Admin");
 
 			this.Acl.AddPermission(
 				admin,
@@ -53,8 +53,8 @@ namespace StrongForce.Core.Tests.Mocks
 
 		private void HandleCreateContractAction(IDictionary<string, object> payload)
 		{
-			var type = Type.GetType(payload.GetOrNull<string>(CreateContractAction.ContractType));
-			this.LastCreatedAddress = this.CreateContract(type, new Dictionary<string, object>() { { "Admin", this.Address.AsString() } });
+			var type = Type.GetType(payload.GetString(CreateContractAction.ContractType));
+			this.LastCreatedAddress = this.CreateContract(type, new Dictionary<string, object>() { { "Admin", this.Address?.ToBase64String() } });
 		}
 	}
 }

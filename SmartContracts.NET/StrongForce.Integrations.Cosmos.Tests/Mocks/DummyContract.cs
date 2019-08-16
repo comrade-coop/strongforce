@@ -13,7 +13,7 @@ namespace StrongForce.Integrations.Cosmos.Tests.Mocks
 		{
 			base.Initialize(payload);
 
-			var admin = payload.GetOrNull<string>("Admin").AsAddress();
+			var admin = payload.GetAddress("Admin");
 
 			this.Acl.AddPermission(
 				admin,

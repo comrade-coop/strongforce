@@ -25,8 +25,8 @@ namespace StrongForce.Core.Permissions
 			state.Add("Permissions", this.Permissions.Select(p => new Dictionary<string, object>()
 			{
 				{ "Type", p.Type },
-				{ "Sender", p.Sender.AsString() },
-				{ "Target", p.Target.AsString() },
+				{ "Sender", p.Sender?.ToBase64String() },
+				{ "Target", p.Target?.ToBase64String() },
 			}).ToList());
 
 			return state;
@@ -34,17 +34,14 @@ namespace StrongForce.Core.Permissions
 
 		public void SetState(IDictionary<string, object> state)
 		{
-			var permissionsList = state.GetOrNull<List<object>>("Permissions");
-
 			this.Permissions = new SortedSet<Permission>(
-				state.GetOrNull<List<object>>("Permissions")
-				.Cast<Dictionary<string, object>>()
+				state.GetList<IDictionary<string, object>>("Permissions")
 				.Select(s =>
 				{
 					return new Permission(
-						s.GetOrNull<string>("Type"),
-						s.GetOrNull<string>("Sender").AsAddress(),
-						s.GetOrNull<string>("Target").AsAddress());
+						s.GetString("Type"),
+						s.GetAddress("Sender"),
+						s.GetAddress("Target"));
 				}));
 		}
 
