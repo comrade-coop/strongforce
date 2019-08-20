@@ -9,6 +9,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/client/context"
 	"github.com/cosmos/cosmos-sdk/codec"
 	"github.com/cosmos/cosmos-sdk/types"
+	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/module"
 
 	abci "github.com/tendermint/tendermint/abci/types"
@@ -68,7 +69,7 @@ func (AppModuleBasic) RegisterRESTRoutes(ctx context.CLIContext, rtr *mux.Router
 
 // GetQueryCmd implements module.AppModuleBasic
 func (ab AppModuleBasic) GetQueryCmd(cdc *codec.Codec) *cobra.Command {
-	return GetQueryCmd(ModuleName, cdc)
+	return GetQueryCmd(RouterKey, cdc)
 }
 
 // GetTxCmd implements module.AppModuleBasic
@@ -121,13 +122,11 @@ func (am AppModule) NewQuerierHandler() types.Querier {
 }
 
 // BeginBlock implements module.AppModule
-func (am AppModule) BeginBlock(_ types.Context, _ abci.RequestBeginBlock) types.Tags {
-	return types.EmptyTags()
-}
+func (am AppModule) BeginBlock(_ sdk.Context, _ abci.RequestBeginBlock) {}
 
 // EndBlock implements module.AppModule
-func (am AppModule) EndBlock(types.Context, abci.RequestEndBlock) ([]abci.ValidatorUpdate, types.Tags) {
-	return []abci.ValidatorUpdate{}, types.EmptyTags()
+func (am AppModule) EndBlock(sdk.Context, abci.RequestEndBlock) []abci.ValidatorUpdate {
+	return []abci.ValidatorUpdate{}
 }
 
 // InitGenesis implements module.AppModule

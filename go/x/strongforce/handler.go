@@ -21,8 +21,9 @@ func NewHandler(keeper Keeper, serverAddress string) types.Handler {
 }
 
 func handleMsgExecuteAction(ctx types.Context, keeper Keeper, connection Connection, msg MsgExecuteAction) types.Result {
-	if !connection.SendAction(ctx, msg.Doer, msg.Action) {
+	actionResult := connection.SendAction(ctx, msg.Doer, msg.Action)
+	if !actionResult.IsOK() {
 		return types.ErrInternal("Couldn't execute action!").Result()
 	}
-	return types.Result{}
+	return types.Result{Events: actionResult.Events}
 }
