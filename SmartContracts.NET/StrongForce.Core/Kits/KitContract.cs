@@ -12,14 +12,28 @@ namespace StrongForce.Core.Kits
 
 		public Kit Kit { get; set; } = null;
 
+		public override IDictionary<string, object> GetState()
+		{
+			var state = base.GetState();
+
+			state.Add("Instantiated", this.Instantiated);
+
+			return state;
+		}
+
+		public override void SetState(IDictionary<string, object> state)
+		{
+			base.SetState(state);
+
+			this.Instantiated = state.Get<bool>("Instantiated");
+		}
+
 		protected override void Initialize(IDictionary<string, object> payload)
 		{
 			this.Acl.AddPermission(
 				null,
 				InstantiateKitAction.Type,
 				this.Address);
-
-			this.Kit = (Kit)payload["Kit"];
 		}
 
 		protected override bool HandlePayloadAction(PayloadAction action)

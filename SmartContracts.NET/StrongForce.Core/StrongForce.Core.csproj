@@ -1,8 +1,8 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
     <PropertyGroup>
-        <TargetFramework>netstandard2.0</TargetFramework>
+        <TargetFramework>netcoreapp2.2</TargetFramework>
         <PackageId>StrongForce</PackageId>
-        <Version>0.2.1</Version>
+        <Version>0.3.0</Version>
         <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
     </PropertyGroup>
     <ItemGroup>

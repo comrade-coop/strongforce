@@ -31,26 +31,14 @@ namespace StrongForce.Core.Serialization
 
 		public static byte[] SerializeContract(Contract contract)
 		{
-			var dictionary = new Dictionary<string, object>()
-			{
-				{ "Type", contract.GetType().AssemblyQualifiedName },
-				{ "State", contract.GetState() },
-			};
-			return StateSerialization.SerializeState(dictionary);
+			return StateSerialization.SerializeState(contract.ToState());
 		}
 
 		public static Contract DeserializeContract(byte[] serialized)
 		{
 			var dictionary = StateSerialization.DeserializeState(serialized);
 
-			var type = Type.GetType(dictionary.GetString("Type"));
-			var state = dictionary.GetDictionary("State");
-
-			var contract = Activator.CreateInstance(type) as Contract;
-
-			contract.SetState(state);
-
-			return contract;
+			return dictionary.ToStateObject() as Contract;
 		}
 	}
 }

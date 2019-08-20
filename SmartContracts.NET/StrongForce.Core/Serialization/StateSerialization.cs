@@ -168,7 +168,6 @@ namespace StrongForce.Core.Serialization
 		{
 			if (reader.TokenType != JsonTokenType.StartObject)
 			{
-				System.Console.WriteLine(reader.TokenType);
 				throw new FormatException("Expected '{'");
 			}
 
@@ -187,7 +186,6 @@ namespace StrongForce.Core.Serialization
 
 			if (reader.TokenType != JsonTokenType.EndObject)
 			{
-				System.Console.WriteLine(reader.TokenType);
 				throw new FormatException("Expected '}'");
 			}
 
@@ -198,7 +196,6 @@ namespace StrongForce.Core.Serialization
 		{
 			if (reader.TokenType != JsonTokenType.StartArray)
 			{
-				System.Console.WriteLine(reader.TokenType);
 				throw new FormatException("Expected '['");
 			}
 
@@ -233,7 +230,7 @@ namespace StrongForce.Core.Serialization
 				case decimal decimalValue:
 					return true;
 
-				case IEnumerable<KeyValuePair<string, object>> pairEnumerableValue:
+				case Dictionary<string, object> pairEnumerableValue:
 					foreach (var kv in pairEnumerableValue)
 					{
 						if (!ValidateObject(kv.Value))
@@ -244,7 +241,7 @@ namespace StrongForce.Core.Serialization
 
 					return true;
 
-				case IEnumerable<object> enumerableValue:
+				case List<object> enumerableValue:
 					foreach (var v in enumerableValue)
 					{
 						if (!ValidateObject(v))

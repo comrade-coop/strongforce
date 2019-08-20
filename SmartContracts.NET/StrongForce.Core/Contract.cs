@@ -15,6 +15,8 @@ namespace StrongForce.Core
 		// Events used to communicate with the registry
 		internal event System.Action<Address[], string, IDictionary<string, object>> SendActionEvent;
 
+		internal event System.Action<Address, string, IDictionary<string, object>> SendEventEvent;
+
 		internal event System.Action<ulong> ForwardActionEvent;
 
 		internal event Func<Type, IDictionary<string, object>, Address> CreateContractEvent;
@@ -63,6 +65,10 @@ namespace StrongForce.Core
 			{
 				return this.HandleForwardAction(forwardAction);
 			}
+			else if (action is EventAction eventAction)
+			{
+				return this.HandleEventAction(eventAction);
+			}
 			else
 			{
 				return false;
@@ -85,6 +91,11 @@ namespace StrongForce.Core
 
 		protected virtual void CheckPermission(Action action)
 		{
+			if (action is EventAction)
+			{
+				return; // No permissions needed for events
+			}
+
 			var neededPermission = new Permission(action.Type, action.Sender, action.FinalTarget);
 
 			if (!this.Acl.HasPermission(neededPermission))
@@ -116,6 +127,11 @@ namespace StrongForce.Core
 			return true;
 		}
 
+		protected virtual bool HandleEventAction(EventAction action)
+		{
+			return false;
+		}
+
 		protected void SendAction(Address[] targets, string type, IDictionary<string, object> payload)
 		{
 			this.SendActionEvent?.Invoke(targets, type, payload);
@@ -124,6 +140,11 @@ namespace StrongForce.Core
 		protected void SendAction(Address target, string type, IDictionary<string, object> payload)
 		{
 			this.SendAction(new[] { target }, type, payload);
+		}
+
+		protected void SendEvent(Address target, string type, IDictionary<string, object> payload)
+		{
+			this.SendEventEvent?.Invoke(target, type, payload);
 		}
 
 		protected void ForwardAction(ulong id)

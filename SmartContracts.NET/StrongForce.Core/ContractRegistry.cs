@@ -55,11 +55,23 @@ namespace StrongForce.Core
 			return this.ExecuteAction(action);
 		}
 
+		public bool SendEvent(Address sender, Address target, string type, IDictionary<string, object> payload)
+		{
+			var action = this.CreateAction(sender, sender, new Address[] { target }, type, payload, true);
+
+			return this.ExecuteAction(action);
+		}
+
 		public Address CreateContract(Type contractType, IDictionary<string, object> payload = null)
 		{
 			if (!typeof(Contract).IsAssignableFrom(contractType))
 			{
 				throw new ArgumentOutOfRangeException(nameof(contractType));
+			}
+
+			if (payload != null && !StateSerialization.ValidateState(payload))
+			{
+				throw new ArgumentOutOfRangeException(nameof(payload));
 			}
 
 			var contract = (Contract)Activator.CreateInstance(contractType);
@@ -81,6 +93,7 @@ namespace StrongForce.Core
 			contract.Configure(address, configurePayload);
 
 			contract.SendActionEvent += (targets, type, payload) => this.SendAction(address, targets, type, payload);
+			contract.SendEventEvent += (target, type, payload) => this.SendEvent(address, target, type, payload);
 			contract.ForwardActionEvent += (id) => this.SendAction(address, id);
 			contract.CreateContractEvent += this.CreateContract;
 
@@ -105,7 +118,7 @@ namespace StrongForce.Core
 			return contract != null && contract.Receive(action);
 		}
 
-		private Action CreateAction(Address origin, Address sender, Address[] targets, string type, IDictionary<string, object> payload)
+		private Action CreateAction(Address origin, Address sender, Address[] targets, string type, IDictionary<string, object> payload, bool eventAction = false)
 		{
 			if (targets == null || targets.Length == 0)
 			{
@@ -127,7 +140,21 @@ namespace StrongForce.Core
 				throw new ArgumentOutOfRangeException(nameof(payload));
 			}
 
-			if (targets.Length == 1)
+			if (eventAction)
+			{
+				if (targets.Length != 1)
+				{
+					throw new ArgumentOutOfRangeException(nameof(targets));
+				}
+
+				return new EventAction(
+					targets[0],
+					origin,
+					sender,
+					type,
+					payload);
+			}
+			else if (targets.Length == 1)
 			{
 				return new PayloadAction(
 					targets[0],
