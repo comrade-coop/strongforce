@@ -9,13 +9,13 @@ import (
 
 	abci "github.com/tendermint/tendermint/abci/types"
 	"github.com/tendermint/tendermint/libs/cli"
-	"github.com/tendermint/tendermint/libs/db"
 	"github.com/tendermint/tendermint/libs/log"
 	tendermintTypes "github.com/tendermint/tendermint/types"
+	db "github.com/tendermint/tm-db"
 
 	"github.com/cosmos/cosmos-sdk/server"
-	"github.com/cosmos/cosmos-sdk/x/auth/genaccounts"
-	genaccountscli "github.com/cosmos/cosmos-sdk/x/auth/genaccounts/client/cli"
+	"github.com/cosmos/cosmos-sdk/x/genaccounts"
+	genaccountscli "github.com/cosmos/cosmos-sdk/x/genaccounts/client/cli"
 	genutilcli "github.com/cosmos/cosmos-sdk/x/genutil/client/cli"
 	"github.com/cosmos/cosmos-sdk/x/staking"
 
@@ -44,7 +44,6 @@ func main() {
 	rootCmd.AddCommand(
 		genutilcli.InitCmd(ctx, cdc, app.ModuleBasicManager, app.DefaultNodeHome),
 		genutilcli.CollectGenTxsCmd(ctx, cdc, genaccounts.AppModuleBasic{}, app.DefaultNodeHome),
-		// Probably shouldn't be using staking on the next line...
 		genutilcli.GenTxCmd(ctx, cdc, app.ModuleBasicManager, staking.AppModuleBasic{}, genaccounts.AppModuleBasic{}, app.DefaultNodeHome, app.DefaultCLIHome),
 		genutilcli.ValidateGenesisCmd(ctx, cdc, app.ModuleBasicManager),
 		// AddGenesisAccountCmd allows users to add accounts to the genesis file
@@ -56,6 +55,8 @@ func main() {
 	executor := cli.PrepareBaseCmd(rootCmd, "SF", DefaultNodeHome)
 	err := executor.Execute()
 	if err != nil {
+		print()
+
 		// handle with #870
 		panic(err)
 	}

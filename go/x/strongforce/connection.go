@@ -1,9 +1,11 @@
 package strongforce
 
 import (
+	"encoding/base64"
 	"io"
 
 	"github.com/cosmos/cosmos-sdk/types"
+	"github.com/tendermint/tendermint/libs/common"
 	"google.golang.org/grpc"
 )
 
@@ -40,31 +42,31 @@ func (c *Connection) ensureConnected() bool {
 }
 
 // SendAction sends an action over the connection
-func (c *Connection) SendAction(ctx types.Context, from types.AccAddress, action []byte) bool {
+func (c *Connection) SendAction(ctx types.Context, from types.AccAddress, action []byte) types.Result {
 	if !c.ensureConnected() {
 		panic("Could not connect to the .NET StrongForce app!")
 	}
-
-	stream, err := c.client.ExecuteAction(ctx)
+	goContext := ctx.Context()
+	stream, err := c.client.ExecuteAction(goContext)
 	if err != nil {
 		println("Error while communicating to .NET: " + err.Error())
-		return false
+		return types.Result{Code: types.CodeInternal, Codespace: "Error while communicating to .NET"}
 	}
 
-	waitc := make(chan bool)
-
+	waitc := make(chan types.Result)
+	events := types.EmptyEvents()
 	go func() {
 		for {
 			request, err := stream.Recv()
 			if err == io.EOF {
-				waitc <- true
+				waitc <- types.Result{Code: types.CodeOK, Events: events}
 				close(waitc)
 				stream.CloseSend()
 				return
 			}
 			if err != nil {
 				println("Error while communicating to .NET: " + err.Error())
-				waitc <- false
+				waitc <- types.Result{Code: types.CodeInternal, Codespace: "Error while communicating to .NET"}
 				close(waitc)
 				return
 			}
@@ -79,11 +81,20 @@ func (c *Connection) SendAction(ctx types.Context, from types.AccAddress, action
 				})
 				if err != nil {
 					println("Error while communicating to .NET: " + err.Error())
-					waitc <- false
+					waitc <- types.Result{Code: types.CodeInternal, Codespace: "Error while communicating to .NET"}
 					close(waitc)
 					return
 				}
 			} else {
+				events = events.AppendEvent(
+					types.Event{
+						Type: "ContractStateUpdate",
+						Attributes: []common.KVPair{
+							{Key: []byte("Address"), Value: []byte(base64.RawURLEncoding.EncodeToString(request.Address))},
+							{Key: []byte("State"), Value: request.Data},
+						},
+					},
+				)
 				c.keeper.SetState(ctx, request.Address, request.Data)
 			}
 		}
@@ -98,7 +109,7 @@ func (c *Connection) SendAction(ctx types.Context, from types.AccAddress, action
 		},
 	}); err != nil {
 		println("Error while communicating to .NET: " + err.Error())
-		return false
+		return types.Result{Code: types.CodeInternal, Codespace: "Error while communicating to .NET"}
 	}
 
 	return <-waitc

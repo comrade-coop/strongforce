@@ -5,18 +5,19 @@ import (
 	"os"
 
 	"github.com/cosmos/cosmos-sdk/x/auth"
-	"github.com/cosmos/cosmos-sdk/x/auth/genaccounts"
 	"github.com/cosmos/cosmos-sdk/x/distribution"
+	"github.com/cosmos/cosmos-sdk/x/genaccounts"
 	"github.com/cosmos/cosmos-sdk/x/genutil"
 	"github.com/cosmos/cosmos-sdk/x/params"
 	"github.com/cosmos/cosmos-sdk/x/slashing"
 	"github.com/cosmos/cosmos-sdk/x/staking"
 
+	"github.com/cosmos/cosmos-sdk/x/bank"
 	abci "github.com/tendermint/tendermint/abci/types"
 	"github.com/tendermint/tendermint/libs/common"
-	"github.com/tendermint/tendermint/libs/db"
 	"github.com/tendermint/tendermint/libs/log"
 	tendermintTypes "github.com/tendermint/tendermint/types"
+	db "github.com/tendermint/tm-db"
 
 	"github.com/cosmos/cosmos-sdk/baseapp"
 	"github.com/cosmos/cosmos-sdk/codec"
@@ -24,6 +25,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/types/module"
 
 	"github.com/comrade-coop/strongforce/go/x/strongforce"
+	"github.com/cosmos/cosmos-sdk/x/supply"
 )
 
 const (
@@ -47,7 +49,18 @@ var (
 		slashing.AppModuleBasic{},
 		staking.AppModuleBasic{},
 		strongforce.AppModuleBasic{},
+		supply.AppModuleBasic{},
+		bank.AppModuleBasic{},
 	)
+	// account permissions
+	maccPerms = map[string][]string{
+		auth.FeeCollectorName:     nil,
+		distribution.ModuleName:   nil,
+		staking.BondedPoolName:    []string{supply.Burner, supply.Staking},
+		staking.NotBondedPoolName: []string{supply.Burner, supply.Staking},
+	}
+
+	blacklist = map[string]bool{}
 )
 
 // StrongForceApp - Type containing needed information for the strongforce cosmos/tendermint application
@@ -56,26 +69,26 @@ type StrongForceApp struct {
 
 	cdc *codec.Codec
 
-	keyAccount       *types.KVStoreKey
-	keyDistribution  *types.KVStoreKey
-	keyFeeCollection *types.KVStoreKey
-	keyMain          *types.KVStoreKey
-	keyParams        *types.KVStoreKey
-	keySlashing      *types.KVStoreKey
-	keyStaking       *types.KVStoreKey
-	keyStrongforce   *types.KVStoreKey
+	keyAccount      *types.KVStoreKey
+	keyDistribution *types.KVStoreKey
+	keySupply       *types.KVStoreKey
+	keyMain         *types.KVStoreKey
+	keyParams       *types.KVStoreKey
+	keySlashing     *types.KVStoreKey
+	keyStaking      *types.KVStoreKey
+	keyStrongforce  *types.KVStoreKey
 
-	tkeyDistribution *types.TransientStoreKey
-	tkeyParams       *types.TransientStoreKey
-	tkeyStaking      *types.TransientStoreKey
+	tkeyParams  *types.TransientStoreKey
+	tkeyStaking *types.TransientStoreKey
 
-	accountKeeper       auth.AccountKeeper
-	distributionKeeper  distribution.Keeper
-	feeCollectionKeeper auth.FeeCollectionKeeper
-	paramsKeeper        params.Keeper
-	slashingKeeper      slashing.Keeper
-	stakingKeeper       staking.Keeper
-	strongforceKeeper   strongforce.Keeper
+	accountKeeper      auth.AccountKeeper
+	distributionKeeper distribution.Keeper
+	supplyKeeper       supply.Keeper
+	paramsKeeper       params.Keeper
+	slashingKeeper     slashing.Keeper
+	stakingKeeper      staking.Keeper
+	bankKeeper         bank.Keeper
+	strongforceKeeper  strongforce.Keeper
 
 	mm *module.Manager
 }
@@ -93,29 +106,47 @@ func NewStrongForceApp(logger log.Logger, db db.DB) *StrongForceApp {
 		BaseApp: baseApp,
 		cdc:     cdc,
 
-		keyAccount:       types.NewKVStoreKey(auth.StoreKey),
-		keyDistribution:  types.NewKVStoreKey(distribution.StoreKey),
-		keyFeeCollection: types.NewKVStoreKey(auth.FeeStoreKey),
-		keyMain:          types.NewKVStoreKey(baseapp.MainStoreKey),
-		keyParams:        types.NewKVStoreKey(params.StoreKey),
-		keySlashing:      types.NewKVStoreKey(slashing.StoreKey),
-		keyStaking:       types.NewKVStoreKey(staking.StoreKey),
-		keyStrongforce:   types.NewKVStoreKey(strongforce.StoreKey),
-		tkeyDistribution: types.NewTransientStoreKey(distribution.TStoreKey),
-		tkeyParams:       types.NewTransientStoreKey(params.TStoreKey),
-		tkeyStaking:      types.NewTransientStoreKey(staking.TStoreKey),
+		keyAccount:      types.NewKVStoreKey(auth.StoreKey),
+		keyDistribution: types.NewKVStoreKey(distribution.StoreKey),
+		keySupply:       types.NewKVStoreKey(supply.StoreKey),
+		keyMain:         types.NewKVStoreKey(baseapp.MainStoreKey),
+		keyParams:       types.NewKVStoreKey(params.StoreKey),
+		keySlashing:     types.NewKVStoreKey(slashing.StoreKey),
+		keyStaking:      types.NewKVStoreKey(staking.StoreKey),
+		keyStrongforce:  types.NewKVStoreKey(strongforce.StoreKey),
+		tkeyParams:      types.NewTransientStoreKey(params.TStoreKey),
+		tkeyStaking:     types.NewTransientStoreKey(staking.TStoreKey),
 	}
 
 	app.paramsKeeper = params.NewKeeper(app.cdc, app.keyParams, app.tkeyParams, params.DefaultCodespace)
+	// Set specific supspaces
+	authSubspace := app.paramsKeeper.Subspace(auth.DefaultParamspace)
+	bankSupspace := app.paramsKeeper.Subspace(bank.DefaultParamspace)
+	stakingSubspace := app.paramsKeeper.Subspace(staking.DefaultParamspace)
+	distrSubspace := app.paramsKeeper.Subspace(distribution.DefaultParamspace)
+	slashingSubspace := app.paramsKeeper.Subspace(slashing.DefaultParamspace)
 
 	app.accountKeeper = auth.NewAccountKeeper(
 		app.cdc,
 		app.keyAccount,
-		app.paramsKeeper.Subspace(auth.DefaultParamspace),
+		authSubspace,
 		auth.ProtoBaseAccount,
 	)
 
-	app.feeCollectionKeeper = auth.NewFeeCollectionKeeper(cdc, app.keyFeeCollection)
+	app.bankKeeper = bank.NewBaseKeeper(
+		app.accountKeeper,
+		bankSupspace,
+		bank.DefaultCodespace,
+		blacklist,
+	)
+
+	app.supplyKeeper = supply.NewKeeper(
+		app.cdc,
+		app.keySupply,
+		app.accountKeeper,
+		app.bankKeeper,
+		maccPerms,
+	)
 
 	app.strongforceKeeper = strongforce.NewKeeper(cdc, app.keyStrongforce)
 
@@ -123,26 +154,27 @@ func NewStrongForceApp(logger log.Logger, db db.DB) *StrongForceApp {
 		app.cdc,
 		app.keyStaking,
 		app.tkeyStaking,
-		app.strongforceKeeper, // In lieu of a bank keeper
-		app.paramsKeeper.Subspace(staking.DefaultParamspace),
+		app.supplyKeeper, // In lieu of a bank keeper
+		stakingSubspace,
 		staking.DefaultCodespace,
 	)
 
 	app.distributionKeeper = distribution.NewKeeper(
 		app.cdc,
 		app.keyDistribution,
-		app.paramsKeeper.Subspace(distribution.DefaultParamspace),
-		app.strongforceKeeper,
+		distrSubspace,
 		&app.stakingKeeper,
-		app.feeCollectionKeeper,
+		app.supplyKeeper,
 		distribution.DefaultCodespace,
+		auth.FeeCollectorName,
+		blacklist,
 	)
 
 	app.slashingKeeper = slashing.NewKeeper(
 		app.cdc,
 		app.keySlashing,
 		&app.stakingKeeper,
-		app.paramsKeeper.Subspace(slashing.DefaultParamspace),
+		slashingSubspace,
 		slashing.DefaultCodespace,
 	)
 
@@ -153,12 +185,14 @@ func NewStrongForceApp(logger log.Logger, db db.DB) *StrongForceApp {
 	)
 
 	app.mm = module.NewManager(
-		auth.NewAppModule(app.accountKeeper, app.feeCollectionKeeper),
-		distribution.NewAppModule(app.distributionKeeper),
+		auth.NewAppModule(app.accountKeeper),
+		distribution.NewAppModule(app.distributionKeeper, app.supplyKeeper),
 		genaccounts.NewAppModule(app.accountKeeper),
+		bank.NewAppModule(app.bankKeeper, app.accountKeeper),
+		supply.NewAppModule(app.supplyKeeper, app.accountKeeper),
 		genutil.NewAppModule(app.accountKeeper, app.stakingKeeper, app.BaseApp.DeliverTx),
 		slashing.NewAppModule(app.slashingKeeper, app.stakingKeeper),
-		staking.NewAppModule(app.stakingKeeper, app.feeCollectionKeeper, app.distributionKeeper, app.accountKeeper),
+		staking.NewAppModule(app.stakingKeeper, app.distributionKeeper, app.accountKeeper, app.supplyKeeper),
 		strongforce.NewAppModule(app.strongforceKeeper, "127.0.0.1:8989"),
 	)
 
@@ -169,6 +203,8 @@ func NewStrongForceApp(logger log.Logger, db db.DB) *StrongForceApp {
 	app.mm.SetOrderInitGenesis(
 		genaccounts.ModuleName,
 		auth.ModuleName,
+		bank.ModuleName,
+		supply.ModuleName,
 		staking.ModuleName,
 		distribution.ModuleName,
 		slashing.ModuleName,
@@ -185,7 +221,7 @@ func NewStrongForceApp(logger log.Logger, db db.DB) *StrongForceApp {
 	app.SetAnteHandler(
 		auth.NewAnteHandler(
 			app.accountKeeper,
-			app.feeCollectionKeeper,
+			app.supplyKeeper,
 			auth.DefaultSigVerificationGasConsumer,
 		),
 	)
@@ -193,14 +229,13 @@ func NewStrongForceApp(logger log.Logger, db db.DB) *StrongForceApp {
 	app.MountStores(
 		app.keyAccount,
 		app.keyDistribution,
-		app.keyFeeCollection,
+		app.keySupply,
 		app.keyMain,
 		app.keyParams,
 		app.keySlashing,
 		app.keyStaking,
 		app.keyStrongforce,
 
-		app.tkeyDistribution,
 		app.tkeyParams,
 		app.tkeyStaking,
 	)
