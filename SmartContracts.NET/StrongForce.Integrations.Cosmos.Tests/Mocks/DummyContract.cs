@@ -13,12 +13,13 @@ namespace StrongForce.Integrations.Cosmos.Tests.Mocks
 		{
 			base.Initialize(payload);
 
-			var admin = payload.GetAddress("Admin");
-
-			this.Acl.AddPermission(
-				admin,
-				DummyAction.Type,
-				this.Address);
+			if (payload.ContainsKey("Admin"))
+			{
+				this.Acl.AddPermission(
+					payload.GetAddress("Admin"),
+					DummyAction.Type,
+					this.Address);
+			}
 		}
 
 		protected override bool HandlePayloadAction(PayloadAction action)

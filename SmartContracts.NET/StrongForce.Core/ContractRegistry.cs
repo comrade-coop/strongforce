@@ -62,7 +62,12 @@ namespace StrongForce.Core
 			return this.ExecuteAction(action);
 		}
 
-		public Address CreateContract(Type contractType, IDictionary<string, object> payload = null)
+		public Address CreateAddress()
+		{
+			return this.AddressFactory.Create();
+		}
+
+		public void CreateContract(Type contractType, Address address, IDictionary<string, object> payload = null)
 		{
 			if (!typeof(Contract).IsAssignableFrom(contractType))
 			{
@@ -76,11 +81,21 @@ namespace StrongForce.Core
 
 			var contract = (Contract)Activator.CreateInstance(contractType);
 
+			this.RegisterContract(address, contract, payload ?? new Dictionary<string, object>());
+		}
+
+		public Address CreateContract(Type contractType, IDictionary<string, object> payload = null)
+		{
 			var address = this.AddressFactory.Create();
 
-			this.RegisterContract(address, contract, payload ?? new Dictionary<string, object>());
+			this.CreateContract(contractType, address, payload);
 
 			return address;
+		}
+
+		public void CreateContract<T>(Address address, IDictionary<string, object> payload = null)
+		{
+			this.CreateContract(typeof(T), address, payload);
 		}
 
 		public Address CreateContract<T>(IDictionary<string, object> payload = null)
@@ -96,6 +111,7 @@ namespace StrongForce.Core
 			contract.SendEventEvent += (target, type, payload) => this.SendEvent(address, target, type, payload);
 			contract.ForwardActionEvent += (id) => this.SendAction(address, id);
 			contract.CreateContractEvent += this.CreateContract;
+			contract.CreateAddressEvent += this.CreateAddress;
 
 			this.SetContract(address, contract);
 		}

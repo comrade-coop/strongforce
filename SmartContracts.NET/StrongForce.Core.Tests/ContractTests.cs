@@ -23,7 +23,10 @@ namespace StrongForce.Core.Tests
 		public void Receive_WhenReceivedSupportedAction_ReturnsTrue()
 		{
 			Contract contract = new FavoriteNumberContract();
-			contract.Configure(this.addressFactory.Create(), new Dictionary<string, object>());
+			contract.Configure(this.addressFactory.Create(), new Dictionary<string, object>(new Dictionary<string, object>()
+			{
+				{ "User", null },
+			}));
 
 			Assert.True(contract.Receive(new PayloadAction(
 				contract.Address,

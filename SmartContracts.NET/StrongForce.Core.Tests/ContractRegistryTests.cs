@@ -55,7 +55,10 @@ namespace StrongForce.Core.Tests
 		{
 			var registry = new ContractRegistry();
 			Address senderAddress = registry.AddressFactory.Create();
-			Address contractAddress = registry.CreateContract<FavoriteNumberContract>();
+			Address contractAddress = registry.CreateContract<FavoriteNumberContract>(new Dictionary<string, object>()
+			{
+				{ "User", senderAddress.ToBase64String() },
+			});
 
 			registry.SendAction(senderAddress, contractAddress, SetFavoriteNumberAction.Type, new Dictionary<string, object>
 			{

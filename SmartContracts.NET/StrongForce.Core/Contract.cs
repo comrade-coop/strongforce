@@ -19,7 +19,9 @@ namespace StrongForce.Core
 
 		internal event System.Action<ulong> ForwardActionEvent;
 
-		internal event Func<Type, IDictionary<string, object>, Address> CreateContractEvent;
+		internal event System.Action<Type, Address, IDictionary<string, object>> CreateContractEvent;
+
+		internal event Func<Address> CreateAddressEvent;
 
 		public Address Address { get; private set; } = null;
 
@@ -77,16 +79,21 @@ namespace StrongForce.Core
 
 		protected virtual void Initialize(IDictionary<string, object> payload)
 		{
-			var admin = payload.GetAddress("Admin");
+			if (payload.ContainsKey("Admin"))
+			{
+				var admin = payload.GetAddress("Admin");
 
-			this.Acl.AddPermission(
-				admin,
-				AddPermissionAction.Type,
-				this.Address);
-			this.Acl.AddPermission(
-				admin,
-				RemovePermissionAction.Type,
-				this.Address);
+				this.Acl.AddPermission(
+					admin,
+					AddPermissionAction.Type,
+					this.Address);
+				this.Acl.AddPermission(
+					admin,
+					RemovePermissionAction.Type,
+					this.Address);
+			}
+
+			this.SetState(this.GetState().MergeStateWith(payload));
 		}
 
 		protected virtual void CheckPermission(Action action)
@@ -152,9 +159,28 @@ namespace StrongForce.Core
 			this.ForwardActionEvent?.Invoke(id);
 		}
 
+		protected Address CreateAddress()
+		{
+			return this.CreateAddressEvent?.Invoke();
+		}
+
+		protected void CreateContract(Type contractType, Address address, IDictionary<string, object> payload)
+		{
+			this.CreateContractEvent?.Invoke(contractType, address, payload);
+		}
+
 		protected Address CreateContract(Type contractType, IDictionary<string, object> payload)
 		{
-			return this.CreateContractEvent?.Invoke(contractType, payload);
+			var address = this.CreateAddress();
+
+			this.CreateContract(contractType, address, payload);
+
+			return address;
+		}
+
+		protected void CreateContract<T>(Address address, IDictionary<string, object> payload)
+		{
+			this.CreateContract(typeof(T), address, payload);
 		}
 
 		protected Address CreateContract<T>(IDictionary<string, object> payload)

@@ -14,7 +14,10 @@ namespace StrongForce.Core.Tests
 			const int expectedNumber = 32;
 
 			var contract = new FavoriteNumberContract();
-			contract.Configure(this.addressFactory.Create(), new Dictionary<string, object>());
+			contract.Configure(this.addressFactory.Create(), new Dictionary<string, object>(new Dictionary<string, object>()
+			{
+				{ "User", null },
+			}));
 
 			var action = new PayloadAction(
 				contract.Address,

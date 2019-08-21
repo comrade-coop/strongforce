@@ -28,14 +28,15 @@ namespace StrongForce.Core.Tests.Mocks
 
 		protected override void Initialize(IDictionary<string, object> payload)
 		{
+			if (payload.ContainsKey("User"))
+			{
+				this.Acl.AddPermission(
+					payload.GetAddress("User"),
+					CreateContractAction.Type,
+					this.Address);
+			}
+
 			base.Initialize(payload);
-
-			var admin = payload.GetAddress("Admin");
-
-			this.Acl.AddPermission(
-				admin,
-				CreateContractAction.Type,
-				this.Address);
 		}
 
 		protected override bool HandlePayloadAction(PayloadAction action)
@@ -54,7 +55,11 @@ namespace StrongForce.Core.Tests.Mocks
 		private void HandleCreateContractAction(IDictionary<string, object> payload)
 		{
 			var type = Type.GetType(payload.GetString(CreateContractAction.ContractType));
-			this.LastCreatedAddress = this.CreateContract(type, new Dictionary<string, object>() { { "Admin", this.Address?.ToBase64String() } });
+			this.LastCreatedAddress = this.CreateContract(type, new Dictionary<string, object>()
+			{
+				{ "Admin", this.Address.ToBase64String() },
+				{ "User", this.Address.ToBase64String() },
+			});
 		}
 	}
 }

@@ -5,20 +5,34 @@ namespace StrongForce.Core.Kits
 {
 	public abstract class Kit
 	{
-		public Func<Type, IDictionary<string, object>, Address> CreateContractHandler { get; set; }
+		public System.Action<Type, Address, IDictionary<string, object>> CreateContractHandler { get; set; }
 
-		public System.Action<Address[], string, IDictionary<string, object>> SendActionHandler { get; set; }
+		public Func<Address> CreateAddressHandler { get; set; }
 
 		public abstract Address Instantiate(Address initialManager);
 
-		protected void SendAction(Address[] targets, string type, IDictionary<string, object> payload)
+		protected Address CreateAddress()
 		{
-			this.SendActionHandler.Invoke(targets, type, payload);
+			return this.CreateAddressHandler.Invoke();
+		}
+
+		protected void CreateContract(Type contractType, Address address, IDictionary<string, object> payload)
+		{
+			this.CreateContractHandler.Invoke(contractType, address, payload);
 		}
 
 		protected Address CreateContract(Type contractType, IDictionary<string, object> payload)
 		{
-			return this.CreateContractHandler.Invoke(contractType, payload);
+			var address = this.CreateAddress();
+
+			this.CreateContract(contractType, address, payload);
+
+			return address;
+		}
+
+		protected void CreateContract<T>(Address address, IDictionary<string, object> payload)
+		{
+			this.CreateContract(typeof(T), address, payload);
 		}
 
 		protected Address CreateContract<T>(IDictionary<string, object> payload)
@@ -28,8 +42,8 @@ namespace StrongForce.Core.Kits
 
 		protected Address InstantiateSubKit(Kit subkit, Address initialManager)
 		{
-			subkit.CreateContractHandler = this.CreateContract;
-			subkit.SendActionHandler = this.SendAction;
+			subkit.CreateContractHandler = this.CreateContractHandler;
+			subkit.CreateAddressHandler = this.CreateAddressHandler;
 
 			return subkit.Instantiate(initialManager);
 		}

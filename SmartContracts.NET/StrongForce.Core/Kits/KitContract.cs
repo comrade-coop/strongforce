@@ -30,10 +30,15 @@ namespace StrongForce.Core.Kits
 
 		protected override void Initialize(IDictionary<string, object> payload)
 		{
-			this.Acl.AddPermission(
-				null,
-				InstantiateKitAction.Type,
-				this.Address);
+			if (payload.ContainsKey("User"))
+			{
+				this.Acl.AddPermission(
+					payload.GetAddress("User"),
+					InstantiateKitAction.Type,
+					this.Address);
+			}
+
+			base.Initialize(payload);
 		}
 
 		protected override bool HandlePayloadAction(PayloadAction action)
@@ -59,7 +64,7 @@ namespace StrongForce.Core.Kits
 			this.Instantiated = true;
 
 			this.Kit.CreateContractHandler = this.CreateContract;
-			this.Kit.SendActionHandler = this.SendAction;
+			this.Kit.CreateAddressHandler = this.CreateAddress;
 
 			this.Kit.Instantiate(action.Sender);
 		}

@@ -81,5 +81,47 @@ namespace StrongForce.Core.Extensions
 
 			return stateObject;
 		}
+
+		public static IDictionary<string, object> MergeStateWith(this IDictionary<string, object> dictionary, IDictionary<string, object> other)
+		{
+			var newDictionary = new Dictionary<string, object>();
+
+			foreach (var kv in dictionary)
+			{
+				if (other.ContainsKey(kv.Key))
+				{
+					var overrideValue = other[kv.Key];
+					if (overrideValue == null || kv.Value == null || overrideValue.GetType() == kv.Value.GetType())
+					{
+						if (
+							overrideValue is IDictionary<string, object> overrideState &&
+							kv.Value is IDictionary<string, object> currentState)
+						{
+							newDictionary[kv.Key] = currentState.MergeStateWith(overrideState);
+						}
+						else if (
+							overrideValue is IList<object> overrideList &&
+							kv.Value is IList<object> currentList)
+						{
+							newDictionary[kv.Key] = currentList.Concat(overrideList).ToList();
+						}
+						else
+						{
+							newDictionary[kv.Key] = overrideValue;
+						}
+					}
+					else
+					{
+						newDictionary[kv.Key] = kv.Value;
+					}
+				}
+				else
+				{
+					newDictionary[kv.Key] = kv.Value;
+				}
+			}
+
+			return newDictionary;
+		}
 	}
 }

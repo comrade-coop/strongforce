@@ -16,13 +16,18 @@ namespace StrongForce.Core.Permissions
 		{
 		}
 
-		public ISet<Permission> Permissions { get; set; } = new SortedSet<Permission>();
+		public AccessControlList(IEnumerable<Permission> initialPermissions)
+		{
+			this.Permissions = new SortedSet<Permission>(initialPermissions);
+		}
+
+		public SortedSet<Permission> Permissions { get; set; } = new SortedSet<Permission>();
 
 		public IDictionary<string, object> GetState()
 		{
 			var state = new Dictionary<string, object>();
 
-			state.Add("Permissions", this.Permissions.Select(p => new Dictionary<string, object>()
+			state.Add("Permissions", this.Permissions.Select(p => (object)new Dictionary<string, object>()
 			{
 				{ "Type", p.Type },
 				{ "Sender", p.Sender?.ToBase64String() },

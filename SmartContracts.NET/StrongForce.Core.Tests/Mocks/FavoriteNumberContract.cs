@@ -41,14 +41,15 @@ namespace StrongForce.Core.Tests.Mocks
 
 		protected override void Initialize(IDictionary<string, object> payload)
 		{
+			if (payload.ContainsKey("User"))
+			{
+				this.Acl.AddPermission(
+					payload.GetAddress("User"),
+					SetFavoriteNumberAction.Type,
+					this.Address);
+			}
+
 			base.Initialize(payload);
-
-			var admin = payload.GetAddress("Admin");
-
-			this.Acl.AddPermission(
-				admin,
-				SetFavoriteNumberAction.Type,
-				this.Address);
 		}
 
 		protected override bool HandlePayloadAction(PayloadAction action)
