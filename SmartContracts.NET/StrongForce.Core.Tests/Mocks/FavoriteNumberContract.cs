@@ -23,14 +23,14 @@ namespace StrongForce.Core.Tests.Mocks
 		{
 			var state = base.GetState();
 
-			state.Add("LastOrigin", this.LastOrigin?.ToBase64String());
-			state.Add("LastSender", this.LastSender?.ToBase64String());
+			state.Add("LastOrigin", this.LastOrigin?.ToString());
+			state.Add("LastSender", this.LastSender?.ToString());
 			state.Add("Number", this.Number);
 
 			return state;
 		}
 
-		public override void SetState(IDictionary<string, object> state)
+		protected override void SetState(IDictionary<string, object> state)
 		{
 			this.LastOrigin = state.GetAddress("LastOrigin");
 			this.LastSender = state.GetAddress("LastSender");
@@ -52,18 +52,19 @@ namespace StrongForce.Core.Tests.Mocks
 			base.Initialize(payload);
 		}
 
-		protected override bool HandlePayloadAction(PayloadAction action)
+		protected override void HandleMessage(Message message)
 		{
-			this.LastOrigin = action.Origin;
-			this.LastSender = action.Sender;
-			switch (action.Type)
+			this.LastOrigin = message.Origin;
+			this.LastSender = message.Sender;
+			switch (message.Type)
 			{
 				case SetFavoriteNumberAction.Type:
-					this.HandleSetNumberAction(action.Payload);
-					return true;
+					this.HandleSetNumberAction(message.Payload);
+					break;
 
 				default:
-					return base.HandlePayloadAction(action);
+					base.HandleMessage(message);
+					break;
 			}
 		}
 

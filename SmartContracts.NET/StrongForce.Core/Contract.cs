@@ -6,78 +6,27 @@ using StrongForce.Core.Permissions;
 
 namespace StrongForce.Core
 {
-	public abstract class Contract : IStateObject
+	public class Contract : BaseContract
 	{
-		public Contract()
-		{
-		}
-
-		// Events used to communicate with the registry
-		internal event System.Action<Address[], string, IDictionary<string, object>> SendActionEvent;
-
-		internal event System.Action<Address, string, IDictionary<string, object>> SendEventEvent;
-
-		internal event System.Action<ulong> ForwardActionEvent;
-
-		internal event System.Action<Type, Address, IDictionary<string, object>> CreateContractEvent;
-
-		internal event Func<Address> CreateAddressEvent;
-
-		public Address Address { get; private set; } = null;
-
 		public AccessControlList Acl { get; } = new AccessControlList();
 
-		public virtual IDictionary<string, object> GetState()
+		public override IDictionary<string, object> GetState()
 		{
-			var state = new Dictionary<string, object>();
+			var state = base.GetState();
 
 			state.Add("Acl", this.Acl.GetState());
 
 			return state;
 		}
 
-		public virtual void SetState(IDictionary<string, object> state)
+		protected override void SetState(IDictionary<string, object> state)
 		{
 			this.Acl.SetState(state.GetDictionary("Acl"));
+
+			base.SetState(state);
 		}
 
-		internal void Configure(Address address, IDictionary<string, object> payload)
-		{
-			this.Address = address;
-			if (payload != null)
-			{
-				this.Initialize(payload);
-			}
-		}
-
-		internal bool Receive(Action action)
-		{
-			if (action == null)
-			{
-				throw new ArgumentNullException(nameof(action));
-			}
-
-			this.CheckPermission(action); // throws
-
-			if (action is PayloadAction payloadAction)
-			{
-				return this.HandlePayloadAction(payloadAction);
-			}
-			else if (action is ForwardAction forwardAction)
-			{
-				return this.HandleForwardAction(forwardAction);
-			}
-			else if (action is EventAction eventAction)
-			{
-				return this.HandleEventAction(eventAction);
-			}
-			else
-			{
-				return false;
-			}
-		}
-
-		protected virtual void Initialize(IDictionary<string, object> payload)
+		protected override void Initialize(IDictionary<string, object> payload)
 		{
 			if (payload.ContainsKey("Admin"))
 			{
@@ -96,96 +45,33 @@ namespace StrongForce.Core
 			this.SetState(this.GetState().MergeStateWith(payload));
 		}
 
-		protected virtual void CheckPermission(Action action)
+		protected override void CheckPermissions(Message message)
 		{
-			if (action is EventAction)
-			{
-				return; // No permissions needed for events
-			}
-
-			var neededPermission = new Permission(action.Type, action.Sender, action.FinalTarget);
+			var neededPermission = new Permission(message.Type, message.Sender, message.FinalTarget);
 
 			if (!this.Acl.HasPermission(neededPermission))
 			{
-				throw new NoPermissionException(this.Address, action.Origin, neededPermission);
+				throw new NoPermissionException(this.Address, message.Origin, neededPermission);
 			}
 		}
 
-		protected virtual bool HandlePayloadAction(PayloadAction action)
+		protected override void HandleMessage(Message message)
 		{
-			switch (action.Type)
+			switch (message.Type)
 			{
 				case AddPermissionAction.Type:
-					this.Acl.AddPermission(AddPermissionAction.GetPermission(action));
-					return true;
+					this.Acl.AddPermission(AddPermissionAction.GetPermission(message.Payload));
+					break;
 
 				case RemovePermissionAction.Type:
-					this.Acl.RemovePermission(RemovePermissionAction.GetPermission(action));
-					return true;
-
-				default:
-					return false;
+					this.Acl.RemovePermission(RemovePermissionAction.GetPermission(message.Payload));
+					break;
 			}
 		}
 
-		protected virtual bool HandleForwardAction(ForwardAction action)
+		protected override void HandleForwardMessage(ForwardMessage message)
 		{
-			this.ForwardAction(action.NextId);
-			return true;
-		}
-
-		protected virtual bool HandleEventAction(EventAction action)
-		{
-			return false;
-		}
-
-		protected void SendAction(Address[] targets, string type, IDictionary<string, object> payload)
-		{
-			this.SendActionEvent?.Invoke(targets, type, payload);
-		}
-
-		protected void SendAction(Address target, string type, IDictionary<string, object> payload)
-		{
-			this.SendAction(new[] { target }, type, payload);
-		}
-
-		protected void SendEvent(Address target, string type, IDictionary<string, object> payload)
-		{
-			this.SendEventEvent?.Invoke(target, type, payload);
-		}
-
-		protected void ForwardAction(ulong id)
-		{
-			this.ForwardActionEvent?.Invoke(id);
-		}
-
-		protected Address CreateAddress()
-		{
-			return this.CreateAddressEvent?.Invoke();
-		}
-
-		protected void CreateContract(Type contractType, Address address, IDictionary<string, object> payload)
-		{
-			this.CreateContractEvent?.Invoke(contractType, address, payload);
-		}
-
-		protected Address CreateContract(Type contractType, IDictionary<string, object> payload)
-		{
-			var address = this.CreateAddress();
-
-			this.CreateContract(contractType, address, payload);
-
-			return address;
-		}
-
-		protected void CreateContract<T>(Address address, IDictionary<string, object> payload)
-		{
-			this.CreateContract(typeof(T), address, payload);
-		}
-
-		protected Address CreateContract<T>(IDictionary<string, object> payload)
-		{
-			return this.CreateContract(typeof(T), payload);
+			this.ForwardMessage(message.ForwardId);
 		}
 	}
 }

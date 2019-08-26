@@ -6,7 +6,7 @@ using StrongForce.Core.Extensions;
 
 namespace StrongForce.Core.Permissions
 {
-	public class AccessControlList : IStateObject
+	public class AccessControlList : IStatefulObject
 	{
 		public const Address AnyAddress = Permission.AnyAddress;
 
@@ -30,8 +30,8 @@ namespace StrongForce.Core.Permissions
 			state.Add("Permissions", this.Permissions.Select(p => (object)new Dictionary<string, object>()
 			{
 				{ "Type", p.Type },
-				{ "Sender", p.Sender?.ToBase64String() },
-				{ "Target", p.Target?.ToBase64String() },
+				{ "Sender", p.Sender?.ToString() },
+				{ "Target", p.Target?.ToString() },
 			}).ToList());
 
 			return state;

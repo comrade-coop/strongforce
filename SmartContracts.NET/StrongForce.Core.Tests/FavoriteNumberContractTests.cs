@@ -13,13 +13,9 @@ namespace StrongForce.Core.Tests
 		{
 			const int expectedNumber = 32;
 
-			var contract = new FavoriteNumberContract();
-			contract.Configure(this.addressFactory.Create(), new Dictionary<string, object>(new Dictionary<string, object>()
-			{
-				{ "User", null },
-			}));
+			var (contract, receiver) = BaseContract.Create(typeof(FavoriteNumberContract), this.addressFactory.Create(), new Dictionary<string, object>() { { "User", null } }, default(ContractHandlers));
 
-			var action = new PayloadAction(
+			var action = new Message(
 				contract.Address,
 				contract.Address,
 				contract.Address,
@@ -29,9 +25,9 @@ namespace StrongForce.Core.Tests
 					{ SetFavoriteNumberAction.Number, expectedNumber },
 				});
 
-			Assert.True(contract.Receive(action));
+			receiver.Invoke(action);
 
-			Assert.Equal(expectedNumber, contract.Number);
+			Assert.Equal(expectedNumber, ((FavoriteNumberContract)contract).Number);
 		}
 	}
 }

@@ -21,7 +21,7 @@ namespace StrongForce.Core.Kits
 			return state;
 		}
 
-		public override void SetState(IDictionary<string, object> state)
+		protected override void SetState(IDictionary<string, object> state)
 		{
 			base.SetState(state);
 
@@ -41,20 +41,21 @@ namespace StrongForce.Core.Kits
 			base.Initialize(payload);
 		}
 
-		protected override bool HandlePayloadAction(PayloadAction action)
+		protected override void HandleMessage(Message message)
 		{
-			switch (action.Type)
+			switch (message.Type)
 			{
 				case InstantiateKitAction.Type:
-					this.HandleInstantiateKitAction(action);
-					return true;
+					this.HandleInstantiateKitMessage(message.Sender);
+					return;
 
 				default:
-					return base.HandlePayloadAction(action);
+					base.HandleMessage(message);
+					return;
 			}
 		}
 
-		private void HandleInstantiateKitAction(PayloadAction action)
+		private void HandleInstantiateKitMessage(Address initialManager)
 		{
 			if (this.Instantiated)
 			{
@@ -63,10 +64,10 @@ namespace StrongForce.Core.Kits
 
 			this.Instantiated = true;
 
-			this.Kit.CreateContractHandler = this.CreateContract;
-			this.Kit.CreateAddressHandler = this.CreateAddress;
+			// TODO: FIXME: Address in CreateContract
+			/* this.Kit.CreateContractHandler = this.CreateContract; */
 
-			this.Kit.Instantiate(action.Sender);
+			this.Kit.Instantiate(initialManager);
 		}
 	}
 }

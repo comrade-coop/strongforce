@@ -16,12 +16,12 @@ namespace StrongForce.Core.Permissions
 		{
 		}
 
-		public static Permission GetPermission(PayloadAction action)
+		public static Permission GetPermission(IDictionary<string, object> payload)
 		{
 			return new Permission(
-				action.Payload.GetString(PermissionType),
-				action.Payload.GetAddress(PermissionSender),
-				action.Payload.GetAddress(PermissionTarget));
+				payload.GetString(PermissionType),
+				payload.GetAddress(PermissionSender),
+				payload.GetAddress(PermissionTarget));
 		}
 	}
 }

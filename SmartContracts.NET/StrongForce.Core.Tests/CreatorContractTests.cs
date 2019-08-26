@@ -12,14 +12,14 @@ namespace StrongForce.Core.Tests
 		[Fact]
 		public void CreateContractAction_WhenPassedFavoriteNumberContract_CreatesContract()
 		{
-			var registry = new ContractRegistry();
+			var registry = new TestRegistry();
 			var permissionManager = registry.AddressFactory.Create();
 			var creatorAddress = registry.CreateContract<CreatorContract>(new Dictionary<string, object>()
 			{
-				{ "User", permissionManager.ToBase64String() },
+				{ "User", permissionManager.ToString() },
 			});
 
-			registry.SendAction(permissionManager, creatorAddress, CreateContractAction.Type, new Dictionary<string, object>()
+			registry.SendMessage(permissionManager, creatorAddress, CreateContractAction.Type, new Dictionary<string, object>()
 			{
 				{ CreateContractAction.ContractType, typeof(FavoriteNumberContract).ToString() },
 			});
@@ -32,22 +32,22 @@ namespace StrongForce.Core.Tests
 		[Fact]
 		public void CreateContractAction_WhenConfigured_AllowsForwarding()
 		{
-			var registry = new ContractRegistry();
+			var registry = new TestRegistry();
 			var permissionManager = new Address(new byte[] { 1 });
 			var creatorAddress = registry.CreateContract<CreatorContract>(new Dictionary<string, object>()
 			{
-				{ "Admin", permissionManager.ToBase64String() },
-				{ "User", permissionManager.ToBase64String() },
+				{ "Admin", permissionManager.ToString() },
+				{ "User", permissionManager.ToString() },
 			});
 
-			registry.SendAction(permissionManager, creatorAddress, AddPermissionAction.Type, new Dictionary<string, object>()
+			registry.SendMessage(permissionManager, creatorAddress, AddPermissionAction.Type, new Dictionary<string, object>()
 			{
 				{ AddPermissionAction.PermissionType, SetFavoriteNumberAction.Type },
-				{ AddPermissionAction.PermissionSender, permissionManager?.ToBase64String() },
+				{ AddPermissionAction.PermissionSender, permissionManager?.ToString() },
 				{ AddPermissionAction.PermissionTarget, null },
 			});
 
-			registry.SendAction(permissionManager, creatorAddress, CreateContractAction.Type, new Dictionary<string, object>()
+			registry.SendMessage(permissionManager, creatorAddress, CreateContractAction.Type, new Dictionary<string, object>()
 			{
 				{ CreateContractAction.ContractType, typeof(FavoriteNumberContract).ToString() },
 			});
@@ -57,13 +57,13 @@ namespace StrongForce.Core.Tests
 			// First, prove that we cannot directly interact with the contract
 			Assert.Throws<NoPermissionException>(() =>
 			{
-				registry.SendAction(permissionManager, newAddress, SetFavoriteNumberAction.Type, new Dictionary<string, object>()
+				registry.SendMessage(permissionManager, newAddress, SetFavoriteNumberAction.Type, new Dictionary<string, object>()
 				{
 					{ SetFavoriteNumberAction.Number, 45 },
 				});
 			});
 
-			registry.SendAction(permissionManager, new Address[] { creatorAddress, newAddress }, SetFavoriteNumberAction.Type, new Dictionary<string, object>()
+			registry.SendMessage(permissionManager, new Address[] { creatorAddress, newAddress }, SetFavoriteNumberAction.Type, new Dictionary<string, object>()
 			{
 				{ SetFavoriteNumberAction.Number, 42 },
 			});

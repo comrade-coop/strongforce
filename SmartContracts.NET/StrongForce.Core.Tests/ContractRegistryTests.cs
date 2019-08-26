@@ -10,7 +10,7 @@ namespace StrongForce.Core.Tests
 		[Fact]
 		public void CreateContract_WhenPassedNewContract_AddsItCorrectly()
 		{
-			var registry = new ContractRegistry();
+			var registry = new TestRegistry();
 
 			Address contractAddress = registry.CreateContract<FavoriteNumberContract>();
 
@@ -21,46 +21,22 @@ namespace StrongForce.Core.Tests
 		[Fact]
 		public void CreateContract_WhenPassedNonContractType_ThrowsArgumentException()
 		{
-			var registry = new ContractRegistry();
+			var registry = new TestRegistry();
 
-			Assert.Throws<ArgumentOutOfRangeException>(() => registry.CreateContract<Action>());
+			Assert.Throws<ArgumentOutOfRangeException>(() => registry.CreateContract<Message>());
 		}
 
 		[Fact]
-		public void CreateContract_WhenPassedNull_ThrowsArgumentNullException()
+		public void SendMessage_WhenPassedValidAction_SendsActionToCorrectContract()
 		{
-			var registry = new ContractRegistry();
-
-			Assert.Throws<ArgumentOutOfRangeException>(() => registry.CreateContract(null));
-		}
-
-		[Fact]
-		public void GetContract_WhenPassedNonExistentContract_ReturnsNull()
-		{
-			var registry = new ContractRegistry();
-			Address contractAddress = registry.AddressFactory.Create();
-
-			Assert.Null(registry.GetContract(contractAddress));
-		}
-
-		[Fact]
-		public void GetContract_WhenPassedNull_ThrowsArgumentNullException()
-		{
-			var registry = new ContractRegistry();
-			Assert.Throws<ArgumentNullException>(() => registry.GetContract(null));
-		}
-
-		[Fact]
-		public void SendAction_WhenPassedValidAction_SendsActionToCorrectContract()
-		{
-			var registry = new ContractRegistry();
+			var registry = new TestRegistry();
 			Address senderAddress = registry.AddressFactory.Create();
 			Address contractAddress = registry.CreateContract<FavoriteNumberContract>(new Dictionary<string, object>()
 			{
-				{ "User", senderAddress.ToBase64String() },
+				{ "User", senderAddress.ToString() },
 			});
 
-			registry.SendAction(senderAddress, contractAddress, SetFavoriteNumberAction.Type, new Dictionary<string, object>
+			registry.SendMessage(senderAddress, contractAddress, SetFavoriteNumberAction.Type, new Dictionary<string, object>
 			{
 				{ SetFavoriteNumberAction.Number, 0 },
 			});
@@ -72,27 +48,16 @@ namespace StrongForce.Core.Tests
 		}
 
 		[Fact]
-		public void SendAction_WhenPassedNull_ThrowsArgumentNullException()
+		public void SendMessage_WhenPassedNull_ThrowsArgumentNullException()
 		{
-			var registry = new ContractRegistry();
+			var registry = new TestRegistry();
 			Address address = registry.AddressFactory.Create();
 			var actionType = "NotARealActionType";
 			var payload = new Dictionary<string, object>();
 
-			Assert.Throws<ArgumentNullException>(() => registry.SendAction(address, (Address[])null, actionType, payload));
-			Assert.Throws<ArgumentNullException>(() => registry.SendAction(address, address, null, payload));
-			Assert.Throws<ArgumentNullException>(() => registry.SendAction(address, address, actionType, null));
-		}
-
-		[Fact]
-		public void HandleAction_WhenPassedActionWithNonExistentAddress_ReturnsFalse()
-		{
-			var registry = new ContractRegistry();
-			Address address = registry.AddressFactory.Create();
-			var actionType = "NotARealActionType";
-			var payload = new Dictionary<string, object>();
-
-			Assert.False(registry.SendAction(address, address, actionType, payload));
+			Assert.Throws<ArgumentNullException>(() => registry.SendMessage(address, (Address[])null, actionType, payload));
+			Assert.Throws<ArgumentNullException>(() => registry.SendMessage(address, address, null, payload));
+			Assert.Throws<ArgumentNullException>(() => registry.SendMessage(address, address, actionType, null));
 		}
 	}
 }

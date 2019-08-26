@@ -3,10 +3,8 @@ using System.Collections.Generic;
 
 namespace StrongForce.Core
 {
-	public interface IStateObject
+	public interface IStatefulObject
 	{
 		IDictionary<string, object> GetState();
-
-		void SetState(IDictionary<string, object> state);
 	}
 }

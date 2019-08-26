@@ -38,7 +38,7 @@ namespace StrongForce.Core
 			return !(a == b);
 		}
 
-		public static Address FromBase64String(string base64String)
+		public static Address Parse(string base64String)
 		{
 			if (base64String != null)
 			{
@@ -61,18 +61,13 @@ namespace StrongForce.Core
 			}
 		}
 
-		public string ToBase64String()
+		public override string ToString()
 		{
 			var result = Convert.ToBase64String(this.Value, 0, this.Value.Length);
 			result = result.TrimEnd('=');
 			result = result.Replace('+', '-').Replace('/', '_');
 
 			return result;
-		}
-
-		public override string ToString()
-		{
-			return $"Address(\"{this.ToBase64String()}\")";
 		}
 
 		public override bool Equals(object other)

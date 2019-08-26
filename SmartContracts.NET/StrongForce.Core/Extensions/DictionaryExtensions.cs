@@ -45,41 +45,12 @@ namespace StrongForce.Core.Extensions
 
 		public static Address GetAddress(this IDictionary<string, object> dictionary, string key)
 		{
-			var value = dictionary.GetString(key);
-
-			return Address.FromBase64String(value);
+			return Address.Parse(dictionary.GetString(key));
 		}
 
 		public static void AddAddress(this IDictionary<string, object> dictionary, string key, Address value)
 		{
-			var serialized = value?.ToBase64String();
-			dictionary.Add(key, serialized);
-		}
-
-		public static IDictionary<string, object> ToState(this IStateObject stateObject)
-		{
-			return new Dictionary<string, object>()
-			{
-				{ "Type", stateObject.GetType().AssemblyQualifiedName },
-				{ "State", stateObject.GetState() },
-			};
-		}
-
-		public static IStateObject ToStateObject(this IDictionary<string, object> dictionary)
-		{
-			var type = Type.GetType(dictionary.GetString("Type"));
-			var state = dictionary.GetDictionary("State");
-
-			if (!type.GetInterfaces().Contains(typeof(IStateObject)))
-			{
-				throw new ArgumentOutOfRangeException(nameof(type));
-			}
-
-			var stateObject = Activator.CreateInstance(type) as IStateObject;
-
-			stateObject.SetState(state);
-
-			return stateObject;
+			dictionary.Add(key, value?.ToString());
 		}
 
 		public static IDictionary<string, object> MergeStateWith(this IDictionary<string, object> dictionary, IDictionary<string, object> other)

@@ -8,133 +8,117 @@ namespace StrongForce.Core
 {
 	public class ContractRegistry
 	{
-		private IDictionary<Address, Contract> addressesToContracts = new SortedDictionary<Address, Contract>();
 
-		private IDictionary<ulong, Action> forwardedActions = new SortedDictionary<ulong, Action>();
-
-		private ulong actionNonce = 0;
-
-		public ContractRegistry(IAddressFactory addressFactory)
+		public ContractRegistry(IIntegrationFacade facade, IAddressFactory addressFactory)
 		{
+			this.IntegrationFacade = facade;
 			this.AddressFactory = addressFactory;
+
+			this.IntegrationFacade.ReceiveMessage += (from, targets, type, payload) =>
+			{
+				this.SendMessage(from, targets, type, payload);
+
+				foreach (var contract in this.CachedContracts)
+				{
+					this.IntegrationFacade.SaveContract(contract.Value.Item1);
+				}
+			};
+			this.IntegrationFacade.DropCaches += this.DropCaches;
 		}
 
 		public ContractRegistry()
-			: this(new RandomAddressFactory())
+			: this(new InMemoryIntegrationFacade(), new RandomAddressFactory())
 		{
 		}
 
-		public IAddressFactory AddressFactory { get; set; }
+		protected IAddressFactory AddressFactory { get; set; }
 
-		public virtual Contract GetContract(Address address)
+		protected IIntegrationFacade IntegrationFacade { get; set; }
+
+		protected IDictionary<Address, (BaseContract, Action<Message>)> CachedContracts { get; set; }
+			= new Dictionary<Address, (BaseContract, Action<Message>)>();
+
+		protected IDictionary<ulong, Message> ForwardedMessages { get; set; } = new Dictionary<ulong, Message>();
+
+		protected ulong MessageNonce { get; set; } = 0;
+
+		protected void DropCaches()
 		{
-			return this.addressesToContracts.TryGetValue(address, out Contract contract) ? contract : null;
+			this.CachedContracts = new Dictionary<Address, (BaseContract, Action<Message>)>();
 		}
 
-		public bool SendAction(Address sender, Address target, string type, IDictionary<string, object> payload)
+		protected void SendMessage(Address sender, Address[] targets, string type, IDictionary<string, object> payload)
 		{
-			return this.SendAction(sender, new Address[] { target }, type, payload);
+			var message = this.CreateMessage(sender, sender, targets, type, payload);
+
+			this.DispatchMessage(message);
 		}
 
-		public bool SendAction(Address sender, Address[] targets, string type, IDictionary<string, object> payload)
+		protected void SendMessage(Address sender, ulong id)
 		{
-			var action = this.CreateAction(sender, sender, targets, type, payload);
+			var message = this.ForwardedMessages[id];
 
-			return this.ExecuteAction(action);
-		}
-
-		public bool SendAction(Address sender, ulong id)
-		{
-			var action = this.forwardedActions[id];
-
-			if (action.Sender != sender)
+			if (message.Sender != sender)
 			{
 				throw new ArgumentOutOfRangeException(nameof(sender));
 			}
 
-			return this.ExecuteAction(action);
+			this.DispatchMessage(message);
 		}
 
-		public bool SendEvent(Address sender, Address target, string type, IDictionary<string, object> payload)
+		protected Address CreateContract(Type type, IDictionary<string, object> payload = null)
 		{
-			var action = this.CreateAction(sender, sender, new Address[] { target }, type, payload, true);
-
-			return this.ExecuteAction(action);
-		}
-
-		public Address CreateAddress()
-		{
-			return this.AddressFactory.Create();
-		}
-
-		public void CreateContract(Type contractType, Address address, IDictionary<string, object> payload = null)
-		{
-			if (!typeof(Contract).IsAssignableFrom(contractType))
-			{
-				throw new ArgumentOutOfRangeException(nameof(contractType));
-			}
-
 			if (payload != null && !StateSerialization.ValidateState(payload))
 			{
 				throw new ArgumentOutOfRangeException(nameof(payload));
 			}
 
-			var contract = (Contract)Activator.CreateInstance(contractType);
-
-			this.RegisterContract(address, contract, payload ?? new Dictionary<string, object>());
-		}
-
-		public Address CreateContract(Type contractType, IDictionary<string, object> payload = null)
-		{
 			var address = this.AddressFactory.Create();
 
-			this.CreateContract(contractType, address, payload);
+			var (contract, receiver) = BaseContract.Create(type, address, payload, this.CreateContractHandlers(address));
+
+			this.CachedContracts.Add(address, (contract, receiver));
+			this.IntegrationFacade.SaveContract(contract);
 
 			return address;
 		}
 
-		public void CreateContract<T>(Address address, IDictionary<string, object> payload = null)
+		protected (BaseContract, Action<Message>) GetContract(Address address)
 		{
-			this.CreateContract(typeof(T), address, payload);
-		}
-
-		public Address CreateContract<T>(IDictionary<string, object> payload = null)
-		{
-			return this.CreateContract(typeof(T), payload);
-		}
-
-		protected void RegisterContract(Address address, Contract contract, IDictionary<string, object> configurePayload = null)
-		{
-			contract.Configure(address, configurePayload);
-
-			contract.SendActionEvent += (targets, type, payload) => this.SendAction(address, targets, type, payload);
-			contract.SendEventEvent += (target, type, payload) => this.SendEvent(address, target, type, payload);
-			contract.ForwardActionEvent += (id) => this.SendAction(address, id);
-			contract.CreateContractEvent += this.CreateContract;
-			contract.CreateAddressEvent += this.CreateAddress;
-
-			this.SetContract(address, contract);
-		}
-
-		protected virtual void SetContract(Address address, Contract contract)
-		{
-			if (this.addressesToContracts.ContainsKey(address))
+			if (this.CachedContracts.TryGetValue(address, out var result))
 			{
-				throw new InvalidOperationException(
-					$"Contract with address {address} has already been registered");
+				return result;
 			}
+			else
+			{
+				var newContract = this.IntegrationFacade.LoadContract(address, this.CreateContractHandlers(address));
 
-			this.addressesToContracts[address] = contract;
+				this.CachedContracts[address] = newContract;
+
+				return newContract;
+			}
 		}
 
-		private bool ExecuteAction(Action action)
+		protected ContractHandlers CreateContractHandlers(Address address)
 		{
-			var contract = this.GetContract(action.Target);
+			return new ContractHandlers()
+			{
+				SendMessage = (targets, type, payload) => this.SendMessage(address, targets, type, payload),
 
-			return contract != null && contract.Receive(action);
+				ForwardMessage = (id) => this.SendMessage(address, id),
+
+				CreateContract = this.CreateContract,
+			};
 		}
 
-		private Action CreateAction(Address origin, Address sender, Address[] targets, string type, IDictionary<string, object> payload, bool eventAction = false)
+		private void DispatchMessage(Message message)
+		{
+			var (contract, receiver) = this.GetContract(message.Target);
+
+			receiver.Invoke(message);
+		}
+
+		private Message CreateMessage(Address origin, Address sender, Address[] targets, string type, IDictionary<string, object> payload, bool eventMessage = false)
 		{
 			if (targets == null || targets.Length == 0)
 			{
@@ -156,44 +140,30 @@ namespace StrongForce.Core
 				throw new ArgumentOutOfRangeException(nameof(payload));
 			}
 
-			if (eventAction)
+			if (targets.Length > 1)
 			{
-				if (targets.Length != 1)
-				{
-					throw new ArgumentOutOfRangeException(nameof(targets));
-				}
-
-				return new EventAction(
-					targets[0],
-					origin,
-					sender,
-					type,
-					payload);
-			}
-			else if (targets.Length == 1)
-			{
-				return new PayloadAction(
-					targets[0],
-					origin,
-					sender,
-					type,
-					payload);
-			}
-			else
-			{
-				var nextId = this.actionNonce;
-				this.actionNonce++;
+				var nextId = this.MessageNonce;
+				this.MessageNonce++;
 
 				var nextTargets = targets.Skip(1).ToArray();
 
-				this.forwardedActions.Add(nextId, this.CreateAction(origin, targets[0], nextTargets, type, payload));
+				this.ForwardedMessages.Add(nextId, this.CreateMessage(origin, targets[0], nextTargets, type, payload));
 
-				return new ForwardAction(
+				return new ForwardMessage(
 					targets[0],
-					nextTargets,
 					origin,
 					sender,
-					nextId,
+					type,
+					payload,
+					nextTargets,
+					nextId);
+			}
+			else
+			{
+				return new Message(
+					targets[0],
+					origin,
+					sender,
 					type,
 					payload);
 			}

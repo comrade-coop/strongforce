@@ -7,6 +7,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Strongforce;
+using StrongForce.Core;
 using StrongForce.Core.Kits;
 
 namespace StrongForce.Integrations.Cosmos
@@ -15,7 +16,7 @@ namespace StrongForce.Integrations.Cosmos
 	{
 		private readonly StrongForceServiceSettings settings;
 
-		private ILogger<StrongForceServer> logger;
+		private ILogger<CosmosIntegrationFacade> logger;
 		private Kit initialKit;
 		private Server server;
 
@@ -26,14 +27,14 @@ namespace StrongForce.Integrations.Cosmos
 			this.initialKit = null;
 		}
 
-		public StrongForceService(ILogger<StrongForceServer> logger, Kit initialKit)
+		public StrongForceService(ILogger<CosmosIntegrationFacade> logger, Kit initialKit)
 		{
 			this.settings = new StrongForceServiceSettings();
 			this.logger = logger;
 			this.initialKit = initialKit;
 		}
 
-		public StrongForceService(ILogger<StrongForceServer> logger, IOptions<StrongForceServiceSettings> options, Kit initialKit)
+		public StrongForceService(ILogger<CosmosIntegrationFacade> logger, IOptions<StrongForceServiceSettings> options, Kit initialKit)
 		{
 			this.settings = options.Value;
 			this.logger = logger;
@@ -42,9 +43,12 @@ namespace StrongForce.Integrations.Cosmos
 
 		public Task StartAsync(CancellationToken cancellationToken)
 		{
+			var facade = new CosmosIntegrationFacade(this.logger, this.initialKit);
+			var registry = new ContractRegistry(facade, new RandomAddressFactory());
+
 			this.server = new Server
 			{
-				Services = { Strongforce.StrongForce.BindService(new StrongForceServer(this.logger, this.initialKit)) },
+				Services = { Strongforce.StrongForce.BindService(facade) },
 				Ports = { new ServerPort(this.settings.Hostname, this.settings.Port, ServerCredentials.Insecure) },
 			};
 			this.server.Start();

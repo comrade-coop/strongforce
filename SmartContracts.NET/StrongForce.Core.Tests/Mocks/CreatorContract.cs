@@ -15,12 +15,12 @@ namespace StrongForce.Core.Tests.Mocks
 		{
 			var state = base.GetState();
 
-			state.Add("LastCreatedAddress", this.LastCreatedAddress?.ToBase64String());
+			state.Add("LastCreatedAddress", this.LastCreatedAddress?.ToString());
 
 			return state;
 		}
 
-		public override void SetState(IDictionary<string, object> state)
+		protected override void SetState(IDictionary<string, object> state)
 		{
 			this.LastCreatedAddress = state.GetAddress("LastCreatedAddress");
 			base.SetState(state);
@@ -39,16 +39,17 @@ namespace StrongForce.Core.Tests.Mocks
 			base.Initialize(payload);
 		}
 
-		protected override bool HandlePayloadAction(PayloadAction action)
+		protected override void HandleMessage(Message message)
 		{
-			switch (action.Type)
+			switch (message.Type)
 			{
 				case CreateContractAction.Type:
-					this.HandleCreateContractAction(action.Payload);
-					return true;
+					this.HandleCreateContractAction(message.Payload);
+					break;
 
 				default:
-					return base.HandlePayloadAction(action);
+					base.HandleMessage(message);
+					return;
 			}
 		}
 
@@ -57,8 +58,8 @@ namespace StrongForce.Core.Tests.Mocks
 			var type = Type.GetType(payload.GetString(CreateContractAction.ContractType));
 			this.LastCreatedAddress = this.CreateContract(type, new Dictionary<string, object>()
 			{
-				{ "Admin", this.Address.ToBase64String() },
-				{ "User", this.Address.ToBase64String() },
+				{ "Admin", this.Address.ToString() },
+				{ "User", this.Address.ToString() },
 			});
 		}
 	}
