@@ -58,14 +58,12 @@ namespace StrongForce.Core.Tests
 			var contractAddress = this.registry.CreateContract<FavoriteNumberContract>(
 				new Dictionary<string, object>() { { "Admin", permissionManager?.ToString() } });
 
-
 			this.registry.SendMessage(permissionManager, contractAddress, AddPermissionAction.Type, new Dictionary<string, object>()
 			{
 				{ AddPermissionAction.PermissionType, SetFavoriteNumberAction.Type },
 				{ AddPermissionAction.PermissionSender, contractAddress?.ToString() },
 				{ AddPermissionAction.PermissionTarget, contractAddress?.ToString() },
 			});
-
 
 			var contract = this.registry.GetContract<Contract>(contractAddress);
 
@@ -120,8 +118,6 @@ namespace StrongForce.Core.Tests
 
 			var contractAddress = this.registry.CreateContract<FavoriteNumberContract>(
 				new Dictionary<string, object>() { { "Admin", permissionManager.ToString() } });
-
-			return;
 
 			this.registry.SendMessage(permissionManager, contractAddress, AddPermissionAction.Type, new Dictionary<string, object>()
 			{

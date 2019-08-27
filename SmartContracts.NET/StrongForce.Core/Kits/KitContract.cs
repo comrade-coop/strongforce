@@ -10,8 +10,6 @@ namespace StrongForce.Core.Kits
 
 		public bool Instantiated { get; set; } = false;
 
-		public Kit Kit { get; set; } = null;
-
 		public override IDictionary<string, object> GetState()
 		{
 			var state = base.GetState();
@@ -64,10 +62,11 @@ namespace StrongForce.Core.Kits
 
 			this.Instantiated = true;
 
-			// TODO: FIXME: Address in CreateContract
-			/* this.Kit.CreateContractHandler = this.CreateContract; */
+			this.Instantiate(initialManager);
+		}
 
-			this.Kit.Instantiate(initialManager);
+		protected virtual void Instantiate(Address initialManager)
+		{
 		}
 	}
 }

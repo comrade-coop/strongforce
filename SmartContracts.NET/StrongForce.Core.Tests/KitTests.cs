@@ -10,7 +10,6 @@ namespace StrongForce.Core.Tests
 {
 	public class KitTests
 	{
-		/*
 		[Fact]
 		public void Kit_WhenInstantiated_CreatesContracts()
 		{
@@ -18,13 +17,12 @@ namespace StrongForce.Core.Tests
 
 			var factory = new SequentialAddressFactory();
 			var registry = new TestRegistry(factory);
-			var kit = new FavoriteNumberKit(favoriteContractsCount);
 
-			Address address = registry.CreateContract<KitContract>(new Dictionary<string, object>()
+			Address address = registry.CreateContract<FavoriteNumberKitContract>(new Dictionary<string, object>()
 			{
 				{ "User", null },
+				{ "FavoriteContractsCount", favoriteContractsCount },
 			});
-			((KitContract)registry.GetContract(address)).Kit = kit;
 
 			registry.SendMessage(address, address, InstantiateKitAction.Type, new Dictionary<string, object>());
 
@@ -35,17 +33,15 @@ namespace StrongForce.Core.Tests
 		public void Kit_WhenInstantiatedTwice_Throws()
 		{
 			var registry = new TestRegistry();
-			var kit = new FavoriteNumberKit(2);
 
-			Address address = registry.CreateContract<KitContract>(new Dictionary<string, object>()
+			Address address = registry.CreateContract<FavoriteNumberKitContract>(new Dictionary<string, object>()
 			{
 				{ "User", null },
+				{ "FavoriteContractsCount", 2 },
 			});
-			((KitContract)registry.GetContract(address)).Kit = kit;
 
 			registry.SendMessage(address, address, InstantiateKitAction.Type, new Dictionary<string, object>());
 			Assert.Throws<InvalidOperationException>(() => registry.SendMessage(address, address, InstantiateKitAction.Type, new Dictionary<string, object>()));
 		}
-		*/
 	}
 }
