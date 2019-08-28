@@ -29,7 +29,15 @@ namespace StrongForce.Integrations.Cosmos.IntegrationTest
 		public void ConfigureServices(IServiceCollection services)
 		{
 			services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
-			services.AddSingleton<Kit>((_) => new FavoriteNumberKit(15));
+			services.AddSingleton<IOptions<StrongForceService.StrongForceServiceSettings>>((_) => new OptionsWrapper<StrongForceService.StrongForceServiceSettings>(new StrongForceService.StrongForceServiceSettings()
+			{
+				InitialKitType = typeof(FavoriteNumberKitContract),
+				InitialKitPayload = new Dictionary<string, object>()
+				{
+					{ "User", null },
+					{ "FavoriteContractsCount", 12 },
+				},
+			}));
 			services.AddSingleton<IHostedService, StrongForceService>();
 		}
 

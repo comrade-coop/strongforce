@@ -18,16 +18,16 @@ namespace StrongForce.Integrations.Cosmos
 	public class CosmosIntegrationFacade : Strongforce.StrongForce.StrongForceBase, IIntegrationFacade
 	{
 		private ILogger<CosmosIntegrationFacade> logger;
-		private Kit initialKit;
+		private byte[] initialKitFallback;
 		private Task currentRequestTask = Task.FromResult(true);
 		private Func<ContractRequest, Task> requestDelegate;
 		private Semaphore pendingResponsesSemaphore = new Semaphore(0, int.MaxValue);
 		private Dictionary<Address, TaskCompletionSource<byte[]>> pendingContracts = new Dictionary<Address, TaskCompletionSource<byte[]>>();
 
-		public CosmosIntegrationFacade(ILogger<CosmosIntegrationFacade> logger, Kit initialKit)
+		public CosmosIntegrationFacade(ILogger<CosmosIntegrationFacade> logger, byte[] initialKitFallback)
 		{
 			this.logger = logger;
-			this.initialKit = initialKit;
+			this.initialKitFallback = initialKitFallback;
 		}
 
 		public event Action<Address, Address[], string, IDictionary<string, object>> ReceiveMessage;
@@ -48,6 +48,11 @@ namespace StrongForce.Integrations.Cosmos
 			var result = this.pendingContracts[address].Task.Result;
 
 			this.logger.LogTrace("Result from contract request received!");
+
+			if (result.Length == 0 && address == KitContract.DefaultAddress)
+			{
+				result = this.initialKitFallback;
+			}
 
 			return StrongForceSerialization.DeserializeContract(address, handlers, result);
 		}

@@ -9,6 +9,7 @@ using Microsoft.Extensions.Options;
 using Strongforce;
 using StrongForce.Core;
 using StrongForce.Core.Kits;
+using StrongForce.Core.Serialization;
 
 namespace StrongForce.Integrations.Cosmos
 {
@@ -17,33 +18,30 @@ namespace StrongForce.Integrations.Cosmos
 		private readonly StrongForceServiceSettings settings;
 
 		private ILogger<CosmosIntegrationFacade> logger;
-		private Kit initialKit;
 		private Server server;
 
 		public StrongForceService()
 		{
 			this.settings = new StrongForceServiceSettings();
 			this.logger = null;
-			this.initialKit = null;
 		}
 
-		public StrongForceService(ILogger<CosmosIntegrationFacade> logger, Kit initialKit)
+		public StrongForceService(ILogger<CosmosIntegrationFacade> logger, Type initialKitType, IDictionary<string, object> initialKitPayload = null)
 		{
 			this.settings = new StrongForceServiceSettings();
 			this.logger = logger;
-			this.initialKit = initialKit;
 		}
 
-		public StrongForceService(ILogger<CosmosIntegrationFacade> logger, IOptions<StrongForceServiceSettings> options, Kit initialKit)
+		public StrongForceService(ILogger<CosmosIntegrationFacade> logger, IOptions<StrongForceServiceSettings> options)
 		{
 			this.settings = options.Value;
 			this.logger = logger;
-			this.initialKit = initialKit;
 		}
 
 		public Task StartAsync(CancellationToken cancellationToken)
 		{
-			var facade = new CosmosIntegrationFacade(this.logger, this.initialKit);
+			var (initialKit, _) = BaseContract.Create(this.settings.InitialKitType, KitContract.DefaultAddress, this.settings.InitialKitPayload, default(ContractHandlers));
+			var facade = new CosmosIntegrationFacade(this.logger, StrongForceSerialization.SerializeContract(initialKit));
 			var registry = new ContractRegistry(facade, new RandomAddressFactory());
 
 			this.server = new Server
@@ -65,6 +63,10 @@ namespace StrongForce.Integrations.Cosmos
 			public string Hostname { get; set; } = "localhost";
 
 			public int Port { get; set; } = 8989;
+
+			public Type InitialKitType { get; set; } = typeof(KitContract);
+
+			public IDictionary<string, object> InitialKitPayload { get; set; } = new Dictionary<string, object>();
 		}
 	}
 }
