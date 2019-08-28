@@ -21,11 +21,9 @@ namespace StrongForce.Core.Serialization
 		public static Tuple<Address[], string, IDictionary<string, object>> DeserializeAction(byte[] serialized)
 		{
 			var action = StateSerialization.DeserializeState(serialized);
-			var targets = action
-				.GetList<string>("Targets").Select(Address.Parse)
-				.ToArray();
-			var type = action.GetString("Type");
-			var payload = action.GetDictionary("Payload");
+			var targets = action.GetList<Address>("Targets").ToArray();
+			var type = action.Get<string>("Type");
+			var payload = action.Get<IDictionary<string, object>>("Payload");
 			return Tuple.Create(targets, type, payload);
 		}
 
@@ -43,8 +41,8 @@ namespace StrongForce.Core.Serialization
 		{
 			var dictionary = StateSerialization.DeserializeState(serialized);
 
-			var type = Type.GetType(dictionary.GetString("Type"));
-			var state = dictionary.GetDictionary("State");
+			var type = Type.GetType(dictionary.Get<string>("Type"));
+			var state = dictionary.Get<IDictionary<string, object>>("State");
 
 			return BaseContract.Create(type, address, state, handlers, true);
 		}

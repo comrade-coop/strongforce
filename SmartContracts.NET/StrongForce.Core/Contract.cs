@@ -14,14 +14,14 @@ namespace StrongForce.Core
 		{
 			var state = base.GetState();
 
-			state.Add("Acl", this.Acl.GetState());
+			state.Set("Acl", this.Acl.GetState());
 
 			return state;
 		}
 
 		protected override void SetState(IDictionary<string, object> state)
 		{
-			this.Acl.SetState(state.GetDictionary("Acl"));
+			this.Acl.SetState(state.Get<IDictionary<string, object>>("Acl"));
 
 			base.SetState(state);
 		}
@@ -30,7 +30,7 @@ namespace StrongForce.Core
 		{
 			if (payload.ContainsKey("Admin"))
 			{
-				var admin = payload.GetAddress("Admin");
+				var admin = payload.Get<Address>("Admin");
 
 				this.Acl.AddPermission(
 					admin,

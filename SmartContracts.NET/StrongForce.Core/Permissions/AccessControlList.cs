@@ -27,7 +27,7 @@ namespace StrongForce.Core.Permissions
 		{
 			var state = new Dictionary<string, object>();
 
-			state.Add("Permissions", this.Permissions.Select(p => (object)new Dictionary<string, object>()
+			state.Set("Permissions", this.Permissions.Select(p => new Dictionary<string, object>()
 			{
 				{ "Type", p.Type },
 				{ "Sender", p.Sender?.ToString() },
@@ -44,9 +44,9 @@ namespace StrongForce.Core.Permissions
 				.Select(s =>
 				{
 					return new Permission(
-						s.GetString("Type"),
-						s.GetAddress("Sender"),
-						s.GetAddress("Target"));
+						s.Get<string>("Type"),
+						s.Get<Address>("Sender"),
+						s.Get<Address>("Target"));
 				}));
 		}
 

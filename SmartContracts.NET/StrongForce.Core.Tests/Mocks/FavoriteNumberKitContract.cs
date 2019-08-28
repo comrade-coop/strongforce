@@ -15,7 +15,7 @@ namespace StrongForce.Core.Tests.Mocks
 		{
 			var state = base.GetState();
 
-			state.Add("FavoriteContractsCount", this.FavoriteContractsCount);
+			state.Set("FavoriteContractsCount", this.FavoriteContractsCount);
 
 			return state;
 		}

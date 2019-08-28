@@ -14,7 +14,7 @@ namespace StrongForce.Core.Kits
 		{
 			var state = base.GetState();
 
-			state.Add("Instantiated", this.Instantiated);
+			state.Set("Instantiated", this.Instantiated);
 
 			return state;
 		}
@@ -31,7 +31,7 @@ namespace StrongForce.Core.Kits
 			if (payload.ContainsKey("User"))
 			{
 				this.Acl.AddPermission(
-					payload.GetAddress("User"),
+					payload.Get<Address>("User"),
 					InstantiateKitAction.Type,
 					this.Address);
 			}
@@ -53,6 +53,10 @@ namespace StrongForce.Core.Kits
 			}
 		}
 
+		protected virtual void Instantiate(Address initialManager)
+		{
+		}
+
 		private void HandleInstantiateKitMessage(Address initialManager)
 		{
 			if (this.Instantiated)
@@ -63,10 +67,6 @@ namespace StrongForce.Core.Kits
 			this.Instantiated = true;
 
 			this.Instantiate(initialManager);
-		}
-
-		protected virtual void Instantiate(Address initialManager)
-		{
 		}
 	}
 }

@@ -23,17 +23,17 @@ namespace StrongForce.Core.Tests.Mocks
 		{
 			var state = base.GetState();
 
-			state.Add("LastOrigin", this.LastOrigin?.ToString());
-			state.Add("LastSender", this.LastSender?.ToString());
-			state.Add("Number", this.Number);
+			state.Set("LastOrigin", this.LastOrigin?.ToString());
+			state.Set("LastSender", this.LastSender?.ToString());
+			state.Set("Number", this.Number);
 
 			return state;
 		}
 
 		protected override void SetState(IDictionary<string, object> state)
 		{
-			this.LastOrigin = state.GetAddress("LastOrigin");
-			this.LastSender = state.GetAddress("LastSender");
+			this.LastOrigin = state.Get<Address>("LastOrigin");
+			this.LastSender = state.Get<Address>("LastSender");
 			this.Number = state.Get<int>("Number");
 
 			base.SetState(state);
@@ -44,7 +44,7 @@ namespace StrongForce.Core.Tests.Mocks
 			if (payload.ContainsKey("User"))
 			{
 				this.Acl.AddPermission(
-					payload.GetAddress("User"),
+					payload.Get<Address>("User"),
 					SetFavoriteNumberAction.Type,
 					this.Address);
 			}

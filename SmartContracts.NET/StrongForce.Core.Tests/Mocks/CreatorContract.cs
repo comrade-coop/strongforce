@@ -15,14 +15,14 @@ namespace StrongForce.Core.Tests.Mocks
 		{
 			var state = base.GetState();
 
-			state.Add("LastCreatedAddress", this.LastCreatedAddress?.ToString());
+			state.Set("LastCreatedAddress", this.LastCreatedAddress?.ToString());
 
 			return state;
 		}
 
 		protected override void SetState(IDictionary<string, object> state)
 		{
-			this.LastCreatedAddress = state.GetAddress("LastCreatedAddress");
+			this.LastCreatedAddress = state.Get<Address>("LastCreatedAddress");
 			base.SetState(state);
 		}
 
@@ -31,7 +31,7 @@ namespace StrongForce.Core.Tests.Mocks
 			if (payload.ContainsKey("User"))
 			{
 				this.Acl.AddPermission(
-					payload.GetAddress("User"),
+					payload.Get<Address>("User"),
 					CreateContractAction.Type,
 					this.Address);
 			}
@@ -55,7 +55,7 @@ namespace StrongForce.Core.Tests.Mocks
 
 		private void HandleCreateContractAction(IDictionary<string, object> payload)
 		{
-			var type = Type.GetType(payload.GetString(CreateContractAction.ContractType));
+			var type = Type.GetType(payload.Get<string>(CreateContractAction.ContractType));
 			this.LastCreatedAddress = this.CreateContract(type, new Dictionary<string, object>()
 			{
 				{ "Admin", this.Address.ToString() },

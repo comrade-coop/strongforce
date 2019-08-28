@@ -39,7 +39,7 @@ namespace StrongForce.Core
 			{
 				this.ReceiveMessage?.Invoke(from, targets, type, payload);
 			}
-			catch(Exception)
+			catch (Exception)
 			{
 				this.DropCaches?.Invoke();
 				throw;
