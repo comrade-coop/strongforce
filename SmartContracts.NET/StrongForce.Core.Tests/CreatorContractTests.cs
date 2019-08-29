@@ -30,6 +30,66 @@ namespace StrongForce.Core.Tests
 		}
 
 		[Fact]
+		public void CreateContractAction_WhenPassedMessages_SendsMessages()
+		{
+			var registry = new TestRegistry();
+			var targetNumber = 367;
+			var permissionManager = registry.AddressFactory.Create();
+			var creatorAddress = registry.CreateContract<CreatorContract>(new Dictionary<string, object>()
+			{
+				{ "User", permissionManager.ToString() },
+			});
+
+			registry.SendMessage(permissionManager, creatorAddress, CreateContractAction.Type, new Dictionary<string, object>()
+			{
+				{ CreateContractAction.ContractType, typeof(FavoriteNumberContract).ToString() },
+				{
+					CreateContractAction.Messages,
+					new List<object>()
+					{
+						new Dictionary<string, object>()
+						{
+							{ CreateContractAction.MessageType, SetFavoriteNumberAction.Type },
+							{ CreateContractAction.MessagePayload, new Dictionary<string, object>() { { SetFavoriteNumberAction.Number, targetNumber } } },
+						},
+					}
+				},
+			});
+
+			var lastAddress = ((CreatorContract)registry.GetContract(creatorAddress)).LastCreatedAddress;
+			Assert.NotNull(lastAddress);
+			Assert.NotNull(registry.GetContract(lastAddress));
+			Assert.Equal(targetNumber, ((FavoriteNumberContract)registry.GetContract(lastAddress)).Number);
+		}
+
+		[Fact]
+		public void CreateContractAction_WhenPassedInvalidMessages_Throws()
+		{
+			var registry = new TestRegistry();
+			var permissionManager = registry.AddressFactory.Create();
+			var creatorAddress = registry.CreateContract<CreatorContract>(new Dictionary<string, object>()
+			{
+				{ "User", permissionManager.ToString() },
+			});
+
+			Assert.Throws<NoPermissionException>(() => registry.SendMessage(permissionManager, creatorAddress, CreateContractAction.Type, new Dictionary<string, object>()
+			{
+				{ CreateContractAction.ContractType, typeof(FavoriteNumberContract).ToString() },
+				{
+					CreateContractAction.Messages,
+					new List<object>()
+					{
+						new Dictionary<string, object>()
+						{
+							{ CreateContractAction.MessageType, "NotARealActionType" },
+							{ CreateContractAction.MessagePayload, new Dictionary<string, object>() { } },
+						},
+					}
+				},
+			}));
+		}
+
+		[Fact]
 		public void CreateContractAction_WhenConfigured_AllowsForwarding()
 		{
 			var registry = new TestRegistry();

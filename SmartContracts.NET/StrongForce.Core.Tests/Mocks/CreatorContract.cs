@@ -61,6 +61,17 @@ namespace StrongForce.Core.Tests.Mocks
 				{ "Admin", this.Address.ToString() },
 				{ "User", this.Address.ToString() },
 			});
+
+			if (payload.ContainsKey(CreateContractAction.Messages))
+			{
+				var messages = payload.GetList<IDictionary<string, object>>(CreateContractAction.Messages);
+				foreach (var message in messages)
+				{
+					var messageType = message.Get<string>(CreateContractAction.MessageType);
+					var messagePayload = message.Get<IDictionary<string, object>>(CreateContractAction.MessagePayload);
+					this.SendMessage(this.LastCreatedAddress, messageType, messagePayload);
+				}
+			}
 		}
 	}
 }

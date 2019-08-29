@@ -54,12 +54,19 @@ namespace StrongForce.Integrations.Cosmos
 				result = this.initialKitFallback;
 			}
 
+			if (result.Length == 0)
+			{
+				return (new Contract(), (message) => { });
+			}
+
 			return StrongForceSerialization.DeserializeContract(address, handlers, result);
 		}
 
 		public void SaveContract(BaseContract contract)
 		{
 			var data = StrongForceSerialization.SerializeContract(contract);
+
+			if (contract.Address == null) return;
 
 			this.requestDelegate.Invoke(new ContractRequest
 			{
