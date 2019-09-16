@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using StrongForce.Core.Tests.Mocks;
 using Xunit;
 
@@ -6,100 +7,57 @@ namespace StrongForce.Core.Tests
 {
 	public class ContractRegistryTests
 	{
-		private readonly IAddressFactory addressFactory;
-
-		public ContractRegistryTests()
+		[Fact]
+		public void CreateContract_WhenPassedNewContract_AddsItCorrectly()
 		{
-			this.addressFactory = new RandomAddressFactory();
+			var registry = new TestRegistry();
+
+			Address contractAddress = registry.CreateContract<FavoriteNumberContract>();
+
+			Assert.NotNull(registry.GetContract(contractAddress));
+			Assert.Equal(typeof(FavoriteNumberContract), registry.GetContract(contractAddress).GetType());
 		}
 
 		[Fact]
-		public void RegisterContract_WhenPassedNewContract_AddsItCorrectly()
+		public void CreateContract_WhenPassedNonContractType_ThrowsArgumentException()
 		{
-			var registry = new ContractRegistry();
-			Address contractAddress = this.addressFactory.Create();
-			Contract contract = new FavoriteNumberContract(contractAddress);
+			var registry = new TestRegistry();
 
-			registry.RegisterContract(contract);
-
-			Assert.Equal(contract, registry.GetContract(contractAddress));
+			Assert.Throws<ArgumentOutOfRangeException>(() => registry.CreateContract<Message>());
 		}
 
 		[Fact]
-		public void RegisterContract_WhenPassedTwoContractsWithSameAddress_ThrowsArgumentException()
+		public void SendMessage_WhenPassedValidAction_SendsActionToCorrectContract()
 		{
-			var registry = new ContractRegistry();
-			Address contractsAddress = this.addressFactory.Create();
-			Contract firstContract = new FavoriteNumberContract(contractsAddress);
-			Contract secondContract = new FavoriteNumberContract(contractsAddress);
+			var registry = new TestRegistry();
+			Address senderAddress = registry.AddressFactory.Create();
+			Address contractAddress = registry.CreateContract<FavoriteNumberContract>(new Dictionary<string, object>()
+			{
+				{ "User", senderAddress.ToString() },
+			});
 
-			registry.RegisterContract(firstContract);
+			registry.SendMessage(senderAddress, contractAddress, SetFavoriteNumberAction.Type, new Dictionary<string, object>
+			{
+				{ SetFavoriteNumberAction.Number, 0 },
+			});
 
-			Assert.Throws<ArgumentException>(() => registry.RegisterContract(secondContract));
-		}
+			var contract = registry.GetContract(contractAddress) as FavoriteNumberContract;
 
-		[Fact]
-		public void RegisterContract_WhenPassedNull_ThrowsArgumentNullException()
-		{
-			var registry = new ContractRegistry();
-			Assert.Throws<ArgumentNullException>(() => registry.RegisterContract(null));
-		}
-
-		[Fact]
-		public void GetContract_WhenPassedNotRegisteredContract_ReturnsNull()
-		{
-			var registry = new ContractRegistry();
-			Address contractAddress = this.addressFactory.Create();
-
-			Assert.Null(registry.GetContract(contractAddress));
-		}
-
-		[Fact]
-		public void GetContract_WhenPassedNull_ThrowsArgumentNullException()
-		{
-			var registry = new ContractRegistry();
-			Assert.Throws<ArgumentNullException>(() => registry.GetContract(null));
-		}
-
-		[Fact]
-		public void HandleAction_WhenPassedValidAction_SendsActionToCorrectContract()
-		{
-			var registry = new ContractRegistry();
-			Address senderAddress = this.addressFactory.Create();
-			Address contractAddress = this.addressFactory.Create();
-			var contract = new FavoriteNumberContract(contractAddress, senderAddress);
-
-			registry.RegisterContract(contract);
-
-			var numberAction = new SetFavoriteNumberAction(contractAddress, 0);
-			registry.HandleAction(senderAddress, numberAction);
 			Assert.Equal(contract.LastOrigin, senderAddress);
 			Assert.Equal(contract.LastSender, senderAddress);
 		}
 
 		[Fact]
-		public void HandleAction_WhenPassedNull_ThrowsArgumentNullException()
+		public void SendMessage_WhenPassedNull_ThrowsArgumentNullException()
 		{
-			var registry = new ContractRegistry();
-			Address senderAddress = this.addressFactory.Create();
+			var registry = new TestRegistry();
+			Address address = registry.AddressFactory.Create();
+			var actionType = "NotARealActionType";
+			var payload = new Dictionary<string, object>();
 
-			Assert.Throws<ArgumentNullException>(() => registry.HandleAction(senderAddress, null));
-		}
-
-		[Fact]
-		public void HandleAction_WhenPassedActionWithNonExistentAddress_ReturnsFalse()
-		{
-			var registry = new ContractRegistry();
-			Address contractAddress = this.addressFactory.Create();
-			var contract = new FavoriteNumberContract(contractAddress);
-
-			registry.RegisterContract(contract);
-			Address address = this.addressFactory.Create();
-			var action = new SetFavoriteNumberAction(
-				null,
-				50);
-
-			Assert.Throws<ArgumentNullException>(() => registry.HandleAction(address, action));
+			Assert.Throws<ArgumentNullException>(() => registry.SendMessage(address, (Address[])null, actionType, payload));
+			Assert.Throws<ArgumentNullException>(() => registry.SendMessage(address, address, null, payload));
+			Assert.Throws<ArgumentNullException>(() => registry.SendMessage(address, address, actionType, null));
 		}
 	}
 }

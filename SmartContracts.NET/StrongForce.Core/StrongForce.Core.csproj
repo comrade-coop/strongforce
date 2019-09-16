@@ -1,12 +1,13 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
     <PropertyGroup>
-        <TargetFramework>netstandard2.0</TargetFramework>
+        <TargetFramework>netcoreapp2.2</TargetFramework>
         <PackageId>StrongForce</PackageId>
-        <Version>0.2.1</Version>
+        <Version>0.3.0</Version>
         <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
     </PropertyGroup>
     <ItemGroup>
         <PackageReference Include="StyleCop.Analyzers" Version="1.1.1-rc.108" />
+        <PackageReference Include="System.Text.Json" Version="4.6.0-preview7.19362.9" />
     </ItemGroup>
     <PropertyGroup>
         <CodeAnalysisRuleSet>..\CodeAnalysis\strongforce.ruleset</CodeAnalysisRuleSet>

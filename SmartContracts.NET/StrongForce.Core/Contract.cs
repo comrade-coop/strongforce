@@ -1,104 +1,77 @@
 using System;
 using System.Collections.Generic;
 using StrongForce.Core.Exceptions;
+using StrongForce.Core.Extensions;
 using StrongForce.Core.Permissions;
 
 namespace StrongForce.Core
 {
-	public abstract class Contract
+	public class Contract : BaseContract
 	{
-		protected Contract(Address address)
-		{
-			this.Address = address;
-		}
-
-		protected Contract(Address address, Address initialAdmin)
-			: this(address)
-		{
-			this.Acl.AddPermission(
-				initialAdmin,
-				typeof(AddPermissionAction),
-				this.Address);
-			this.Acl.AddPermission(
-				initialAdmin,
-				typeof(RemovePermissionAction),
-				this.Address);
-			this.Acl.AddPermission(
-				initialAdmin,
-				typeof(RemovePermissionAction),
-				this.Address);
-		}
-
-		public delegate void ActionEventHandler(Action action);
-
-		internal event ActionEventHandler SendActionEvent;
-
-		public Address Address { get; }
-
 		public AccessControlList Acl { get; } = new AccessControlList();
 
-		public override string ToString()
+		public override IDictionary<string, object> GetState()
 		{
-			return $"{this.Address} ({this.GetType()})";
+			var state = base.GetState();
+
+			state.Set("Acl", this.Acl.GetState());
+
+			return state;
 		}
 
-		internal bool Receive(ActionContext context, Action action)
+		protected override void SetState(IDictionary<string, object> state)
 		{
-			if (action == null)
-			{
-				throw new ArgumentNullException(nameof(action));
-			}
+			this.Acl.SetState(state.Get<IDictionary<string, object>>("Acl"));
 
-			if (!this.CheckPermission(context, action))
-			{
-				throw new NoPermissionException(this, context.Sender, action.GetType());
-			}
-
-			return this.HandleAction(context, action);
+			base.SetState(state);
 		}
 
-		protected bool CheckPermission(ActionContext context, Action action)
+		protected override void Initialize(IDictionary<string, object> payload)
 		{
-			var checkedAction = action;
-
-			if (action is ForwardAction forwardAction)
+			if (payload.ContainsKey("Admin"))
 			{
-				checkedAction = forwardAction.FinalAction;
+				var admin = payload.Get<Address>("Admin");
+
+				this.Acl.AddPermission(
+					admin,
+					AddPermissionAction.Type,
+					this.Address);
+				this.Acl.AddPermission(
+					admin,
+					RemovePermissionAction.Type,
+					this.Address);
 			}
 
-			var permission = checkedAction.GetType();
-			return this.Acl.HasPermission(context.Sender, permission, checkedAction.Target);
+			this.SetState(this.GetState().MergeStateWith(payload));
 		}
 
-		protected virtual bool HandleAction(ActionContext context, Action action)
+		protected override void CheckPermissions(Message message)
 		{
-			switch (action)
+			var neededPermission = new Permission(message.Type, message.Sender, message.FinalTarget);
+
+			if (!this.Acl.HasPermission(neededPermission))
 			{
-				case AddPermissionAction permissionAction:
-					this.Acl.AddPermission(permissionAction.Permission);
-					return true;
-
-				case RemovePermissionAction permissionAction:
-					this.Acl.RemovePermission(permissionAction.Permission);
-					return true;
-
-				case ForwardAction forwardAction:
-					this.SendAction(forwardAction.NextAction);
-					return true;
-
-				default:
-					return false;
+				throw new NoPermissionException(this.Address, message.Origin, neededPermission);
 			}
 		}
 
-		protected void SendAction(Action action)
+		protected override void HandleMessage(Message message)
 		{
-			if (action == null)
+			switch (message.Type)
 			{
-				throw new ArgumentNullException();
-			}
+				case AddPermissionAction.Type:
+					this.Acl.AddPermission(AddPermissionAction.GetPermission(message.Payload));
+					break;
 
-			this.SendActionEvent?.Invoke(action);
+				case RemovePermissionAction.Type:
+					this.Acl.RemovePermission(RemovePermissionAction.GetPermission(message.Payload));
+					break;
+			}
+		}
+
+		protected override void HandleForwardMessage(ForwardMessage message)
+		{
+			this.ForwardMessage(message.ForwardId);
 		}
 	}
 }

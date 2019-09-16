@@ -11,8 +11,10 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using StrongForce.Core.Kits;
+using StrongForce.Core.Tests.Mocks;
 
-namespace Tendermint.IntegrationTest
+namespace StrongForce.Integrations.Cosmos.IntegrationTest
 {
 	public class Startup
 	{
@@ -27,6 +29,15 @@ namespace Tendermint.IntegrationTest
 		public void ConfigureServices(IServiceCollection services)
 		{
 			services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
+			services.AddSingleton<IOptions<StrongForceService.StrongForceServiceSettings>>((_) => new OptionsWrapper<StrongForceService.StrongForceServiceSettings>(new StrongForceService.StrongForceServiceSettings()
+			{
+				InitialKitType = typeof(FavoriteNumberKitContract),
+				InitialKitPayload = new Dictionary<string, object>()
+				{
+					{ "User", null },
+					{ "FavoriteContractsCount", 12 },
+				},
+			}));
 			services.AddSingleton<IHostedService, StrongForceService>();
 		}
 

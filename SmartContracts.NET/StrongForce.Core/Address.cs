@@ -1,4 +1,5 @@
 using System;
+using StrongForce.Core.Serialization;
 
 namespace StrongForce.Core
 {
@@ -37,19 +38,36 @@ namespace StrongForce.Core
 			return !(a == b);
 		}
 
-		public static Address FromBase64String(string base64String)
+		public static Address Parse(string base64String)
 		{
-			return new Address(Convert.FromBase64String(base64String));
-		}
+			if (base64String != null)
+			{
+				base64String = base64String.Replace('_', '/').Replace('-', '+');
+				switch (base64String.Length % 4)
+				{
+					case 2:
+						base64String += "==";
+						break;
+					case 3:
+						base64String += "=";
+						break;
+				}
 
-		public string ToBase64String()
-		{
-			return Convert.ToBase64String(this.Value, 0, this.Value.Length);
+				return new Address(Convert.FromBase64String(base64String));
+			}
+			else
+			{
+				return null;
+			}
 		}
 
 		public override string ToString()
 		{
-			return $"Address(\"{this.ToBase64String()}\")";
+			var result = Convert.ToBase64String(this.Value, 0, this.Value.Length);
+			result = result.TrimEnd('=');
+			result = result.Replace('+', '-').Replace('/', '_');
+
+			return result;
 		}
 
 		public override bool Equals(object other)

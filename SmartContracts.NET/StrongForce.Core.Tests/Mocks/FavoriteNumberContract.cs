@@ -2,60 +2,75 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using StrongForce.Core;
+using StrongForce.Core.Extensions;
 using StrongForce.Core.Permissions;
 
 namespace StrongForce.Core.Tests.Mocks
 {
 	public class FavoriteNumberContract : Contract
 	{
-		public FavoriteNumberContract(Address address)
-			: base(address)
+		public FavoriteNumberContract()
 		{
 		}
 
-		public FavoriteNumberContract(Address address, Address initialAdmin)
-			: base(address, initialAdmin)
+		public int Number { get; set; } = 0;
+
+		public Address LastOrigin { get; set; } = null;
+
+		public Address LastSender { get; set; } = null;
+
+		public override IDictionary<string, object> GetState()
 		{
-			this.Acl.AddPermission(
-				initialAdmin,
-				typeof(SetFavoriteNumberAction),
-				this.Address);
+			var state = base.GetState();
+
+			state.Set("LastOrigin", this.LastOrigin?.ToString());
+			state.Set("LastSender", this.LastSender?.ToString());
+			state.Set("Number", this.Number);
+
+			return state;
 		}
 
-		public int Number { get; private set; }
-
-		public Address LastOrigin { get; private set; }
-
-		public Address LastSender { get; private set; }
-
-		public new bool CheckPermission(ActionContext context, Action action)
+		protected override void SetState(IDictionary<string, object> state)
 		{
-			return base.CheckPermission(context, action);
+			this.LastOrigin = state.Get<Address>("LastOrigin");
+			this.LastSender = state.Get<Address>("LastSender");
+			this.Number = state.Get<int>("Number");
+
+			base.SetState(state);
 		}
 
-		public bool CheckPermission(Address sender, Type type, Address target)
+		protected override void Initialize(IDictionary<string, object> payload)
 		{
-			return this.Acl.HasPermission(sender, type, target);
-		}
-
-		protected override bool HandleAction(ActionContext context, Action action)
-		{
-			this.LastOrigin = context.Origin;
-			this.LastSender = context.Sender;
-			switch (action)
+			if (payload.ContainsKey("User"))
 			{
-				case SetFavoriteNumberAction favoriteNumberAction:
-					this.HandleSetNumberAction(favoriteNumberAction);
-					return true;
+				this.Acl.AddPermission(
+					payload.Get<Address>("User"),
+					SetFavoriteNumberAction.Type,
+					this.Address);
+			}
+
+			base.Initialize(payload);
+		}
+
+		protected override void HandleMessage(Message message)
+		{
+			this.LastOrigin = message.Origin;
+			this.LastSender = message.Sender;
+			switch (message.Type)
+			{
+				case SetFavoriteNumberAction.Type:
+					this.HandleSetNumberAction(message.Payload);
+					break;
 
 				default:
-					return base.HandleAction(context, action);
+					base.HandleMessage(message);
+					break;
 			}
 		}
 
-		private void HandleSetNumberAction(SetFavoriteNumberAction favoriteNumberAction)
+		private void HandleSetNumberAction(IDictionary<string, object> payload)
 		{
-			this.Number = favoriteNumberAction.Number;
+			this.Number = payload.Get<int>(SetFavoriteNumberAction.Number);
 		}
 	}
 }

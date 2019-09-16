@@ -5,18 +5,18 @@ namespace StrongForce.Core.Exceptions
 {
 	public class NoPermissionException : Exception
 	{
-		public NoPermissionException(Contract contract, Address actionSender, Type permission)
-			: base($"Address \"{actionSender.ToBase64String()}\" does not have permission \"{permission}\" on {contract}")
+		public NoPermissionException(Address contract, Address origin, Permission neededPermission)
+			: base($"Missing permission \"{neededPermission}\" on {contract} (on action originating from \"{origin}\")")
 		{
-			this.Permission = permission;
+			this.NeededPermission = neededPermission;
 			this.Contract = contract;
-			this.ActionSender = actionSender;
+			this.Origin = origin;
 		}
 
-		public Type Permission { get; }
+		public Address Contract { get; }
 
-		public Contract Contract { get; }
+		public Address Origin { get; }
 
-		public Address ActionSender { get; }
+		public Permission NeededPermission { get; }
 	}
 }

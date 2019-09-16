@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using StrongForce.Core.Permissions;
 using StrongForce.Core.Tests.Mocks;
 using Xunit;
@@ -10,45 +11,27 @@ namespace StrongForce.Core.Tests
 		private readonly IAddressFactory addressFactory = new RandomAddressFactory();
 
 		[Fact]
-		public void Contract_WhenCreated_IsInitialisedWithSpecifiedAddress()
-		{
-			Address address = this.addressFactory.Create();
-			Contract contract = new FavoriteNumberContract(address, null);
-			Assert.Equal(address, contract.Address);
-		}
-
-		[Fact]
 		public void Receive_WhenPassedNull_ThrowsArgumentNullException()
 		{
-			Address address = this.addressFactory.Create();
-			Contract contract = new FavoriteNumberContract(address, null);
+			var (contract, receiver) = BaseContract.Create(typeof(FavoriteNumberContract), this.addressFactory.Create(), new Dictionary<string, object>(), default(ContractHandlers));
 
-			Assert.Throws<ArgumentNullException>(() => contract.Receive(new ActionContext(address), null));
+			Assert.Throws<ArgumentNullException>(() => receiver.Invoke(null));
 		}
 
 		[Fact]
 		public void Receive_WhenReceivedSupportedAction_ReturnsTrue()
 		{
-			Address address = this.addressFactory.Create();
-			Contract contract = new FavoriteNumberContract(address, null);
-			var action = new SetFavoriteNumberAction(address, 0);
+			var (contract, receiver) = BaseContract.Create(typeof(FavoriteNumberContract), this.addressFactory.Create(), new Dictionary<string, object>() { { "User", null } }, default(ContractHandlers));
 
-			Assert.True(contract.Receive(new ActionContext(address), action));
-		}
-
-		[Fact]
-		public void Receive_WhenReceivedUnsupportedAction_ReturnsFalse()
-		{
-			Address address = this.addressFactory.Create();
-			Contract contract = new FavoriteNumberContract(address, null);
-			var action = new Action(address);
-
-			contract.Acl.AddPermission(
-				address,
-				typeof(Action),
-				address);
-
-			Assert.False(contract.Receive(new ActionContext(address), action));
+			receiver.Invoke(new Message(
+				contract.Address,
+				contract.Address,
+				contract.Address,
+				SetFavoriteNumberAction.Type,
+				new Dictionary<string, object>()
+				{
+					{ SetFavoriteNumberAction.Number, 0 },
+				}));
 		}
 	}
 }
