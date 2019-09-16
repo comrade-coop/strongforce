@@ -66,7 +66,10 @@ namespace StrongForce.Integrations.Cosmos
 		{
 			var data = StrongForceSerialization.SerializeContract(contract);
 
-			if (contract.Address == null) return;
+			if (contract.Address == null)
+			{
+				return;
+			}
 
 			this.requestDelegate.Invoke(new ContractRequest
 			{

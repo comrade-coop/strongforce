@@ -16,7 +16,12 @@ namespace StrongForce.Core
 
 		private ContractHandlers ContractHandlers { get; set; }
 
-		public static (BaseContract, Action<Message>) Create(Type contractType, Address address, IDictionary<string, object> payload, ContractHandlers contractHandlers, bool isDeserialization = false)
+		public static (BaseContract, Action<Message>) Create(
+			Type contractType,
+			Address address,
+			IDictionary<string, object> payload,
+			ContractHandlers contractHandlers,
+			bool isDeserialization = false)
 		{
 			if (!typeof(BaseContract).IsAssignableFrom(contractType))
 			{
