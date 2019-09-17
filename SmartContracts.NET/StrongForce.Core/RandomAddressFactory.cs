@@ -1,18 +1,36 @@
 using System;
+using System.Collections.Generic;
+using StrongForce.Core.Extensions;
 
 namespace StrongForce.Core
 {
-	public class RandomAddressFactory : IAddressFactory
+	public class RandomAddressFactory : BaseAddressFactory
 	{
-		private const int AddressLength = 20;
-
 		private readonly Random random = new Random();
 
-		public Address Create()
+		public int AddressLength { get; private set; } = 20;
+
+		public override Address CreateAddress()
 		{
-			var addressValue = new byte[AddressLength];
+			var addressValue = new byte[this.AddressLength];
 			this.random.NextBytes(addressValue);
 			return new Address(addressValue);
+		}
+
+		public override IDictionary<string, object> GetState()
+		{
+			var state = base.GetState();
+
+			state.Set("AddressLength", this.AddressLength);
+
+			return state;
+		}
+
+		protected override void SetState(IDictionary<string, object> state)
+		{
+			this.AddressLength = state.Get<int>("AddressLength");
+
+			base.SetState(state);
 		}
 	}
 }

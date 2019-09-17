@@ -42,7 +42,7 @@ namespace StrongForce.Integrations.Cosmos
 		{
 			var (initialKit, _) = BaseContract.Create(this.settings.InitialKitType, KitContract.DefaultAddress, this.settings.InitialKitPayload, default(ContractHandlers));
 			var facade = new CosmosIntegrationFacade(this.logger, StrongForceSerialization.SerializeContract(initialKit));
-			var registry = new ContractRegistry(facade, new RandomAddressFactory());
+			var registry = new ContractRegistry(facade);
 
 			this.server = new Server
 			{

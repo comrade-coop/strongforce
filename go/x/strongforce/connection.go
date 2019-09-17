@@ -56,6 +56,12 @@ func (c *Connection) SendAction(ctx types.Context, from types.AccAddress, action
 	waitc := make(chan types.Result)
 	events := types.EmptyEvents()
 	go func() {
+		defer func() {
+			if r := recover(); r != nil {
+				waitc <- types.Result{Code: types.CodeInternal, Codespace: "Error while communicating to .NET"}
+			}
+		}()
+
 		for {
 			request, err := stream.Recv()
 			if err == io.EOF {

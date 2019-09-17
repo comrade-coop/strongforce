@@ -8,12 +8,12 @@ namespace StrongForce.Core.Tests
 {
 	public class ContractTests
 	{
-		private readonly IAddressFactory addressFactory = new RandomAddressFactory();
+		private readonly BaseAddressFactory addressFactory = new RandomAddressFactory();
 
 		[Fact]
 		public void Receive_WhenPassedNull_ThrowsArgumentNullException()
 		{
-			var (contract, receiver) = BaseContract.Create(typeof(FavoriteNumberContract), this.addressFactory.Create(), new Dictionary<string, object>(), default(ContractHandlers));
+			var (contract, receiver) = BaseContract.Create(typeof(FavoriteNumberContract), this.addressFactory.CreateAddress(), new Dictionary<string, object>(), default(ContractHandlers));
 
 			Assert.Throws<ArgumentNullException>(() => receiver.Invoke(null));
 		}
@@ -21,7 +21,7 @@ namespace StrongForce.Core.Tests
 		[Fact]
 		public void Receive_WhenReceivedSupportedAction_ReturnsTrue()
 		{
-			var (contract, receiver) = BaseContract.Create(typeof(FavoriteNumberContract), this.addressFactory.Create(), new Dictionary<string, object>() { { "User", null } }, default(ContractHandlers));
+			var (contract, receiver) = BaseContract.Create(typeof(FavoriteNumberContract), this.addressFactory.CreateAddress(), new Dictionary<string, object>() { { "User", null } }, default(ContractHandlers));
 
 			receiver.Invoke(new Message(
 				contract.Address,

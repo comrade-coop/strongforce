@@ -7,6 +7,8 @@ namespace StrongForce.Core
 	{
 		private Dictionary<Address, (Type, IDictionary<string, object>)> storedContracts = new Dictionary<Address, (Type, IDictionary<string, object>)>();
 
+		private IDictionary<string, object> storedRegistryState = null;
+
 		public event Action<Address, Address[], string, IDictionary<string, object>> ReceiveMessage;
 
 		public event Action DropCaches;
@@ -22,6 +24,16 @@ namespace StrongForce.Core
 			var state = contract.GetState();
 			var type = contract.GetType();
 			this.storedContracts[contract.Address] = (type, state);
+		}
+
+		public ContractRegistryState LoadRegistryState()
+		{
+			return new ContractRegistryState(this.storedRegistryState);
+		}
+
+		public void SaveRegistryState(ContractRegistryState state)
+		{
+			this.storedRegistryState = state.GetState();
 		}
 
 		public void CreateContract(Type type, Address address, IDictionary<string, object> payload = null)
@@ -44,6 +56,11 @@ namespace StrongForce.Core
 				this.DropCaches?.Invoke();
 				throw;
 			}
+		}
+
+		public void DropCache()
+		{
+			this.DropCaches?.Invoke();
 		}
 	}
 }
