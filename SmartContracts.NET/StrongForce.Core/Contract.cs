@@ -8,7 +8,9 @@ namespace StrongForce.Core
 {
 	public class Contract : BaseContract
 	{
-		public AccessControlList Acl { get; } = new AccessControlList();
+		private IDictionary<string, object> initialState = null;
+
+		public AccessControlList Acl { get; protected set; } = new AccessControlList();
 
 		public override IDictionary<string, object> GetState()
 		{
@@ -21,12 +23,24 @@ namespace StrongForce.Core
 
 		protected override void SetState(IDictionary<string, object> state)
 		{
-			this.Acl.SetState(state.Get<IDictionary<string, object>>("Acl"));
+			this.initialState = state;
+
+			this.Acl = StatefulObject.CreateFromState<AccessControlList>(state.GetDictionary("Acl"));
 
 			base.SetState(state);
 		}
 
-		protected override void Initialize(IDictionary<string, object> payload)
+		protected override void Initialize()
+		{
+			if (this.initialState != null)
+			{
+				this.Initialize(this.initialState);
+			}
+
+			this.initialState = null;
+		}
+
+		protected virtual void Initialize(IDictionary<string, object> payload)
 		{
 			if (payload.ContainsKey("Admin"))
 			{
@@ -41,12 +55,15 @@ namespace StrongForce.Core
 					RemovePermissionAction.Type,
 					this.Address);
 			}
-
-			this.SetState(this.GetState().MergeStateWith(payload));
 		}
 
 		protected override void CheckPermissions(Message message)
 		{
+			if (this.initialState != null)
+			{
+				throw new InvalidOperationException();
+			}
+
 			var neededPermission = new Permission(message.Type, message.Sender, message.FinalTarget);
 
 			if (!this.Acl.HasPermission(neededPermission))

@@ -37,7 +37,7 @@ namespace StrongForce.Core.Extensions
 			return dictionary.GetList(key).Select(x => (T)ConvertToType(x, typeof(T)));
 		}
 
-		public static IDictionary<string, object> MergeStateWith(this IDictionary<string, object> dictionary, IDictionary<string, object> other)
+		public static IDictionary<string, object> MergeState(this IDictionary<string, object> dictionary, IDictionary<string, object> other)
 		{
 			var newDictionary = new Dictionary<string, object>();
 
@@ -52,7 +52,7 @@ namespace StrongForce.Core.Extensions
 							overrideValue is IDictionary<string, object> overrideState &&
 							kv.Value is IDictionary<string, object> currentState)
 						{
-							newDictionary[kv.Key] = currentState.MergeStateWith(overrideState);
+							newDictionary[kv.Key] = currentState.MergeState(overrideState);
 						}
 						else if (
 							overrideValue is IList<object> overrideList &&
@@ -71,6 +71,14 @@ namespace StrongForce.Core.Extensions
 					}
 				}
 				else
+				{
+					newDictionary[kv.Key] = kv.Value;
+				}
+			}
+
+			foreach (var kv in other)
+			{
+				if (!dictionary.ContainsKey(kv.Key))
 				{
 					newDictionary[kv.Key] = kv.Value;
 				}

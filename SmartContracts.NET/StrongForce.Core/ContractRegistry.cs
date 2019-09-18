@@ -8,7 +8,6 @@ namespace StrongForce.Core
 {
 	public class ContractRegistry
 	{
-
 		public ContractRegistry(IIntegrationFacade facade, IAddressFactory addressFactory)
 		{
 			this.IntegrationFacade = facade;
@@ -66,7 +65,8 @@ namespace StrongForce.Core
 			this.DispatchMessage(message);
 		}
 
-		protected Address CreateContract(Type type, IDictionary<string, object> payload = null)
+		protected Address CreateContract<T>(IDictionary<string, object> payload = null)
+			where T : BaseContract, new()
 		{
 			if (payload != null && !StateSerialization.ValidateState(payload))
 			{
@@ -75,7 +75,9 @@ namespace StrongForce.Core
 
 			var address = this.AddressFactory.Create();
 
-			var (contract, receiver) = BaseContract.Create(type, address, payload, this.CreateContractHandlers(address));
+			var contract = StatefulObject.Create<T>(payload);
+
+			var receiver = contract.RegisterWithRegistry(new ContractContext(this, address));
 
 			this.CachedContracts.Add(address, (contract, receiver));
 			this.IntegrationFacade.SaveContract(contract);
@@ -91,24 +93,14 @@ namespace StrongForce.Core
 			}
 			else
 			{
-				var newContract = this.IntegrationFacade.LoadContract(address, this.CreateContractHandlers(address));
+				var contract = this.IntegrationFacade.LoadContract(address);
 
-				this.CachedContracts[address] = newContract;
+				var receiver = contract.RegisterWithRegistry(new ContractContext(this, address));
 
-				return newContract;
+				this.CachedContracts.Add(address, (contract, receiver));
+
+				return (contract, receiver);
 			}
-		}
-
-		protected ContractHandlers CreateContractHandlers(Address address)
-		{
-			return new ContractHandlers()
-			{
-				SendMessage = (targets, type, payload) => this.SendMessage(address, targets, type, payload),
-
-				ForwardMessage = (id) => this.SendMessage(address, id),
-
-				CreateContract = this.CreateContract,
-			};
 		}
 
 		private void DispatchMessage(Message message)
@@ -166,6 +158,35 @@ namespace StrongForce.Core
 					sender,
 					type,
 					payload);
+			}
+		}
+
+		private class ContractContext : IContractContext
+		{
+			private readonly ContractRegistry registry;
+
+			public ContractContext(ContractRegistry registry, Address address)
+			{
+				this.Address = address;
+				this.registry = registry;
+			}
+
+			public Address Address { get; }
+
+			public void SendMessage(Address[] addresses, string type, IDictionary<string, object> payload)
+			{
+				this.registry.SendMessage(this.Address, addresses, type, payload);
+			}
+
+			public void ForwardMessage(ulong id)
+			{
+				this.registry.SendMessage(this.Address, id);
+			}
+
+			public Address CreateContract<T>(IDictionary<string, object> payload)
+				where T : BaseContract, new()
+			{
+				return this.registry.CreateContract<T>(payload);
 			}
 		}
 	}

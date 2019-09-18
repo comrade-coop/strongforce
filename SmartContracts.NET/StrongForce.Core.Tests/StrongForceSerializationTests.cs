@@ -72,15 +72,17 @@ namespace StrongForce.Core.Tests
 		{
 			var address = new Address(new byte[] { 10, 20, 127, 54, 51 });
 			var adminAddress = new Address(new byte[] { 10, 20, 4 });
-			var (contract, _) = BaseContract.Create(typeof(FavoriteNumberContract), address, new Dictionary<string, object> { { "Admin", adminAddress.ToString() }, { "Number", 15 } }, default(ContractHandlers));
+			var contract = StatefulObject.Create<FavoriteNumberContract>(new Dictionary<string, object> { { "Admin", adminAddress.ToString() }, { "Number", 15 } });
+			contract.RegisterWithRegistry(new FakeContractContext(address));
 
-			var serializedContract = StrongForceSerialization.SerializeContract(contract);
+			var serializedContract = StrongForceSerialization.SerializeStatefulObject(contract);
 
-			var (deserializedContract, _) = StrongForceSerialization.DeserializeContract(address, default(ContractHandlers), serializedContract);
+			var deserializedContract = (FavoriteNumberContract)StrongForceSerialization.DeserializeStatefulObject(serializedContract);
+			deserializedContract.RegisterWithRegistry(new FakeContractContext(address));
 
 			Assert.Equal(contract.GetState(), deserializedContract.GetState());
 			Assert.Equal(contract.Address, deserializedContract.Address);
-			Assert.Equal(((FavoriteNumberContract)contract).Number, ((FavoriteNumberContract)deserializedContract).Number);
+			Assert.Equal(contract.Number, deserializedContract.Number);
 		}
 	}
 }

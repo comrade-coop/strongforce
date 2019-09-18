@@ -55,8 +55,7 @@ namespace StrongForce.Core.Tests.Mocks
 
 		private void HandleCreateContractAction(IDictionary<string, object> payload)
 		{
-			var type = Type.GetType(payload.Get<string>(CreateContractAction.ContractType));
-			this.LastCreatedAddress = this.CreateContract(type, new Dictionary<string, object>()
+			this.LastCreatedAddress = this.CreateContract<FavoriteNumberContract>(new Dictionary<string, object>()
 			{
 				{ "Admin", this.Address.ToString() },
 				{ "User", this.Address.ToString() },

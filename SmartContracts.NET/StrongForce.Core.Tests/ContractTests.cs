@@ -13,15 +13,16 @@ namespace StrongForce.Core.Tests
 		[Fact]
 		public void Receive_WhenPassedNull_ThrowsArgumentNullException()
 		{
-			var (contract, receiver) = BaseContract.Create(typeof(FavoriteNumberContract), this.addressFactory.Create(), new Dictionary<string, object>(), default(ContractHandlers));
-
+			var contract = StatefulObject.Create<FavoriteNumberContract>(new Dictionary<string, object>());
+			var receiver = contract.RegisterWithRegistry(new FakeContractContext(this.addressFactory.Create()));
 			Assert.Throws<ArgumentNullException>(() => receiver.Invoke(null));
 		}
 
 		[Fact]
 		public void Receive_WhenReceivedSupportedAction_ReturnsTrue()
 		{
-			var (contract, receiver) = BaseContract.Create(typeof(FavoriteNumberContract), this.addressFactory.Create(), new Dictionary<string, object>() { { "User", null } }, default(ContractHandlers));
+			var contract = StatefulObject.Create<FavoriteNumberContract>(new Dictionary<string, object>() { { "User", null } });
+			var receiver = contract.RegisterWithRegistry(new FakeContractContext(this.addressFactory.Create()));
 
 			receiver.Invoke(new Message(
 				contract.Address,

@@ -30,7 +30,7 @@ namespace StrongForce.Core.Tests.Mocks
 		public Address CreateContract<T>(IDictionary<string, object> payload = null)
 		{
 			var address = this.AddressFactory.Create();
-			this.Facade.CreateContract(typeof(T), address, payload ?? new Dictionary<string, object>());
+			this.Facade.CreateContract(typeof(T), new FakeContractContext(address), payload ?? new Dictionary<string, object>());
 			return address;
 		}
 
@@ -46,13 +46,13 @@ namespace StrongForce.Core.Tests.Mocks
 
 		public Contract GetContract(Address address)
 		{
-			return (Contract)this.Facade.LoadContract(address, default(ContractHandlers)).Item1;
+			return (Contract)this.Facade.LoadContract(address);
 		}
 
 		public T GetContract<T>(Address address)
 			where T : BaseContract
 		{
-			return (T)this.Facade.LoadContract(address, default(ContractHandlers)).Item1;
+			return (T)this.Facade.LoadContract(address);
 		}
 	}
 }

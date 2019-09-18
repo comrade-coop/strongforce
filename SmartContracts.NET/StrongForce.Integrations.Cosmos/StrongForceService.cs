@@ -40,8 +40,8 @@ namespace StrongForce.Integrations.Cosmos
 
 		public Task StartAsync(CancellationToken cancellationToken)
 		{
-			var (initialKit, _) = BaseContract.Create(this.settings.InitialKitType, KitContract.DefaultAddress, this.settings.InitialKitPayload, default(ContractHandlers));
-			var facade = new CosmosIntegrationFacade(this.logger, StrongForceSerialization.SerializeContract(initialKit));
+			var initialKit = StatefulObject.Create(this.settings.InitialKitType, this.settings.InitialKitPayload);
+			var facade = new CosmosIntegrationFacade(this.logger, StrongForceSerialization.SerializeStatefulObject(initialKit));
 			var registry = new ContractRegistry(facade, new RandomAddressFactory());
 
 			this.server = new Server

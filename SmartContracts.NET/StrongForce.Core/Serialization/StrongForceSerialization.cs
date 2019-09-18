@@ -27,24 +27,24 @@ namespace StrongForce.Core.Serialization
 			return Tuple.Create(targets, type, payload);
 		}
 
-		public static byte[] SerializeContract(BaseContract contract)
+		public static byte[] SerializeStatefulObject(StatefulObject statefulObject)
 		{
 			var dictionary = new Dictionary<string, object>()
 			{
-				{ "Type", contract.GetType().AssemblyQualifiedName },
-				{ "State", contract.GetState() },
+				{ "Type", statefulObject.GetType().AssemblyQualifiedName },
+				{ "State", statefulObject.GetState() },
 			};
 			return StateSerialization.SerializeState(dictionary);
 		}
 
-		public static (BaseContract, Action<Message>) DeserializeContract(Address address, ContractHandlers handlers, byte[] serialized)
+		public static StatefulObject DeserializeStatefulObject(byte[] serialized)
 		{
 			var dictionary = StateSerialization.DeserializeState(serialized);
 
 			var type = Type.GetType(dictionary.Get<string>("Type"));
 			var state = dictionary.Get<IDictionary<string, object>>("State");
 
-			return BaseContract.Create(type, address, state, handlers, true);
+			return StatefulObject.Create(type, state, true);
 		}
 	}
 }

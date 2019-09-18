@@ -11,10 +11,10 @@ namespace StrongForce.Core
 
 		public event Action DropCaches;
 
-		public (BaseContract, Action<Message>) LoadContract(Address address, ContractHandlers handlers)
+		public BaseContract LoadContract(Address address)
 		{
 			var (type, state) = this.storedContracts[address];
-			return BaseContract.Create(type, address, state, handlers, true);
+			return (BaseContract)StatefulObject.Create(type, state, true);
 		}
 
 		public void SaveContract(BaseContract contract)
@@ -24,9 +24,10 @@ namespace StrongForce.Core
 			this.storedContracts[contract.Address] = (type, state);
 		}
 
-		public void CreateContract(Type type, Address address, IDictionary<string, object> payload = null)
+		public void CreateContract(Type type, IContractContext context, IDictionary<string, object> payload = null)
 		{
-			var (contract, receiver) = BaseContract.Create(type, address, payload, default(ContractHandlers));
+			var contract = (BaseContract)StatefulObject.Create(type, payload);
+			contract.RegisterWithRegistry(context);
 
 			this.SaveContract(contract);
 

@@ -9,7 +9,7 @@ namespace StrongForce.Core
 
 		event Action DropCaches;
 
-		(BaseContract, Action<Message>) LoadContract(Address address, ContractHandlers handlers);
+		BaseContract LoadContract(Address address);
 
 		void SaveContract(BaseContract contract);
 	}

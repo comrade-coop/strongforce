@@ -34,7 +34,7 @@ namespace StrongForce.Integrations.Cosmos
 
 		public event Action DropCaches;
 
-		public (BaseContract, Action<Message>) LoadContract(Address address, ContractHandlers handlers)
+		public BaseContract LoadContract(Address address)
 		{
 			this.pendingContracts[address] = new TaskCompletionSource<byte[]>();
 			this.pendingResponsesSemaphore.Release();
@@ -56,17 +56,17 @@ namespace StrongForce.Integrations.Cosmos
 
 			if (result.Length == 0)
 			{
-				return (new Contract(), (message) => { });
+				return new NonexistentContract();
 			}
 
-			return StrongForceSerialization.DeserializeContract(address, handlers, result);
+			return (BaseContract)StrongForceSerialization.DeserializeStatefulObject(result);
 		}
 
 		public void SaveContract(BaseContract contract)
 		{
-			var data = StrongForceSerialization.SerializeContract(contract);
+			var data = StrongForceSerialization.SerializeStatefulObject(contract);
 
-			if (contract.Address == null)
+			if (contract is NonexistentContract)
 			{
 				return;
 			}
@@ -178,6 +178,22 @@ namespace StrongForce.Integrations.Cosmos
 			}
 
 			currentRequestTaskSource.SetResult(true);
+		}
+
+		public class NonexistentContract : BaseContract
+		{
+			protected override void CheckPermissions(Message message)
+			{
+			}
+
+			protected override void HandleMessage(Message message)
+			{
+			}
+
+			protected override void HandleForwardMessage(ForwardMessage message)
+			{
+				throw new InvalidOperationException("Cannot forward through nonexistent contracts!");
+			}
 		}
 	}
 }

@@ -19,10 +19,7 @@ namespace StrongForce.Core.Tests
 				{ "User", permissionManager.ToString() },
 			});
 
-			registry.SendMessage(permissionManager, creatorAddress, CreateContractAction.Type, new Dictionary<string, object>()
-			{
-				{ CreateContractAction.ContractType, typeof(FavoriteNumberContract).ToString() },
-			});
+			registry.SendMessage(permissionManager, creatorAddress, CreateContractAction.Type, new Dictionary<string, object>() { });
 
 			var lastAddress = ((CreatorContract)registry.GetContract(creatorAddress)).LastCreatedAddress;
 			Assert.NotNull(lastAddress);
@@ -42,7 +39,6 @@ namespace StrongForce.Core.Tests
 
 			registry.SendMessage(permissionManager, creatorAddress, CreateContractAction.Type, new Dictionary<string, object>()
 			{
-				{ CreateContractAction.ContractType, typeof(FavoriteNumberContract).ToString() },
 				{
 					CreateContractAction.Messages,
 					new List<object>()
@@ -74,7 +70,6 @@ namespace StrongForce.Core.Tests
 
 			Assert.Throws<NoPermissionException>(() => registry.SendMessage(permissionManager, creatorAddress, CreateContractAction.Type, new Dictionary<string, object>()
 			{
-				{ CreateContractAction.ContractType, typeof(FavoriteNumberContract).ToString() },
 				{
 					CreateContractAction.Messages,
 					new List<object>()
@@ -109,7 +104,6 @@ namespace StrongForce.Core.Tests
 
 			registry.SendMessage(permissionManager, creatorAddress, CreateContractAction.Type, new Dictionary<string, object>()
 			{
-				{ CreateContractAction.ContractType, typeof(FavoriteNumberContract).ToString() },
 			});
 
 			var newAddress = ((CreatorContract)registry.GetContract(creatorAddress)).LastCreatedAddress;
