@@ -15,6 +15,7 @@ namespace StrongForce.Core
 
 			this.IntegrationFacade.ReceiveMessage += (from, targets, type, payload) =>
 			{
+				this.Errored = false;
 				this.SendMessage(from, targets, type, payload);
 
 				foreach (var contract in this.CachedContracts)
@@ -29,6 +30,8 @@ namespace StrongForce.Core
 			: this(new InMemoryIntegrationFacade(), new RandomAddressFactory())
 		{
 		}
+
+		protected bool Errored { get; set; }
 
 		protected IAddressFactory AddressFactory { get; set; }
 
@@ -107,7 +110,20 @@ namespace StrongForce.Core
 		{
 			var (contract, receiver) = this.GetContract(message.Target);
 
-			receiver.Invoke(message);
+			try
+			{
+				receiver.Invoke(message);
+			}
+			catch (Exception)
+			{
+				this.Errored = true;
+				throw;
+			}
+
+			if (this.Errored)
+			{
+				throw new InvalidOperationException("Using try/catch around SendMessage is not allowed.");
+			}
 		}
 
 		private Message CreateMessage(Address origin, Address sender, Address[] targets, string type, IDictionary<string, object> payload, bool eventMessage = false)
