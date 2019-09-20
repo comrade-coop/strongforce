@@ -6,7 +6,7 @@ namespace StrongForce.Core.Tests
 {
 	public class FavoriteNumberContractTests
 	{
-		private readonly IAddressFactory addressFactory = new RandomAddressFactory();
+		private readonly BaseAddressFactory addressFactory = new RandomAddressFactory();
 
 		[Fact]
 		public void Receive_WhenPassedSetFavoriteNumberAction_SetsNumberCorrectly()
@@ -14,7 +14,7 @@ namespace StrongForce.Core.Tests
 			const int expectedNumber = 32;
 
 			var contract = StatefulObject.Create<FavoriteNumberContract>(new Dictionary<string, object>() { { "User", null } });
-			var receiver = contract.RegisterWithRegistry(new FakeContractContext(this.addressFactory.Create()));
+			var receiver = contract.RegisterWithRegistry(new FakeContractContext(this.addressFactory.CreateAddress()));
 
 			var action = new Message(
 				contract.Address,

@@ -9,27 +9,23 @@ namespace StrongForce.Core.Tests.Mocks
 {
 	public class TestRegistry
 	{
-		public TestRegistry(IAddressFactory addressFactory)
-		{
-			this.AddressFactory = addressFactory;
-			this.Facade = new InMemoryIntegrationFacade();
-			this.Registry = new ContractRegistry(this.Facade, this.AddressFactory);
-		}
-
 		public TestRegistry()
-			: this(new RandomAddressFactory())
 		{
+			this.Facade = new InMemoryIntegrationFacade();
+			this.Registry = new ContractRegistry(this.Facade);
 		}
 
 		public ContractRegistry Registry { get; set; }
 
 		public InMemoryIntegrationFacade Facade { get; set; }
 
-		public IAddressFactory AddressFactory { get; set; }
+		public BaseAddressFactory AddressFactory { get => new TestRegistryAddressFactory(this.Facade); }
+
+		public BaseAddressFactory RawAddressFactory { get => this.Facade.LoadRegistryState().AddressFactory; }
 
 		public Address CreateContract<T>(IDictionary<string, object> payload = null)
 		{
-			var address = this.AddressFactory.Create();
+			var address = this.AddressFactory.CreateAddress();
 			this.Facade.CreateContract(typeof(T), new FakeContractContext(address), payload ?? new Dictionary<string, object>());
 			return address;
 		}

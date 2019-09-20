@@ -15,8 +15,7 @@ namespace StrongForce.Core.Tests
 		{
 			var favoriteContractsCount = 2;
 
-			var factory = new SequentialAddressFactory();
-			var registry = new TestRegistry(factory);
+			var registry = new TestRegistry();
 
 			Address address = registry.CreateContract<FavoriteNumberKitContract>(new Dictionary<string, object>()
 			{
@@ -26,7 +25,7 @@ namespace StrongForce.Core.Tests
 
 			registry.SendMessage(address, address, InstantiateKitAction.Type, new Dictionary<string, object>());
 
-			Assert.Equal(favoriteContractsCount + 1, factory.AddressCount);
+			Assert.Equal(favoriteContractsCount + 1, (int)((HashedAddressFactory)registry.RawAddressFactory).AddressNonce - 1);
 		}
 
 		[Fact]

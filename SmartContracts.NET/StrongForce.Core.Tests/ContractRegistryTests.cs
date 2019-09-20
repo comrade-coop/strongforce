@@ -30,7 +30,7 @@ namespace StrongForce.Core.Tests
 		public void SendMessage_WhenPassedValidAction_SendsActionToCorrectContract()
 		{
 			var registry = new TestRegistry();
-			Address senderAddress = registry.AddressFactory.Create();
+			Address senderAddress = registry.AddressFactory.CreateAddress();
 			Address contractAddress = registry.CreateContract<FavoriteNumberContract>(new Dictionary<string, object>()
 			{
 				{ "User", senderAddress.ToString() },
@@ -51,7 +51,7 @@ namespace StrongForce.Core.Tests
 		public void SendMessage_WhenPassedNull_ThrowsArgumentNullException()
 		{
 			var registry = new TestRegistry();
-			Address address = registry.AddressFactory.Create();
+			Address address = registry.AddressFactory.CreateAddress();
 			var actionType = "NotARealActionType";
 			var payload = new Dictionary<string, object>();
 
@@ -66,7 +66,7 @@ namespace StrongForce.Core.Tests
 			var targetNumber = 48;
 
 			var registry = new TestRegistry();
-			Address address = registry.AddressFactory.Create();
+			Address address = registry.AddressFactory.CreateAddress();
 			Address buggedContractAddress = registry.CreateContract<CatchingContract>();
 			Address targetContractAddress = registry.CreateContract<FavoriteNumberContract>(new Dictionary<string, object>()
 			{

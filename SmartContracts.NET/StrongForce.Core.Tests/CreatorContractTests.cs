@@ -13,7 +13,7 @@ namespace StrongForce.Core.Tests
 		public void CreateContractAction_WhenPassedFavoriteNumberContract_CreatesContract()
 		{
 			var registry = new TestRegistry();
-			var permissionManager = registry.AddressFactory.Create();
+			var permissionManager = registry.AddressFactory.CreateAddress();
 			var creatorAddress = registry.CreateContract<CreatorContract>(new Dictionary<string, object>()
 			{
 				{ "User", permissionManager.ToString() },
@@ -31,7 +31,7 @@ namespace StrongForce.Core.Tests
 		{
 			var registry = new TestRegistry();
 			var targetNumber = 367;
-			var permissionManager = registry.AddressFactory.Create();
+			var permissionManager = registry.AddressFactory.CreateAddress();
 			var creatorAddress = registry.CreateContract<CreatorContract>(new Dictionary<string, object>()
 			{
 				{ "User", permissionManager.ToString() },
@@ -62,7 +62,7 @@ namespace StrongForce.Core.Tests
 		public void CreateContractAction_WhenPassedInvalidMessages_Throws()
 		{
 			var registry = new TestRegistry();
-			var permissionManager = registry.AddressFactory.Create();
+			var permissionManager = registry.AddressFactory.CreateAddress();
 			var creatorAddress = registry.CreateContract<CreatorContract>(new Dictionary<string, object>()
 			{
 				{ "User", permissionManager.ToString() },

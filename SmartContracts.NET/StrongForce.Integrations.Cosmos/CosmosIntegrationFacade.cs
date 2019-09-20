@@ -17,6 +17,7 @@ namespace StrongForce.Integrations.Cosmos
 {
 	public class CosmosIntegrationFacade : Strongforce.StrongForce.StrongForceBase, IIntegrationFacade
 	{
+		private Address contractRegistryAddress = new Address(new byte[] { 123, 32, 4 });
 		private ILogger<CosmosIntegrationFacade> logger;
 		private byte[] initialKitFallback;
 		private Task currentRequestTask = Task.FromResult(true);
@@ -80,6 +81,42 @@ namespace StrongForce.Integrations.Cosmos
 			this.logger.LogTrace("Saved contract " + contract.Address);
 		}
 
+		public ContractRegistryState LoadRegistryState()
+		{
+			this.pendingContracts[this.contractRegistryAddress] = new TaskCompletionSource<byte[]>();
+			this.pendingResponsesSemaphore.Release();
+			this.requestDelegate.Invoke(new ContractRequest
+			{
+				Address = ByteString.CopyFrom(this.contractRegistryAddress.Value),
+			}).Wait();
+
+			this.logger.LogTrace("Sent request for registry state!");
+
+			var result = this.pendingContracts[this.contractRegistryAddress].Task.Result;
+
+			this.logger.LogTrace("Result from registry state request received!");
+
+			if (result.Length == 0)
+			{
+				return new ContractRegistryState();
+			}
+
+			return StatefulObject.Create<ContractRegistryState>(StateSerialization.DeserializeState(result));
+		}
+
+		public void SaveRegistryState(ContractRegistryState registryState)
+		{
+			var data = StateSerialization.SerializeState(registryState.GetState());
+
+			this.requestDelegate.Invoke(new ContractRequest
+			{
+				Address = ByteString.CopyFrom(this.contractRegistryAddress.Value),
+				Data = ByteString.CopyFrom(data),
+			}).Wait();
+
+			this.logger.LogTrace("Saved registry state");
+		}
+
 		public override async Task ExecuteAction(IAsyncStreamReader<ActionOrContract> requestStream, IServerStreamWriter<ContractRequest> responseStream, ServerCallContext context)
 		{
 			var previousTask = this.currentRequestTask;
@@ -116,13 +153,16 @@ namespace StrongForce.Integrations.Cosmos
 					{
 						try
 						{
+							// Needed since the message might fail even if we do not throw an exception
+							// HACK: Would be better if the go part tells us whenever a transaction fails
+							this.DropCaches.Invoke();
 							this.ReceiveMessage.Invoke(address, action.Item1, action.Item2, action.Item3);
 							actionFinished = true;
 							this.pendingResponsesSemaphore.Release();
 						}
 						catch (Exception e)
 						{
-							this.DropCaches.Invoke();
+							// this.DropCaches.Invoke();
 							this.logger.LogError(e.ToString());
 							actionFinished = true;
 							this.pendingResponsesSemaphore.Release();

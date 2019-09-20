@@ -7,7 +7,7 @@ namespace StrongForce.Core.Tests
 {
 	public class AccessControlListTests
 	{
-		private readonly IAddressFactory addressFactory;
+		private readonly BaseAddressFactory addressFactory;
 
 		public AccessControlListTests()
 		{
@@ -17,7 +17,7 @@ namespace StrongForce.Core.Tests
 		[Fact]
 		public void AddPermission_WhenNewOnesArePassed_ReturnsTrue()
 		{
-			Address address = this.addressFactory.Create();
+			Address address = this.addressFactory.CreateAddress();
 			var acl = new AccessControlList();
 
 			Assert.True(acl.AddPermission(address, SetFavoriteNumberAction.Type, address));
@@ -26,7 +26,7 @@ namespace StrongForce.Core.Tests
 		[Fact]
 		public void AddPermission_WhenDuplicatePermissionsArePassed_ReturnsFalse()
 		{
-			Address address = this.addressFactory.Create();
+			Address address = this.addressFactory.CreateAddress();
 			var acl = new AccessControlList();
 
 			acl.AddPermission(address, SetFavoriteNumberAction.Type, address);
@@ -43,7 +43,7 @@ namespace StrongForce.Core.Tests
 		[Fact]
 		public void HasPermission_WhenPermissionHasBeenAdded_ReturnsTrue()
 		{
-			Address address = this.addressFactory.Create();
+			Address address = this.addressFactory.CreateAddress();
 			var acl = new AccessControlList();
 
 			acl.AddPermission(address, SetFavoriteNumberAction.Type, address);
@@ -53,7 +53,7 @@ namespace StrongForce.Core.Tests
 		[Fact]
 		public void HasPermission_WhenPermissionHasNotBeenAdded_ReturnsFalse()
 		{
-			Address address = this.addressFactory.Create();
+			Address address = this.addressFactory.CreateAddress();
 			var acl = new AccessControlList();
 
 			Assert.False(acl.HasPermission(address, SetFavoriteNumberAction.Type, address));
@@ -62,7 +62,7 @@ namespace StrongForce.Core.Tests
 		[Fact]
 		public void RemovePermission_WhenPermissionHasBeenAdded_RemovesPermission()
 		{
-			Address address = this.addressFactory.Create();
+			Address address = this.addressFactory.CreateAddress();
 			var acl = new AccessControlList();
 
 			acl.AddPermission(address, SetFavoriteNumberAction.Type, address);
@@ -73,7 +73,7 @@ namespace StrongForce.Core.Tests
 		[Fact]
 		public void RemovePermission_WhenPermissionHasNotBeenAdded_ReturnsFalse()
 		{
-			Address address = this.addressFactory.Create();
+			Address address = this.addressFactory.CreateAddress();
 			var acl = new AccessControlList();
 
 			Assert.False(acl.RemovePermission(address, SetFavoriteNumberAction.Type, address));
@@ -97,7 +97,7 @@ namespace StrongForce.Core.Tests
 		[Fact]
 		public void HasPermission_WhenGrantedWithHashSet_ReturnsTrue()
 		{
-			Address address = this.addressFactory.Create();
+			Address address = this.addressFactory.CreateAddress();
 			var acl = new AccessControlList();
 
 			Assert.True(acl.AddPermission(address, SetFavoriteNumberAction.Type, null));
@@ -107,7 +107,7 @@ namespace StrongForce.Core.Tests
 		[Fact]
 		public void HasPermission_WhenGrantedWithAnyWildCard_ReturnsTrue()
 		{
-			Address address = this.addressFactory.Create();
+			Address address = this.addressFactory.CreateAddress();
 			var acl = new AccessControlList();
 
 			Assert.True(acl.AddPermission(null, SetFavoriteNumberAction.Type, null));
@@ -117,22 +117,22 @@ namespace StrongForce.Core.Tests
 		[Fact]
 		public void UpdatePermissionSender_WhenPermissionExists_ReturnsTrue()
 		{
-			var address = this.addressFactory.Create();
-			var newAddress = this.addressFactory.Create();
+			var address = this.addressFactory.CreateAddress();
+			var newAddress = this.addressFactory.CreateAddress();
 			var acl = new AccessControlList();
 
 			Assert.True(acl.AddPermission(address, SetFavoriteNumberAction.Type, null));
 
 			Assert.True(acl.AddPermission(newAddress, SetFavoriteNumberAction.Type, null));
-			Assert.True(acl.HasPermission(address, SetFavoriteNumberAction.Type, this.addressFactory.Create()));
-			Assert.True(acl.HasPermission(newAddress, SetFavoriteNumberAction.Type, this.addressFactory.Create()));
+			Assert.True(acl.HasPermission(address, SetFavoriteNumberAction.Type, this.addressFactory.CreateAddress()));
+			Assert.True(acl.HasPermission(newAddress, SetFavoriteNumberAction.Type, this.addressFactory.CreateAddress()));
 		}
 
 		/*[Fact]
 		public void AddPermissionReceiver_WhenPermissionExists_ReturnsTrue()
 		{
-			var address = this.addressFactory.Create();
-			var newAddress = this.addressFactory.Create();
+			var address = this.addressFactory.CreateAddress();
+			var newAddress = this.addressFactory.CreateAddress();
 			var addressCard = this.GenerateWildCard(address);
 			var newAddressCard = this.GenerateWildCard(newAddress);
 			newAddressCard.Add(address);
@@ -141,15 +141,15 @@ namespace StrongForce.Core.Tests
 			Assert.True(acl.AddPermission(this.anyWildCard, SetFavoriteNumberAction.Type, addressCard));
 
 			Assert.True(acl.UpdatePermission(this.anyWildCard, SetFavoriteNumberAction.Type, this.anyWildCard, newAddressCard));
-			Assert.True(acl.HasPermission(this.addressFactory.Create(), SetFavoriteNumberAction.Type, address));
-			Assert.True(acl.HasPermission(this.addressFactory.Create(), SetFavoriteNumberAction.Type, newAddress));
+			Assert.True(acl.HasPermission(this.addressFactory.CreateAddress(), SetFavoriteNumberAction.Type, address));
+			Assert.True(acl.HasPermission(this.addressFactory.CreateAddress(), SetFavoriteNumberAction.Type, newAddress));
 		}*/
 
 		[Fact]
 		public void RemovePermissionSender_WhenPermissionExists_ReturnsTrue()
 		{
-			var address = this.addressFactory.Create();
-			var newAddress = this.addressFactory.Create();
+			var address = this.addressFactory.CreateAddress();
+			var newAddress = this.addressFactory.CreateAddress();
 
 			var acl = new AccessControlList();
 
@@ -157,8 +157,8 @@ namespace StrongForce.Core.Tests
 			Assert.True(acl.AddPermission(newAddress, SetFavoriteNumberAction.Type, null));
 
 			Assert.True(acl.RemovePermission(newAddress, SetFavoriteNumberAction.Type, null));
-			Assert.True(acl.HasPermission(address, SetFavoriteNumberAction.Type, this.addressFactory.Create()));
-			Assert.False(acl.HasPermission(newAddress, SetFavoriteNumberAction.Type, this.addressFactory.Create()));
+			Assert.True(acl.HasPermission(address, SetFavoriteNumberAction.Type, this.addressFactory.CreateAddress()));
+			Assert.False(acl.HasPermission(newAddress, SetFavoriteNumberAction.Type, this.addressFactory.CreateAddress()));
 		}
 
 		private HashSet<Address> GenerateWildCard(Address address)

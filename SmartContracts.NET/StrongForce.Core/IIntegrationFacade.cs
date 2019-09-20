@@ -11,6 +11,10 @@ namespace StrongForce.Core
 
 		BaseContract LoadContract(Address address);
 
+		ContractRegistryState LoadRegistryState();
+
 		void SaveContract(BaseContract contract);
+
+		void SaveRegistryState(ContractRegistryState state);
 	}
 }
