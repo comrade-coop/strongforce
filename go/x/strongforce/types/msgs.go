@@ -1,4 +1,4 @@
-package strongforce
+package types
 
 import (
 	"encoding/json"

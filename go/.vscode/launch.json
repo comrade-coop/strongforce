@@ -5,7 +5,16 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Launch",
+            "name": "Launch Light Client",
+            "type": "go",
+            "request": "launch",
+            "mode": "debug",
+            "program": "${workspaceFolder}/cmd/strongforcecli/main.go",
+            "env": {},
+            "args": ["rest-server"]
+        },
+        {
+            "name": "Launch Strongforce",
             "type": "go",
             "request": "launch",
             "mode": "auto",

@@ -3,15 +3,14 @@ package strongforce
 import (
 	"encoding/json"
 
-	"github.com/gorilla/mux"
-	"github.com/spf13/cobra"
-
+	"github.com/comrade-coop/strongforce/go/cmd/rest"
 	"github.com/cosmos/cosmos-sdk/client/context"
 	"github.com/cosmos/cosmos-sdk/codec"
 	"github.com/cosmos/cosmos-sdk/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/module"
-
+	"github.com/gorilla/mux"
+	"github.com/spf13/cobra"
 	abci "github.com/tendermint/tendermint/abci/types"
 )
 
@@ -21,15 +20,6 @@ var (
 
 	moduleCdc = codec.New()
 )
-
-// ModuleName - the name of the module
-const ModuleName = "strongforce"
-
-// RouterKey - the key used for routes
-const RouterKey = "strongforce"
-
-// StoreKey - the key used for state storage
-const StoreKey = "strongforce"
 
 // AppModuleBasic object
 type AppModuleBasic struct {
@@ -64,7 +54,7 @@ func (AppModuleBasic) ValidateGenesis(bz json.RawMessage) error {
 
 // RegisterRESTRoutes implements module.AppModuleBasic
 func (AppModuleBasic) RegisterRESTRoutes(ctx context.CLIContext, rtr *mux.Router) {
-	// pass
+	rest.RegisterRoutes(ctx, rtr, StoreKey)
 }
 
 // GetQueryCmd implements module.AppModuleBasic
@@ -74,7 +64,7 @@ func (ab AppModuleBasic) GetQueryCmd(cdc *codec.Codec) *cobra.Command {
 
 // GetTxCmd implements module.AppModuleBasic
 func (ab AppModuleBasic) GetTxCmd(cdc *codec.Codec) *cobra.Command {
-	return GetTxCmd(ab.keeper, cdc)
+	return GetTxCmd(cdc)
 }
 
 // AppModule implements module.AppModule
