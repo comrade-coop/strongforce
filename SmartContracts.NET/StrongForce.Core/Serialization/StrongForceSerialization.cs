@@ -7,7 +7,7 @@ namespace StrongForce.Core.Serialization
 {
 	public static class StrongForceSerialization
 	{
-		public static byte[] SerializeAction(Address[] targets, string type, IDictionary<string, object> payload)
+		public static byte[] SerializeMessage(Address[] targets, string type, IDictionary<string, object> payload)
 		{
 			var action = new Dictionary<string, object>()
 			{
@@ -18,7 +18,7 @@ namespace StrongForce.Core.Serialization
 			return StateSerialization.SerializeState(action);
 		}
 
-		public static Tuple<Address[], string, IDictionary<string, object>> DeserializeAction(byte[] serialized)
+		public static Tuple<Address[], string, IDictionary<string, object>> DeserializeMessage(byte[] serialized)
 		{
 			var action = StateSerialization.DeserializeState(serialized);
 			var targets = action.GetList<Address>("Targets").ToArray();

@@ -15,7 +15,7 @@ namespace StrongForce.Core.Tests
 		public TraceBulletTests()
 		{
 			this.addressFactory = new RandomAddressFactory();
-			this.registry = new TestRegistry();
+			this.registry = new InMemoryIntegration();
 		}
 
 		[Fact]

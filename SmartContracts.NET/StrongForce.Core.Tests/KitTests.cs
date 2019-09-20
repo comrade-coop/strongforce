@@ -15,7 +15,7 @@ namespace StrongForce.Core.Tests
 		{
 			var favoriteContractsCount = 2;
 
-			var registry = new TestRegistry();
+			var registry = new InMemoryIntegration();
 
 			Address address = registry.CreateContract<FavoriteNumberKitContract>(new Dictionary<string, object>()
 			{
@@ -25,13 +25,13 @@ namespace StrongForce.Core.Tests
 
 			registry.SendMessage(address, address, InstantiateKitAction.Type, new Dictionary<string, object>());
 
-			Assert.Equal(favoriteContractsCount + 1, (int)((HashedAddressFactory)registry.RawAddressFactory).AddressNonce - 1);
+			Assert.Equal(favoriteContractsCount + 1, (int)((HashedAddressFactory)registry.AddressFactory.Raw).AddressNonce - 1);
 		}
 
 		[Fact]
 		public void Kit_WhenInstantiatedTwice_Throws()
 		{
-			var registry = new TestRegistry();
+			var registry = new InMemoryIntegration();
 
 			Address address = registry.CreateContract<FavoriteNumberKitContract>(new Dictionary<string, object>()
 			{

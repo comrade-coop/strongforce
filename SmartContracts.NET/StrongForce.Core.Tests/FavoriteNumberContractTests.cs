@@ -14,7 +14,7 @@ namespace StrongForce.Core.Tests
 			const int expectedNumber = 32;
 
 			var contract = StatefulObject.Create<FavoriteNumberContract>(new Dictionary<string, object>() { { "User", null } });
-			var receiver = contract.RegisterWithRegistry(new FakeContractContext(this.addressFactory.CreateAddress()));
+			var receiver = contract.RegisterWithRegistry(new InMemoryIntegration.FakeContractContext(this.addressFactory.CreateAddress()));
 
 			var action = new Message(
 				contract.Address,

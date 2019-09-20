@@ -49,7 +49,7 @@ namespace StrongForce.Core.Tests
 		}
 
 		[Fact]
-		public void Serializes_And_Deserializes_Actions()
+		public void Serializes_And_Deserializes_Messages()
 		{
 			var targets = new Address[] { new Address(new byte[] { 10, 20, 127, 54, 51 }), null };
 			var type = "NotARealActionType";
@@ -58,13 +58,13 @@ namespace StrongForce.Core.Tests
 				{ "isTest", true },
 			};
 
-			var serializedAction = StrongForceSerialization.SerializeAction(targets, type, payload);
+			var serializedMessage = StrongForceSerialization.SerializeMessage(targets, type, payload);
 
-			var deserializedAction = StrongForceSerialization.DeserializeAction(serializedAction);
+			var deserializedMessage = StrongForceSerialization.DeserializeMessage(serializedMessage);
 
-			Assert.Equal(targets, deserializedAction.Item1);
-			Assert.Equal(type, deserializedAction.Item2);
-			Assert.Equal(payload, deserializedAction.Item3);
+			Assert.Equal(targets, deserializedMessage.Item1);
+			Assert.Equal(type, deserializedMessage.Item2);
+			Assert.Equal(payload, deserializedMessage.Item3);
 		}
 
 		[Fact]
@@ -73,12 +73,12 @@ namespace StrongForce.Core.Tests
 			var address = new Address(new byte[] { 10, 20, 127, 54, 51 });
 			var adminAddress = new Address(new byte[] { 10, 20, 4 });
 			var contract = StatefulObject.Create<FavoriteNumberContract>(new Dictionary<string, object> { { "Admin", adminAddress.ToString() }, { "Number", 15 } });
-			contract.RegisterWithRegistry(new FakeContractContext(address));
+			contract.RegisterWithRegistry(new InMemoryIntegration.FakeContractContext(address));
 
 			var serializedContract = StrongForceSerialization.SerializeStatefulObject(contract);
 
 			var deserializedContract = (FavoriteNumberContract)StrongForceSerialization.DeserializeStatefulObject(serializedContract);
-			deserializedContract.RegisterWithRegistry(new FakeContractContext(address));
+			deserializedContract.RegisterWithRegistry(new InMemoryIntegration.FakeContractContext(address));
 
 			Assert.Equal(contract.GetState(), deserializedContract.GetState());
 			Assert.Equal(contract.Address, deserializedContract.Address);

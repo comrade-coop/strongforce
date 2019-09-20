@@ -59,6 +59,9 @@ func (c *Connection) SendAction(ctx types.Context, from types.AccAddress, action
 		defer func() {
 			if r := recover(); r != nil {
 				waitc <- types.Result{Code: types.CodeInternal, Codespace: "Error while communicating to .NET"}
+				close(waitc)
+				stream.CloseSend()
+				return
 			}
 		}()
 

@@ -17,7 +17,7 @@ namespace StrongForce.Integrations.Cosmos
 	{
 		private readonly StrongForceServiceSettings settings;
 
-		private ILogger<CosmosIntegrationFacade> logger;
+		private ILogger<CosmosIntegration> logger;
 		private Server server;
 
 		public StrongForceService()
@@ -26,13 +26,13 @@ namespace StrongForce.Integrations.Cosmos
 			this.logger = null;
 		}
 
-		public StrongForceService(ILogger<CosmosIntegrationFacade> logger, Type initialKitType, IDictionary<string, object> initialKitPayload = null)
+		public StrongForceService(ILogger<CosmosIntegration> logger, Type initialKitType, IDictionary<string, object> initialKitPayload = null)
 		{
 			this.settings = new StrongForceServiceSettings();
 			this.logger = logger;
 		}
 
-		public StrongForceService(ILogger<CosmosIntegrationFacade> logger, IOptions<StrongForceServiceSettings> options)
+		public StrongForceService(ILogger<CosmosIntegration> logger, IOptions<StrongForceServiceSettings> options)
 		{
 			this.settings = options.Value;
 			this.logger = logger;
@@ -40,9 +40,17 @@ namespace StrongForce.Integrations.Cosmos
 
 		public Task StartAsync(CancellationToken cancellationToken)
 		{
-			var initialKit = StatefulObject.Create(this.settings.InitialKitType, this.settings.InitialKitPayload);
-			var facade = new CosmosIntegrationFacade(this.logger, StrongForceSerialization.SerializeStatefulObject(initialKit));
-			var registry = new ContractRegistry(facade);
+			var initialKit = (KitContract)StatefulObject.Create(
+				this.settings.InitialKitType,
+				this.settings.InitialKitPayload);
+
+			initialKit.RegisterWithRegistry(
+				new InMemoryIntegration.FakeContractContext(
+					KitContract.DefaultAddress));
+
+			var facade = new CosmosIntegration(
+				this.logger,
+				StrongForceSerialization.SerializeStatefulObject(initialKit));
 
 			this.server = new Server
 			{

@@ -2,55 +2,84 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using StrongForce.Core.Exceptions;
+using StrongForce.Core.Extensions;
 using StrongForce.Core.Serialization;
 
 namespace StrongForce.Core
 {
-	public class ContractRegistry
+	public class ContractRegistry : StatefulObject
 	{
-		public ContractRegistry(IIntegrationFacade facade)
-		{
-			this.IntegrationFacade = facade;
+		protected IContractRegistryContext Context { get; set; }
 
-			this.IntegrationFacade.ReceiveMessage += (from, targets, type, payload) =>
-			{
-				this.Errored = false;
+		protected BaseAddressFactory AddressFactory { get; set; } = new HashedAddressFactory();
 
-				if (this.State == null)
-				{
-					this.State = this.IntegrationFacade.LoadRegistryState();
-				}
+		protected IDictionary<ulong, Message> ForwardedMessages { get; set; } = new Dictionary<ulong, Message>();
 
-				this.SendMessage(from, targets, type, payload);
-
-				foreach (var contract in this.CachedContracts)
-				{
-					this.IntegrationFacade.SaveContract(contract.Value.Item1);
-				}
-
-				this.IntegrationFacade.SaveRegistryState(this.State);
-			};
-			this.IntegrationFacade.DropCaches += this.DropCaches;
-		}
-
-		public ContractRegistry()
-			: this(new InMemoryIntegrationFacade())
-		{
-		}
+		protected ulong MessageNonce { get; set; } = 0;
 
 		protected bool Errored { get; set; }
 
-		protected IIntegrationFacade IntegrationFacade { get; set; }
+		protected IDictionary<Address, (BaseContract, Action<Message>)> CachedContracts { get; } = new Dictionary<Address, (BaseContract, Action<Message>)>();
 
-		protected ContractRegistryState State { get; set; } = null;
-
-		protected IDictionary<Address, (BaseContract, Action<Message>)> CachedContracts { get; set; }
-			= new Dictionary<Address, (BaseContract, Action<Message>)>();
-
-		protected void DropCaches()
+		public Action<Address, Address[], string, IDictionary<string, object>> SetContext(IContractRegistryContext context)
 		{
-			this.CachedContracts = new Dictionary<Address, (BaseContract, Action<Message>)>();
-			this.State = null;
+			if (this.Context != null)
+			{
+				throw new InvalidOperationException("Context has already been set");
+			}
+
+			this.Context = context;
+
+			return this.ReceiveMessage;
+		}
+
+		public override IDictionary<string, object> GetState()
+		{
+			var state = new Dictionary<string, object>();
+
+			state.Set("AddressFactory", new Dictionary<string, object>()
+			{
+				{ "Type", this.AddressFactory.GetType().AssemblyQualifiedName },
+				{ "State", this.AddressFactory.GetState() },
+			});
+
+			state.Set("ForwardedMessages", this.ForwardedMessages.ToDictionary(
+				kv => (string)kv.Key.ToString(),
+				kv => (object)kv.Value.GetState()));
+
+			state.Set("MessageNonce", this.MessageNonce.ToString());
+
+			if (this.Context != null)
+			{
+				foreach (var contract in this.CachedContracts)
+				{
+					this.Context.SaveContract(contract.Value.Item1);
+				}
+			}
+
+			return state;
+		}
+
+		protected override void SetState(IDictionary<string, object> state)
+		{
+			var factory = state.GetDictionary("AddressFactory");
+			var factoryType = Type.GetType(factory.Get<string>("Type"));
+			var factoryState = factory.GetDictionary("State");
+
+			this.AddressFactory = (BaseAddressFactory)StatefulObject.Create(factoryType, factoryState);
+
+			this.ForwardedMessages = state.GetDictionary("ForwardedMessages").ToDictionary(
+				kv => ulong.Parse(kv.Key),
+				kv => Message.Create((IDictionary<string, object>)kv.Value));
+
+			this.MessageNonce = ulong.Parse(state.Get<string>("MessageNonce"));
+		}
+
+		protected void ReceiveMessage(Address sender, Address[] targets, string type, IDictionary<string, object> payload)
+		{
+			this.Errored = false;
+
+			this.SendMessage(sender, targets, type, payload);
 		}
 
 		protected void SendMessage(Address sender, Address[] targets, string type, IDictionary<string, object> payload)
@@ -62,7 +91,7 @@ namespace StrongForce.Core
 
 		protected void SendMessage(Address sender, ulong id)
 		{
-			var message = this.State.ForwardedMessages[id];
+			var message = this.ForwardedMessages[id];
 
 			if (message.Sender != sender)
 			{
@@ -80,14 +109,13 @@ namespace StrongForce.Core
 				throw new ArgumentOutOfRangeException(nameof(payload));
 			}
 
-			var address = this.State.AddressFactory.CreateAddress();
+			var address = this.AddressFactory.CreateAddress();
 
 			var contract = StatefulObject.Create<T>(payload);
 
 			var receiver = contract.RegisterWithRegistry(new ContractContext(this, address));
 
 			this.CachedContracts.Add(address, (contract, receiver));
-			this.IntegrationFacade.SaveContract(contract);
 
 			return address;
 		}
@@ -100,7 +128,7 @@ namespace StrongForce.Core
 			}
 			else
 			{
-				var contract = this.IntegrationFacade.LoadContract(address);
+				var contract = this.Context.LoadContract(address);
 
 				var receiver = contract.RegisterWithRegistry(new ContractContext(this, address));
 
@@ -154,30 +182,18 @@ namespace StrongForce.Core
 
 			if (targets.Length > 1)
 			{
-				var nextId = this.State.MessageNonce;
-				this.State.MessageNonce++;
+				var nextId = this.MessageNonce;
+				this.MessageNonce++;
 
 				var nextTargets = targets.Skip(1).ToArray();
 
-				this.State.ForwardedMessages.Add(nextId, this.CreateMessage(origin, targets[0], nextTargets, type, payload));
+				this.ForwardedMessages.Add(nextId, this.CreateMessage(origin, targets[0], nextTargets, type, payload));
 
-				return new ForwardMessage(
-					targets[0],
-					origin,
-					sender,
-					type,
-					payload,
-					nextTargets,
-					nextId);
+				return new ForwardMessage(targets[0], origin, sender, type, payload, nextTargets, nextId);
 			}
 			else
 			{
-				return new Message(
-					targets[0],
-					origin,
-					sender,
-					type,
-					payload);
+				return new Message(targets[0], origin, sender, type, payload);
 			}
 		}
 

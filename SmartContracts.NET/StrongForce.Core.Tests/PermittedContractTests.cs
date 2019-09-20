@@ -10,11 +10,11 @@ namespace StrongForce.Core.Tests
 {
 	public class PermittedContractTests
 	{
-		private TestRegistry registry;
+		private InMemoryIntegration registry;
 
 		public PermittedContractTests()
 		{
-			this.registry = new TestRegistry();
+			this.registry = new InMemoryIntegration();
 		}
 
 		[Fact]
