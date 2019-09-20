@@ -7,6 +7,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/types"
 	"github.com/tendermint/tendermint/libs/common"
 	"google.golang.org/grpc"
+	// "github.com/comrade-coop/strongforce/go/x/strongforce/types"
 )
 
 //go:generate protoc --go_out=plugins=grpc:. -I=../../ ../../StrongForce.proto

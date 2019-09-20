@@ -20,6 +20,7 @@ require (
 	github.com/coreos/go-systemd v0.0.0-20190719114852-fd7a80b32e1f // indirect
 	github.com/cosmos/cosmos-sdk v0.36.0
 	github.com/cosmos/go-bip39 v0.0.0-20180819234021-555e2067c45d // indirect
+	github.com/cosmos/sdk-application-tutorial v0.0.0-20190823103447-415ea4f6b7e8
 	github.com/go-kit/kit v0.9.0 // indirect
 	github.com/golang/groupcache v0.0.0-20190702054246-869f871628b6 // indirect
 	github.com/golang/protobuf v1.3.2
@@ -52,7 +53,6 @@ require (
 	github.com/rs/cors v1.7.0 // indirect
 	github.com/russross/blackfriday v2.0.0+incompatible // indirect
 	github.com/sirupsen/logrus v1.4.2 // indirect
-	github.com/spf13/afero v1.2.2 // indirect
 	github.com/spf13/cobra v0.0.5
 	github.com/spf13/viper v1.4.0
 	github.com/stretchr/objx v0.2.0 // indirect

@@ -1,9 +1,9 @@
-package strongforce
+package types
 
 import (
 	"bytes"
-	"fmt"
 	"encoding/json"
+	"fmt"
 
 	"github.com/spf13/cobra"
 
@@ -39,7 +39,7 @@ func GetCmdGetState(queryRoute string, cdc *codec.Codec) *cobra.Command {
 			cliCtx := context.NewCLIContext().WithCodec(cdc)
 			address := args[0]
 
-			res, _, err := cliCtx.QueryWithData(fmt.Sprintf("custom/%s/contract/%s", queryRoute, address), nil)
+			res, _, err := cliCtx.QueryWithData(fmt.Sprintf("custom/%s/contract/state/%s", queryRoute, address), nil)
 			if err != nil {
 				fmt.Printf("could not state address - %s \n", address)
 				fmt.Println(err.Error())
@@ -67,7 +67,7 @@ func GetCmdListState(queryRoute string, cdc *codec.Codec) *cobra.Command {
 		RunE: func(cmd *cobra.Command, args []string) error {
 			cliCtx := context.NewCLIContext().WithCodec(cdc)
 
-			res, _, err := cliCtx.QueryWithData(fmt.Sprintf("custom/%s/contract", queryRoute), nil)
+			res, _, err := cliCtx.QueryWithData(fmt.Sprintf("custom/%s/contract/addresses", queryRoute), nil)
 			if err != nil {
 				fmt.Println("could not list addresses")
 				fmt.Println(err.Error())

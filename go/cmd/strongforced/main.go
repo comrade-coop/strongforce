@@ -13,13 +13,12 @@ import (
 	tendermintTypes "github.com/tendermint/tendermint/types"
 	db "github.com/tendermint/tm-db"
 
+	app "github.com/comrade-coop/strongforce/go"
 	"github.com/cosmos/cosmos-sdk/server"
 	"github.com/cosmos/cosmos-sdk/x/genaccounts"
 	genaccountscli "github.com/cosmos/cosmos-sdk/x/genaccounts/client/cli"
 	genutilcli "github.com/cosmos/cosmos-sdk/x/genutil/client/cli"
 	"github.com/cosmos/cosmos-sdk/x/staking"
-
-	app "github.com/comrade-coop/strongforce/go"
 )
 
 // DefaultNodeHome sets the folder where the application data and configuration will be stored

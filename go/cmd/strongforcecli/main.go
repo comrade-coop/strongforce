@@ -13,10 +13,9 @@ import (
 	amino "github.com/tendermint/go-amino"
 	"github.com/tendermint/tendermint/libs/cli"
 
+	app "github.com/comrade-coop/strongforce/go"
 	"github.com/cosmos/cosmos-sdk/types"
 	authcmd "github.com/cosmos/cosmos-sdk/x/auth/client/cli"
-
-	app "github.com/comrade-coop/strongforce/go"
 )
 
 func main() {
@@ -60,6 +59,7 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
+
 }
 
 func registerRoutes(rs *lcd.RestServer) {
