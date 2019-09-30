@@ -6,14 +6,15 @@ namespace StrongForce.Core.Tests
 {
 	public class FavoriteNumberContractTests
 	{
-		private readonly IAddressFactory addressFactory = new RandomAddressFactory();
+		private readonly BaseAddressFactory addressFactory = new RandomAddressFactory();
 
 		[Fact]
 		public void Receive_WhenPassedSetFavoriteNumberAction_SetsNumberCorrectly()
 		{
 			const int expectedNumber = 32;
 
-			var (contract, receiver) = BaseContract.Create(typeof(FavoriteNumberContract), this.addressFactory.Create(), new Dictionary<string, object>() { { "User", null } }, default(ContractHandlers));
+			var contract = StatefulObject.Create<FavoriteNumberContract>(new Dictionary<string, object>() { { "User", null } });
+			var receiver = contract.RegisterWithRegistry(new InMemoryIntegration.FakeContractContext(this.addressFactory.CreateAddress()));
 
 			var action = new Message(
 				contract.Address,

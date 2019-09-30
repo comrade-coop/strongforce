@@ -1,53 +1,30 @@
 using System;
 using System.Collections.Generic;
 using StrongForce.Core.Exceptions;
-using StrongForce.Core.Extensions;
 using StrongForce.Core.Permissions;
 
 namespace StrongForce.Core
 {
-	public abstract class BaseContract : IStatefulObject
+	public abstract class BaseContract : StatefulObject
 	{
 		public BaseContract()
 		{
 		}
 
-		public Address Address { get; private set; } = null;
+		public Address Address { get => this.Context.Address; }
 
-		private ContractHandlers ContractHandlers { get; set; }
+		protected IContractContext Context { get; private set; }
 
-		public static (BaseContract, Action<Message>) Create(
-			Type contractType,
-			Address address,
-			IDictionary<string, object> payload,
-			ContractHandlers contractHandlers,
-			bool isDeserialization = false)
+		public Action<Message> RegisterWithRegistry(IContractContext context)
 		{
-			if (!typeof(BaseContract).IsAssignableFrom(contractType))
+			if (this.Context != null)
 			{
-				throw new ArgumentOutOfRangeException(nameof(contractType));
+				throw new InvalidOperationException("Already registered with registry");
 			}
 
-			var contract = (BaseContract)Activator.CreateInstance(contractType);
-
-			contract.Address = address;
-			contract.ContractHandlers = contractHandlers;
-
-			if (isDeserialization)
-			{
-				contract.SetState(payload);
-			}
-			else
-			{
-				contract.Initialize(payload);
-			}
-
-			return (contract, contract.Receive);
-		}
-
-		public virtual IDictionary<string, object> GetState()
-		{
-			return new Dictionary<string, object>();
+			this.Context = context;
+			this.Initialize();
+			return this.Receive;
 		}
 
 		protected void Receive(Message message)
@@ -69,24 +46,19 @@ namespace StrongForce.Core
 			}
 		}
 
-		protected virtual void SetState(IDictionary<string, object> state)
-		{
-		}
-
-		protected virtual void Initialize(IDictionary<string, object> payload)
-		{
-			this.SetState(this.GetState().MergeStateWith(payload));
-		}
-
 		protected abstract void CheckPermissions(Message message);
 
 		protected abstract void HandleMessage(Message message);
 
 		protected abstract void HandleForwardMessage(ForwardMessage message);
 
+		protected virtual void Initialize()
+		{
+		}
+
 		protected void SendMessage(Address[] targets, string type, IDictionary<string, object> payload)
 		{
-			this.ContractHandlers.SendMessage.Invoke(targets, type, payload);
+			this.Context.SendMessage(targets, type, payload);
 		}
 
 		protected void SendMessage(Address target, string type, IDictionary<string, object> payload)
@@ -96,17 +68,13 @@ namespace StrongForce.Core
 
 		protected void ForwardMessage(ulong id)
 		{
-			this.ContractHandlers.ForwardMessage.Invoke(id);
-		}
-
-		protected Address CreateContract(Type contractType, IDictionary<string, object> payload)
-		{
-			return this.ContractHandlers.CreateContract.Invoke(contractType, payload);
+			this.Context.ForwardMessage(id);
 		}
 
 		protected Address CreateContract<T>(IDictionary<string, object> payload)
+			where T : BaseContract, new()
 		{
-			return this.CreateContract(typeof(T), payload);
+			return this.Context.CreateContract<T>(payload);
 		}
 	}
 }

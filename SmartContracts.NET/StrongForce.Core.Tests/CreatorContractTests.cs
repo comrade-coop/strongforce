@@ -12,17 +12,14 @@ namespace StrongForce.Core.Tests
 		[Fact]
 		public void CreateContractAction_WhenPassedFavoriteNumberContract_CreatesContract()
 		{
-			var registry = new TestRegistry();
-			var permissionManager = registry.AddressFactory.Create();
+			var registry = new InMemoryIntegration();
+			var permissionManager = registry.AddressFactory.CreateAddress();
 			var creatorAddress = registry.CreateContract<CreatorContract>(new Dictionary<string, object>()
 			{
 				{ "User", permissionManager.ToString() },
 			});
 
-			registry.SendMessage(permissionManager, creatorAddress, CreateContractAction.Type, new Dictionary<string, object>()
-			{
-				{ CreateContractAction.ContractType, typeof(FavoriteNumberContract).ToString() },
-			});
+			registry.SendMessage(permissionManager, creatorAddress, CreateContractAction.Type, new Dictionary<string, object>() { });
 
 			var lastAddress = ((CreatorContract)registry.GetContract(creatorAddress)).LastCreatedAddress;
 			Assert.NotNull(lastAddress);
@@ -32,9 +29,9 @@ namespace StrongForce.Core.Tests
 		[Fact]
 		public void CreateContractAction_WhenPassedMessages_SendsMessages()
 		{
-			var registry = new TestRegistry();
+			var registry = new InMemoryIntegration();
 			var targetNumber = 367;
-			var permissionManager = registry.AddressFactory.Create();
+			var permissionManager = registry.AddressFactory.CreateAddress();
 			var creatorAddress = registry.CreateContract<CreatorContract>(new Dictionary<string, object>()
 			{
 				{ "User", permissionManager.ToString() },
@@ -42,7 +39,6 @@ namespace StrongForce.Core.Tests
 
 			registry.SendMessage(permissionManager, creatorAddress, CreateContractAction.Type, new Dictionary<string, object>()
 			{
-				{ CreateContractAction.ContractType, typeof(FavoriteNumberContract).ToString() },
 				{
 					CreateContractAction.Messages,
 					new List<object>()
@@ -65,8 +61,8 @@ namespace StrongForce.Core.Tests
 		[Fact]
 		public void CreateContractAction_WhenPassedInvalidMessages_Throws()
 		{
-			var registry = new TestRegistry();
-			var permissionManager = registry.AddressFactory.Create();
+			var registry = new InMemoryIntegration();
+			var permissionManager = registry.AddressFactory.CreateAddress();
 			var creatorAddress = registry.CreateContract<CreatorContract>(new Dictionary<string, object>()
 			{
 				{ "User", permissionManager.ToString() },
@@ -74,7 +70,6 @@ namespace StrongForce.Core.Tests
 
 			Assert.Throws<NoPermissionException>(() => registry.SendMessage(permissionManager, creatorAddress, CreateContractAction.Type, new Dictionary<string, object>()
 			{
-				{ CreateContractAction.ContractType, typeof(FavoriteNumberContract).ToString() },
 				{
 					CreateContractAction.Messages,
 					new List<object>()
@@ -92,7 +87,7 @@ namespace StrongForce.Core.Tests
 		[Fact]
 		public void CreateContractAction_WhenConfigured_AllowsForwarding()
 		{
-			var registry = new TestRegistry();
+			var registry = new InMemoryIntegration();
 			var permissionManager = new Address(new byte[] { 1 });
 			var creatorAddress = registry.CreateContract<CreatorContract>(new Dictionary<string, object>()
 			{
@@ -109,7 +104,6 @@ namespace StrongForce.Core.Tests
 
 			registry.SendMessage(permissionManager, creatorAddress, CreateContractAction.Type, new Dictionary<string, object>()
 			{
-				{ CreateContractAction.ContractType, typeof(FavoriteNumberContract).ToString() },
 			});
 
 			var newAddress = ((CreatorContract)registry.GetContract(creatorAddress)).LastCreatedAddress;

@@ -10,17 +10,17 @@ namespace StrongForce.Core.Tests
 {
 	public class PermittedContractTests
 	{
-		private TestRegistry registry;
+		private InMemoryIntegration registry;
 
 		public PermittedContractTests()
 		{
-			this.registry = new TestRegistry();
+			this.registry = new InMemoryIntegration();
 		}
 
 		[Fact]
 		public void Permissions_WhenContractInitialized_ReturnTrue()
 		{
-			Address permissionManager = this.registry.AddressFactory.Create();
+			Address permissionManager = this.registry.AddressFactory.CreateAddress();
 			var contractAddress = this.registry.CreateContract<FavoriteNumberContract>(
 				new Dictionary<string, object>() { { "Admin", permissionManager?.ToString() } });
 
@@ -33,8 +33,8 @@ namespace StrongForce.Core.Tests
 		[Fact]
 		public void Receive_WhenPassedActionWithNoPermissions_ThrowsNoPermissionException()
 		{
-			Address permissionManager = this.registry.AddressFactory.Create();
-			Address otherAddress = this.registry.AddressFactory.Create();
+			Address permissionManager = this.registry.AddressFactory.CreateAddress();
+			Address otherAddress = this.registry.AddressFactory.CreateAddress();
 
 			var contractAddress = this.registry.CreateContract<FavoriteNumberContract>(
 				new Dictionary<string, object>() { { "Admin", permissionManager?.ToString() } });
@@ -53,7 +53,7 @@ namespace StrongForce.Core.Tests
 		[Fact]
 		public void Receive_WhenPassedSupportedActionWithPermissions_ReturnsTrue()
 		{
-			Address permissionManager = this.registry.AddressFactory.Create();
+			Address permissionManager = this.registry.AddressFactory.CreateAddress();
 
 			var contractAddress = this.registry.CreateContract<FavoriteNumberContract>(
 				new Dictionary<string, object>() { { "Admin", permissionManager?.ToString() } });
@@ -73,7 +73,7 @@ namespace StrongForce.Core.Tests
 		[Fact]
 		public void Receive_WhenRemovePermitedAction_ReturnsTrue()
 		{
-			Address permissionManager = this.registry.AddressFactory.Create();
+			Address permissionManager = this.registry.AddressFactory.CreateAddress();
 
 			var contractAddress = this.registry.CreateContract<FavoriteNumberContract>(
 				new Dictionary<string, object>() { { "Admin", permissionManager?.ToString() } });
@@ -100,7 +100,7 @@ namespace StrongForce.Core.Tests
 		[Fact]
 		public void Receive_WhenPassedUnsupportedActionWithPermissions_ReturnsFalse()
 		{
-			Address permissionManager = this.registry.AddressFactory.Create();
+			Address permissionManager = this.registry.AddressFactory.CreateAddress();
 
 			var contractAddress = this.registry.CreateContract<FavoriteNumberContract>(
 				new Dictionary<string, object>() { { "Admin", permissionManager?.ToString() } });
@@ -114,7 +114,7 @@ namespace StrongForce.Core.Tests
 		[Fact]
 		public void AddPermission_WithWildcard_ReturnsTrue()
 		{
-			Address permissionManager = this.registry.AddressFactory.Create();
+			Address permissionManager = this.registry.AddressFactory.CreateAddress();
 
 			var contractAddress = this.registry.CreateContract<FavoriteNumberContract>(
 				new Dictionary<string, object>() { { "Admin", permissionManager.ToString() } });
@@ -128,13 +128,13 @@ namespace StrongForce.Core.Tests
 
 			var contract = this.registry.GetContract<Contract>(contractAddress);
 
-			Assert.True(contract.CheckPermission(this.registry.AddressFactory.Create(), SetFavoriteNumberAction.Type, contractAddress));
+			Assert.True(contract.CheckPermission(this.registry.AddressFactory.CreateAddress(), SetFavoriteNumberAction.Type, contractAddress));
 		}
 
 		[Fact]
 		public void ForwardAction_WhenPermissionExists_ReturnsTrue()
 		{
-			Address permissionManager = this.registry.AddressFactory.Create();
+			Address permissionManager = this.registry.AddressFactory.CreateAddress();
 			var contract1Address = this.registry.CreateContract<FavoriteNumberContract>(
 				new Dictionary<string, object>() { { "Admin", permissionManager.ToString() } });
 			var contract2Address = this.registry.CreateContract<FavoriteNumberContract>(
@@ -160,7 +160,7 @@ namespace StrongForce.Core.Tests
 		[Fact]
 		public void ForwardAction_WithoutIntermediaryPermission_ThrowsNoPermissionException()
 		{
-			Address permissionManager = this.registry.AddressFactory.Create();
+			Address permissionManager = this.registry.AddressFactory.CreateAddress();
 			var contract1Address = this.registry.CreateContract<FavoriteNumberContract>(
 				new Dictionary<string, object>() { { "Admin", permissionManager.ToString() } });
 			var contract2Address = this.registry.CreateContract<FavoriteNumberContract>(
@@ -179,7 +179,7 @@ namespace StrongForce.Core.Tests
 		[Fact]
 		public void ForwardAction_WithoutFinalPermission_ThrowsNoPermissionException()
 		{
-			Address permissionManager = this.registry.AddressFactory.Create();
+			Address permissionManager = this.registry.AddressFactory.CreateAddress();
 			var contract1Address = this.registry.CreateContract<FavoriteNumberContract>(
 				new Dictionary<string, object>() { { "Admin", permissionManager.ToString() } });
 			var contract2Address = this.registry.CreateContract<FavoriteNumberContract>(
@@ -212,12 +212,12 @@ namespace StrongForce.Core.Tests
 		[Fact]
 		public void RemovePermissionSender_WhenPermissionExists_ReturnsTrue()
 		{
-			Address permissionManager = this.registry.AddressFactory.Create();
+			Address permissionManager = this.registry.AddressFactory.CreateAddress();
 
 			var contractAddress = this.registry.CreateContract<FavoriteNumberContract>(
 				new Dictionary<string, object>() { { "Admin", permissionManager?.ToString() } });
 
-			Address permitedAddress = this.registry.AddressFactory.Create();
+			Address permitedAddress = this.registry.AddressFactory.CreateAddress();
 			string permission = "NotARealActionType";
 
 			this.registry.SendMessage(permissionManager, contractAddress, AddPermissionAction.Type, new Dictionary<string, object>()

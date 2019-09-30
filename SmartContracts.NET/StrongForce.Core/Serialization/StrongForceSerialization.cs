@@ -7,7 +7,7 @@ namespace StrongForce.Core.Serialization
 {
 	public static class StrongForceSerialization
 	{
-		public static byte[] SerializeAction(Address[] targets, string type, IDictionary<string, object> payload)
+		public static byte[] SerializeMessage(Address[] targets, string type, IDictionary<string, object> payload)
 		{
 			var action = new Dictionary<string, object>()
 			{
@@ -18,7 +18,7 @@ namespace StrongForce.Core.Serialization
 			return StateSerialization.SerializeState(action);
 		}
 
-		public static Tuple<Address[], string, IDictionary<string, object>> DeserializeAction(byte[] serialized)
+		public static Tuple<Address[], string, IDictionary<string, object>> DeserializeMessage(byte[] serialized)
 		{
 			var action = StateSerialization.DeserializeState(serialized);
 			var targets = action.GetList<Address>("Targets").ToArray();
@@ -27,24 +27,24 @@ namespace StrongForce.Core.Serialization
 			return Tuple.Create(targets, type, payload);
 		}
 
-		public static byte[] SerializeContract(BaseContract contract)
+		public static byte[] SerializeStatefulObject(StatefulObject statefulObject)
 		{
 			var dictionary = new Dictionary<string, object>()
 			{
-				{ "Type", contract.GetType().AssemblyQualifiedName },
-				{ "State", contract.GetState() },
+				{ "Type", statefulObject.GetType().AssemblyQualifiedName },
+				{ "State", statefulObject.GetState() },
 			};
 			return StateSerialization.SerializeState(dictionary);
 		}
 
-		public static (BaseContract, Action<Message>) DeserializeContract(Address address, ContractHandlers handlers, byte[] serialized)
+		public static StatefulObject DeserializeStatefulObject(byte[] serialized)
 		{
 			var dictionary = StateSerialization.DeserializeState(serialized);
 
 			var type = Type.GetType(dictionary.Get<string>("Type"));
 			var state = dictionary.Get<IDictionary<string, object>>("State");
 
-			return BaseContract.Create(type, address, state, handlers, true);
+			return StatefulObject.Create(type, state, true);
 		}
 	}
 }

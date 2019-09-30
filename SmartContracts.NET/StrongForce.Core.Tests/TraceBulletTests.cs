@@ -9,24 +9,24 @@ namespace StrongForce.Core.Tests
 	/*
 	public class TraceBulletTests
 	{
-		private readonly IAddressFactory addressFactory;
+		private readonly BaseAddressFactory addressFactory;
 		private ContractRegistry registry;
 
 		public TraceBulletTests()
 		{
 			this.addressFactory = new RandomAddressFactory();
-			this.registry = new TestRegistry();
+			this.registry = new InMemoryIntegration();
 		}
 
 		[Fact]
 		public void Receive_WhenPassedSetFavoriteNumberActionWithGrantedPermissions_SetsNumberCorrectly()
 		{
-			Address permissionManager = this.addressFactory.Create();
+			Address permissionManager = this.addressFactory.CreateAddress();
 			Address[] addrs = new Address[10];
 			FavoriteNumberContract[] contracts = new FavoriteNumberContract[10];
 			for (int i = 0; i < 4; i++)
 			{
-				addrs[i] = this.addressFactory.Create();
+				addrs[i] = this.addressFactory.CreateAddress();
 				contracts[i] = new FavoriteNumberContract(addrs[i], permissionManager);
 				this.registry.RegisterContract(contracts[i]);
 
@@ -61,12 +61,12 @@ namespace StrongForce.Core.Tests
 		[Fact]
 		public void Receive_WhenPassedSetFavoriteNumberActionWithGrantedPermissions_ReturnPath()
 		{
-			Address permissionManager = this.addressFactory.Create();
+			Address permissionManager = this.addressFactory.CreateAddress();
 			Address[] addrs = new Address[10];
 			FavoriteNumberContract[] contracts = new FavoriteNumberContract[10];
 			for (int i = 0; i <= 3; i++)
 			{
-				addrs[i] = this.addressFactory.Create();
+				addrs[i] = this.addressFactory.CreateAddress();
 				contracts[i] = new FavoriteNumberContract(addrs[i], permissionManager);
 				this.registry.RegisterContract(contracts[i]);
 				var addTracingPermissionAction = new AddPermissionAction(
@@ -96,12 +96,12 @@ namespace StrongForce.Core.Tests
 		[Fact]
 		public void Receive_WhenPassedSetFavoriteNumberActionWithGrantedPermissions2_ReturnPath()
 		{
-			Address permissionManager = this.addressFactory.Create();
+			Address permissionManager = this.addressFactory.CreateAddress();
 			Address[] addrs = new Address[10];
 			FavoriteNumberContract[] contracts = new FavoriteNumberContract[10];
 			for (int i = 0; i <= 5; i++)
 			{
-				addrs[i] = this.addressFactory.Create();
+				addrs[i] = this.addressFactory.CreateAddress();
 				contracts[i] = new FavoriteNumberContract(addrs[i], permissionManager);
 				this.registry.RegisterContract(contracts[i]);
 				var addTracingPermissionAction = new AddPermissionAction(
@@ -143,12 +143,12 @@ namespace StrongForce.Core.Tests
 		[Fact]
 		public void Receive_WhenPassedSetFavoriteNumberActionWithGrantedPermissions3_ReturnPath()
 		{
-			Address permissionManager = this.addressFactory.Create();
+			Address permissionManager = this.addressFactory.CreateAddress();
 			Address[] addrs = new Address[10];
 			FavoriteNumberContract[] contracts = new FavoriteNumberContract[10];
 			for (int i = 0; i <= 8; i++)
 			{
-				addrs[i] = this.addressFactory.Create();
+				addrs[i] = this.addressFactory.CreateAddress();
 				contracts[i] = new FavoriteNumberContract(addrs[i], permissionManager);
 				this.registry.RegisterContract(contracts[i]);
 				var addTracingPermissionAction = new AddPermissionAction(
@@ -197,12 +197,12 @@ namespace StrongForce.Core.Tests
 		[Fact]
 		public void Receive_WhenPassedSetFavoriteNumberActionWithGrantedPermissions4_ReturnPath()
 		{
-			Address permissionManager = this.addressFactory.Create();
+			Address permissionManager = this.addressFactory.CreateAddress();
 			Address[] addrs = new Address[10];
 			FavoriteNumberContract[] contracts = new FavoriteNumberContract[10];
 			for (int i = 0; i <= 8; i++)
 			{
-				addrs[i] = this.addressFactory.Create();
+				addrs[i] = this.addressFactory.CreateAddress();
 				contracts[i] = new FavoriteNumberContract(addrs[i], permissionManager);
 				this.registry.RegisterContract(contracts[i]);
 				var addTracingPermissionAction = new AddPermissionAction(
@@ -255,12 +255,12 @@ namespace StrongForce.Core.Tests
 		[Fact]
 		public void Receive_WhenPassedSetFavoriteNumberActionWithGrantedPermissions5_ReturnPath()
 		{
-			Address permissionManager = this.addressFactory.Create();
+			Address permissionManager = this.addressFactory.CreateAddress();
 			Address[] addrs = new Address[15];
 			FavoriteNumberContract[] contracts = new FavoriteNumberContract[15];
 			for (int i = 0; i <= 11; i++)
 			{
-				addrs[i] = this.addressFactory.Create();
+				addrs[i] = this.addressFactory.CreateAddress();
 				contracts[i] = new FavoriteNumberContract(addrs[i], permissionManager);
 				this.registry.RegisterContract(contracts[i]);
 				var addTracingPermissionAction = new AddPermissionAction(

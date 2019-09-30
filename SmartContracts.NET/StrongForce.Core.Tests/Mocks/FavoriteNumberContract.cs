@@ -9,6 +9,8 @@ namespace StrongForce.Core.Tests.Mocks
 {
 	public class FavoriteNumberContract : Contract
 	{
+		public const int InvalidNumber = -4242;
+
 		public FavoriteNumberContract()
 		{
 		}
@@ -71,6 +73,10 @@ namespace StrongForce.Core.Tests.Mocks
 		private void HandleSetNumberAction(IDictionary<string, object> payload)
 		{
 			this.Number = payload.Get<int>(SetFavoriteNumberAction.Number);
+			if (this.Number == InvalidNumber)
+			{
+				throw new ArgumentOutOfRangeException("Invalid number passed to FavoriteNumberContract!");
+			}
 		}
 	}
 }

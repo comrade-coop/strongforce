@@ -33,7 +33,7 @@ namespace StrongForce.Core.Tests.Mocks
 
 			for (int i = 0; i < this.FavoriteContractsCount; i++)
 			{
-				address = this.CreateContract<CreatorContract>(
+				address = this.CreateContract<FavoriteNumberContract>(
 					new Dictionary<string, object>() { { "Admin", initialManager?.ToString() } });
 			}
 		}
