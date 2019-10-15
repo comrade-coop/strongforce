@@ -6,6 +6,7 @@ import (
 
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	abci "github.com/tendermint/tendermint/abci/types"
 )
 
@@ -67,6 +68,19 @@ func NewQuerier(keeper Keeper) sdk.Querier {
 				}
 
 				return result, nil
+			}
+		case "amino-action-wrap":
+			{
+				var stdTx authtypes.StdTx
+				str := string(req.Data)
+				x, err := base64.RawURLEncoding.DecodeString(str)
+				keeper.cdc.MustUnmarshalJSON(x, &stdTx)
+				txBytes, err := keeper.cdc.MarshalBinaryLengthPrefixed(stdTx)
+				if err != nil {
+					return nil, sdk.ErrInternal("could not encode Action to amino")
+				}
+				//encoded := []byte(base64.StdEncoding.EncodeToString(txBytes))
+				return txBytes, nil
 			}
 			// return nil, sdk.ErrUnknownRequest("invalid parameters for strongforce/contract endpoint")
 		default:

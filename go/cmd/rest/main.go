@@ -1,18 +1,20 @@
 package rest
 
 import (
+	"encoding/base64"
 	"fmt"
+	"io/ioutil"
 	"net/http"
 	"os"
 
 	types "github.com/comrade-coop/strongforce/go/x/strongforce/types"
 	"github.com/cosmos/cosmos-sdk/client/context"
-	"github.com/cosmos/cosmos-sdk/client/flags"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/rest"
 	auth "github.com/cosmos/cosmos-sdk/x/auth/client/rest"
 	"github.com/cosmos/cosmos-sdk/x/auth/client/utils"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
+	bank "github.com/cosmos/cosmos-sdk/x/bank/client/rest"
 	"github.com/gorilla/mux"
 )
 
@@ -23,10 +25,12 @@ const (
 // RegisterRoutes - Central function to define routes that get registered by the main application
 func RegisterRoutes(cliCtx context.CLIContext, r *mux.Router, storeName string) {
 	r.HandleFunc(fmt.Sprintf("/%s/contract/addresses", storeName), contractAddressesHandler(cliCtx, storeName)).Methods("GET")
+	r.HandleFunc(fmt.Sprintf("/%s/contract/amino-action-wrap", storeName), resolveAminoActionWrapHandler(cliCtx, storeName)).Methods("POST")
 	r.HandleFunc(fmt.Sprintf("/%s/contract/state/{%s}", storeName, restName), resolveStateHandler(cliCtx, storeName)).Methods("GET")
 	r.HandleFunc(fmt.Sprintf("/%s/contract/type/{%s}", storeName, restName), contractTypeHandler(cliCtx, storeName)).Methods("GET")
 	r.HandleFunc(fmt.Sprintf("/%s/contract/action", storeName), receiveActionHandler(cliCtx)).Methods("POST")
 	auth.RegisterTxRoutes(cliCtx, r)
+	bank.RegisterRoutes(cliCtx, r)
 }
 
 // --------------------------------------------------------------------------------------
@@ -71,27 +75,31 @@ func receiveActionHandler(cliCtx context.CLIContext) http.HandlerFunc {
 			return
 		}
 
-		gasAdj, ok := rest.ParseFloat64OrReturnBadRequest(w, baseReq.GasAdjustment, flags.DefaultGasAdjustment)
-		if !ok {
-			return
-		}
+		//Comment to run transactions
+		utils.WriteGenerateStdTxResponse(w, cliCtx, baseReq, []sdk.Msg{msg})
+		//Uncomment to run transactions
 
-		simAndExec, gas, err := flags.ParseGas(baseReq.Gas)
-		if err != nil {
-			rest.WriteErrorResponse(w, http.StatusBadRequest, err.Error())
-			return
-		}
+		// gasAdj, ok := rest.ParseFloat64OrReturnBadRequest(w, baseReq.GasAdjustment, flags.DefaultGasAdjustment)
+		// if !ok {
+		// 	return
+		// }
 
-		cliCtx.FromName = req.Name
-		cliCtx.SkipConfirm = true
+		// simAndExec, gas, err := flags.ParseGas(baseReq.Gas)
+		// if err != nil {
+		// 	rest.WriteErrorResponse(w, http.StatusBadRequest, err.Error())
+		// 	return
+		// }
 
-		txBldr := authtypes.NewTxBuilder(
-			utils.GetTxEncoder(cliCtx.Codec), baseReq.AccountNumber, baseReq.Sequence, gas, gasAdj,
-			baseReq.Simulate || simAndExec, baseReq.ChainID, baseReq.Memo, baseReq.Fees, baseReq.GasPrices,
-		)
-		err = CompleteAndBroadcastTxCLI(txBldr, cliCtx, []sdk.Msg{msg})
+		// cliCtx.FromName = req.Name
+		// cliCtx.SkipConfirm = true
 
-		rest.WriteErrorResponse(w, http.StatusBadRequest, err.Error())
+		// txBldr := authtypes.NewTxBuilder(
+		// 	utils.GetTxEncoder(cliCtx.Codec), baseReq.AccountNumber, baseReq.Sequence, gas, gasAdj,
+		// 	baseReq.Simulate || simAndExec, baseReq.ChainID, baseReq.Memo, baseReq.Fees, baseReq.GasPrices,
+		// )
+		// err = CompleteAndBroadcastTxCLI(txBldr, cliCtx, []sdk.Msg{msg})
+
+		// rest.WriteErrorResponse(w, http.StatusBadRequest, err.Error())
 	}
 }
 
@@ -136,6 +144,27 @@ func CompleteAndBroadcastTxCLI(txBldr authtypes.TxBuilder, cliCtx context.CLICon
 
 //--------------------------------------------------------------------------------------
 // Query Handlers
+func resolveAminoActionWrapHandler(cliCtx context.CLIContext, storeName string) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		// vars := mux.Vars(r)
+		// txBytes := []byte(vars[restName])
+		// // txBytes, err := base64.RawURLEncoding.DecodeString(paramType)
+		// print(fmt.Sprintf("JSON %v", txBytes))
+		// // if err != nil {
+		// // 	rest.WriteErrorResponse(w, http.StatusExpectationFailed, err.Error())
+		// // 	return
+		// // }
+		body, err := ioutil.ReadAll(r.Body)
+
+		res, _, err := cliCtx.QueryWithData(fmt.Sprintf("custom/%s/contract/amino-action-wrap", storeName), body)
+		if err != nil {
+			rest.WriteErrorResponse(w, http.StatusNotFound, err.Error())
+			return
+		}
+
+		rest.PostProcessResponse(w, cliCtx, base64.StdEncoding.EncodeToString(res))
+	}
+}
 
 func resolveStateHandler(cliCtx context.CLIContext, storeName string) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {

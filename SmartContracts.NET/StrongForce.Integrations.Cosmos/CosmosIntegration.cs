@@ -1,4 +1,5 @@
 using System;
+using System.Text;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading;
@@ -148,8 +149,9 @@ namespace StrongForce.Integrations.Cosmos
 				}
 
 				var data = StrongForceSerialization.SerializeStatefulObject(contract);
+				var typeName = Encoding.ASCII.GetBytes(contract.GetType().Name);
 
-				this.SaveData(contract.Address, data);
+				this.SaveData(contract.Address, data, typeName);
 				this.integration.logger.LogTrace("Saved contract data: " + data.Length + " bytes for " + contract.Address);
 			}
 
@@ -170,8 +172,9 @@ namespace StrongForce.Integrations.Cosmos
 			public void SaveContractRegistry(ContractRegistry registry)
 			{
 				var data = StateSerialization.SerializeState(registry.GetState());
+				var typeName = Encoding.ASCII.GetBytes(registry.GetType().Name);
 
-				this.SaveData(this.integration.contractRegistryAddress, data);
+				this.SaveData(this.integration.contractRegistryAddress, data, typeName);
 				this.integration.logger.LogTrace("Saved registry data: " + data.Length + " bytes");
 			}
 
@@ -210,12 +213,13 @@ namespace StrongForce.Integrations.Cosmos
 				return response.Contract.Data.ToByteArray();
 			}
 
-			private void SaveData(Address address, byte[] data)
+			private void SaveData(Address address, byte[] data, byte[] typeName)
 			{
 				this.WriteToStream(new ContractRequest
 				{
 					Address = ByteString.CopyFrom(address.Value),
 					Data = ByteString.CopyFrom(data),
+					TypeName = ByteString.CopyFrom(typeName)
 				});
 			}
 		}
