@@ -146,14 +146,6 @@ func CompleteAndBroadcastTxCLI(txBldr authtypes.TxBuilder, cliCtx context.CLICon
 // Query Handlers
 func resolveAminoActionWrapHandler(cliCtx context.CLIContext, storeName string) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		// vars := mux.Vars(r)
-		// txBytes := []byte(vars[restName])
-		// // txBytes, err := base64.RawURLEncoding.DecodeString(paramType)
-		// print(fmt.Sprintf("JSON %v", txBytes))
-		// // if err != nil {
-		// // 	rest.WriteErrorResponse(w, http.StatusExpectationFailed, err.Error())
-		// // 	return
-		// // }
 		body, err := ioutil.ReadAll(r.Body)
 
 		res, _, err := cliCtx.QueryWithData(fmt.Sprintf("custom/%s/contract/amino-action-wrap", storeName), body)

@@ -12,7 +12,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using StrongForce.Core.Kits;
-using Wetonomy.Achievements;
+using StrongForce.Core.Tests.Mocks;
 
 namespace StrongForce.Integrations.Cosmos.IntegrationTest
 {
@@ -31,12 +31,11 @@ namespace StrongForce.Integrations.Cosmos.IntegrationTest
 			services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
 			services.AddSingleton<IOptions<StrongForceService.StrongForceServiceSettings>>((_) => new OptionsWrapper<StrongForceService.StrongForceServiceSettings>(new StrongForceService.StrongForceServiceSettings()
 			{
-				InitialKitType = typeof(AchievementsKit),
+				InitialKitType = typeof(FavoriteNumberKitContract),
 				InitialKitPayload = new Dictionary<string, object>()
 				{
 					{ "User", null },
-					{ "ExchangeRateNumerator", 1 },
-					{ "ExchangeRateDenominator", 2 },
+					{ "FavoriteContractsCount", 12 },
 				},
 			}));
 			services.AddSingleton<IHostedService, StrongForceService>();
