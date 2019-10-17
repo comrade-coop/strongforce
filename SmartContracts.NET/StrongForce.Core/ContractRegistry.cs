@@ -140,6 +140,7 @@ namespace StrongForce.Core
 
 		private void DispatchMessage(Message message)
 		{
+
 			var (contract, receiver) = this.GetContract(message.Target);
 
 			try

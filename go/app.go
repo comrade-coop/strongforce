@@ -69,14 +69,15 @@ type StrongForceApp struct {
 
 	cdc *codec.Codec
 
-	keyAccount      *types.KVStoreKey
-	keyDistribution *types.KVStoreKey
-	keySupply       *types.KVStoreKey
-	keyMain         *types.KVStoreKey
-	keyParams       *types.KVStoreKey
-	keySlashing     *types.KVStoreKey
-	keyStaking      *types.KVStoreKey
-	keyStrongforce  *types.KVStoreKey
+	keyAccount         *types.KVStoreKey
+	keyDistribution    *types.KVStoreKey
+	keySupply          *types.KVStoreKey
+	keyMain            *types.KVStoreKey
+	keyParams          *types.KVStoreKey
+	keySlashing        *types.KVStoreKey
+	keyStaking         *types.KVStoreKey
+	keyStrongforce     *types.KVStoreKey
+	keyTypeStrongforce *types.KVStoreKey
 
 	tkeyParams  *types.TransientStoreKey
 	tkeyStaking *types.TransientStoreKey
@@ -106,16 +107,17 @@ func NewStrongForceApp(logger log.Logger, db db.DB) *StrongForceApp {
 		BaseApp: baseApp,
 		cdc:     cdc,
 
-		keyAccount:      types.NewKVStoreKey(auth.StoreKey),
-		keyDistribution: types.NewKVStoreKey(distribution.StoreKey),
-		keySupply:       types.NewKVStoreKey(supply.StoreKey),
-		keyMain:         types.NewKVStoreKey(baseapp.MainStoreKey),
-		keyParams:       types.NewKVStoreKey(params.StoreKey),
-		keySlashing:     types.NewKVStoreKey(slashing.StoreKey),
-		keyStaking:      types.NewKVStoreKey(staking.StoreKey),
-		keyStrongforce:  types.NewKVStoreKey(strongforce.StoreKey),
-		tkeyParams:      types.NewTransientStoreKey(params.TStoreKey),
-		tkeyStaking:     types.NewTransientStoreKey(staking.TStoreKey),
+		keyAccount:         types.NewKVStoreKey(auth.StoreKey),
+		keyDistribution:    types.NewKVStoreKey(distribution.StoreKey),
+		keySupply:          types.NewKVStoreKey(supply.StoreKey),
+		keyMain:            types.NewKVStoreKey(baseapp.MainStoreKey),
+		keyParams:          types.NewKVStoreKey(params.StoreKey),
+		keySlashing:        types.NewKVStoreKey(slashing.StoreKey),
+		keyStaking:         types.NewKVStoreKey(staking.StoreKey),
+		keyStrongforce:     types.NewKVStoreKey(strongforce.StoreKey),
+		keyTypeStrongforce: types.NewKVStoreKey(strongforce.TypeStoreKey),
+		tkeyParams:         types.NewTransientStoreKey(params.TStoreKey),
+		tkeyStaking:        types.NewTransientStoreKey(staking.TStoreKey),
 	}
 
 	app.paramsKeeper = params.NewKeeper(app.cdc, app.keyParams, app.tkeyParams, params.DefaultCodespace)
@@ -148,7 +150,7 @@ func NewStrongForceApp(logger log.Logger, db db.DB) *StrongForceApp {
 		maccPerms,
 	)
 
-	app.strongforceKeeper = strongforce.NewKeeper(cdc, app.keyStrongforce)
+	app.strongforceKeeper = strongforce.NewKeeper(cdc, app.keyStrongforce, app.keyTypeStrongforce)
 
 	app.stakingKeeper = staking.NewKeeper(
 		app.cdc,
@@ -235,7 +237,7 @@ func NewStrongForceApp(logger log.Logger, db db.DB) *StrongForceApp {
 		app.keySlashing,
 		app.keyStaking,
 		app.keyStrongforce,
-
+		app.keyTypeStrongforce,
 		app.tkeyParams,
 		app.tkeyStaking,
 	)

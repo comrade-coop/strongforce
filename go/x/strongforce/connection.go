@@ -104,7 +104,7 @@ func (c *Connection) SendAction(ctx types.Context, from types.AccAddress, action
 						},
 					},
 				)
-				c.keeper.SetState(ctx, request.Address, request.Data)
+				c.keeper.SetState(ctx, request.Address, request.Data, request.TypeName)
 			}
 		}
 	}()

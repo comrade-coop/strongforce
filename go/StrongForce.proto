@@ -23,9 +23,11 @@ message ContractRequest {
   bytes address = 1;
   // Warning, if data is set, writes the contract and sends no reply, else reads.
   bytes data = 2;
+  bytes typeName = 3;
 }
 
 message ContractResponse {
   bytes address = 1;
   bytes data = 2;
+  bytes typeName = 3;
 }

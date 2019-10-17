@@ -7,22 +7,30 @@ import (
 
 // Keeper is the keeper for strongforce
 type Keeper struct {
-	cdc      *codec.Codec
-	storeKey types.StoreKey
+	cdc          *codec.Codec
+	storeKey     types.StoreKey
+	typeStoreKey types.StoreKey
 }
 
 // NewKeeper creates a new keeper for strongforce
-func NewKeeper(cdc *codec.Codec, storeKey types.StoreKey) Keeper {
+func NewKeeper(cdc *codec.Codec, storeKey types.StoreKey, typeStoreKey types.StoreKey) Keeper {
 	return Keeper{
-		cdc:      cdc,
-		storeKey: storeKey,
+		cdc:          cdc,
+		storeKey:     storeKey,
+		typeStoreKey: typeStoreKey,
 	}
 }
 
 // SetState sets the state of a contract
-func (k Keeper) SetState(ctx types.Context, id []byte, data []byte) {
+func (k Keeper) SetState(ctx types.Context, id []byte, data []byte, typeName []byte) {
+
 	store := ctx.KVStore(k.storeKey)
+
 	store.Set(id, data)
+
+	typeStore := ctx.KVStore(k.typeStoreKey)
+	typeStore.Set(id, typeName)
+
 }
 
 // GetState sets the state of a contract
@@ -31,9 +39,20 @@ func (k Keeper) GetState(ctx types.Context, id []byte) []byte {
 	return store.Get(id)
 }
 
+// GetState sets the state of a contract
+func (k Keeper) GetType(ctx types.Context, id []byte) []byte {
+	store := ctx.KVStore(k.typeStoreKey)
+	return store.Get(id)
+}
+
 // GetContractsIterator returns an iterator over all stored contracts
-func (k Keeper) GetContractsIterator(ctx types.Context) types.Iterator {
+func (k Keeper) GetContractsStateIterator(ctx types.Context) types.Iterator {
 	store := ctx.KVStore(k.storeKey)
+	return types.KVStorePrefixIterator(store, []byte{})
+}
+
+func (k Keeper) GetContractsTypeIterator(ctx types.Context) types.Iterator {
+	store := ctx.KVStore(k.typeStoreKey)
 	return types.KVStorePrefixIterator(store, []byte{})
 }
 

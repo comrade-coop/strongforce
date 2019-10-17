@@ -9,8 +9,9 @@ import (
 
 // GenesisContractData contains the genesis information of a strongforce contract
 type GenesisContractData struct {
-	Address []byte `json:"address"`
-	Data    []byte `json:"data"`
+	Address  []byte `json:"address"`
+	Data     []byte `json:"data"`
+	TypeName []byte `json:"typeName"`
 }
 
 // GenesisState contains the genesis information of a strongforce network
@@ -46,7 +47,7 @@ func DefaultGenesisState() GenesisState {
 // InitGenesis initializes a Keeper with a GenesisState
 func InitGenesis(ctx sdk.Context, keeper Keeper, data GenesisState) []abci.ValidatorUpdate {
 	for _, record := range data.ContractData {
-		keeper.SetState(ctx, record.Address, record.Data)
+		keeper.SetState(ctx, record.Address, record.Data, record.TypeName)
 	}
 	return []abci.ValidatorUpdate{}
 }
@@ -54,12 +55,14 @@ func InitGenesis(ctx sdk.Context, keeper Keeper, data GenesisState) []abci.Valid
 // ExportGenesis gets the GenesisState from a Keeper
 func ExportGenesis(ctx sdk.Context, k Keeper) GenesisState {
 	var records []GenesisContractData
-	for iterator := k.GetContractsIterator(ctx); iterator.Valid(); iterator.Next() {
+	for iterator := k.GetContractsStateIterator(ctx); iterator.Valid(); iterator.Next() {
 		address := iterator.Key()
 		data := k.GetState(ctx, address)
+		typeName := k.GetType(ctx, address)
 		records = append(records, GenesisContractData{
-			Address: address,
-			Data:    data,
+			Address:  address,
+			Data:     data,
+			TypeName: typeName,
 		})
 	}
 	return GenesisState{

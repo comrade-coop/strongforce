@@ -1,4 +1,4 @@
-package strongforce
+package types
 
 import (
 	"github.com/spf13/cobra"
@@ -13,7 +13,7 @@ import (
 )
 
 // GetTxCmd generates the entrypoint for the strongforce module
-func GetTxCmd(keeper Keeper, cdc *codec.Codec) *cobra.Command {
+func GetTxCmd(cdc *codec.Codec) *cobra.Command {
 	strongforceTxCmd := &cobra.Command{
 		Use:                        ModuleName,
 		Short:                      "Strongforce transaction subcommands",
@@ -25,7 +25,6 @@ func GetTxCmd(keeper Keeper, cdc *codec.Codec) *cobra.Command {
 	strongforceTxCmd.AddCommand(client.PostCommands(
 		GetCmdExecuteAction(cdc),
 	)...)
-
 	return strongforceTxCmd
 }
 
